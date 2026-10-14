@@ -1,0 +1,46 @@
+/* Cores da Gebon */
+:root { --laranja: #f16c22; --menu: #1e242b; }
+
+body { background: #f4f5f7; }
+
+.btn-laranja { background: var(--laranja); color: #fff; }
+.btn-laranja:hover { background: #d95813; color: #fff; }
+
+/* Tela de login centralizada */
+.tela-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.cartao-login { width: 100%; max-width: 380px; }
+
+/* Menu à esquerda + conteúdo à direita */
+.layout { display: flex; min-height: 100vh; }
+.menu { width: 240px; flex-shrink: 0; background: var(--menu); color: #fff; padding: 20px 16px; }
+.menu button { display: block; width: 100%; text-align: left; background: none; border: 0; border-radius: 6px; color: #cfd4da; padding: 8px 12px; }
+.menu button.ativo { background: var(--laranja); color: #fff; }
+.conteudo { flex-grow: 1; padding: 24px; min-width: 0; overflow-x: auto; }
+h2 { margin-bottom: 16px; }
+
+/* Aviso flutuante de sucesso/erro */
+#mensagem { position: fixed; top: 16px; right: 16px; z-index: 2000; max-width: 400px; }
+
+/* Janelas (dialog) */
+.janela { border: 0; border-radius: 8px; padding: 24px; max-width: 95vw; }
+.janela-grande { width: 800px; }
+.janela::backdrop { background: rgb(0 0 0 / 0.5); }
+
+/* Lista de produtos com caixinhas no relatório */
+.lista-marcar { max-height: 220px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px 12px; }
+
+/* Celular: o menu fica em cima, com os botões lado a lado */
+@media (max-width: 767px) {
+  .layout { flex-direction: column; }
+  .menu { width: auto; display: flex; flex-wrap: wrap; gap: 4px; }
+  .menu > div { width: 100%; margin-bottom: 4px !important; }
+  .menu button { width: auto; }
+  .conteudo { padding: 16px; }
+}
+
+/* Impressão do relatório: esconde menu e botões */
+@media print {
+  .no-print, .menu { display: none !important; }
+  .conteudo { padding: 0; }
+  body { background: #fff; }
+}

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synapse - Fichas Técnicas e Custos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="estilo.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===================== LOGIN ===================== -->
+  <div id="tela-login" class="tela-login" hidden>
+    <form class="card card-body shadow cartao-login" onsubmit="fazerLogin(event)">
+      <h1 class="h4">Synapse</h1>
+      <p class="text-muted" id="login-titulo"></p>
+      <!-- O campo "nome" só aparece no primeiro acesso -->
+      <div id="campo-nome">
+        <label class="form-label">Seu nome</label>
+        <input class="form-control mb-3" name="nome">
+      </div>
+      <label class="form-label">Usuário</label>
+      <input class="form-control mb-3" name="login" autocomplete="username" required>
+      <label class="form-label">Senha</label>
+      <input class="form-control mb-3" name="senha" type="password" autocomplete="current-password" required>
+      <button class="btn btn-laranja">Entrar</button>
+    </form>
+  </div>
+
+  <!-- ===================== SISTEMA ===================== -->
+  <div id="tela-sistema" class="layout" hidden>
+
+    <nav class="menu">
+      <div class="fs-4 fw-bold">Synapse</div>
+      <div class="small text-white-50 mb-3" id="usuario-logado"></div>
+      <button data-aba="catalogo">Catálogo</button>
+      <button data-aba="produtos" class="so-recepcao">Produtos</button>
+      <button data-aba="ficha" class="so-recepcao">Ficha Técnica</button>
+      <button data-aba="insumos" class="so-recepcao">Insumos</button>
+      <button data-aba="categorias" class="so-recepcao">Categorias</button>
+      <button data-aba="relatorio" class="so-recepcao">Relatório de Custo</button>
+      <button data-aba="usuarios" class="so-recepcao">Usuários</button>
+      <button data-aba="auditoria" class="so-recepcao">Auditoria</button>
+      <button onclick="sair()">Sair</button>
+    </nav>
+
+    <main class="conteudo">
+
+      <!-- ---------- CATÁLOGO ---------- -->
+      <section id="aba-catalogo">
+        <h2>Catálogo de Produtos</h2>
+        <div id="aviso-desatualizadas" class="alert alert-warning" hidden></div>
+        <div class="row g-2 mb-3">
+          <div class="col-md-8"><input class="form-control" id="catalogo-busca" placeholder="Buscar por nome ou código..." oninput="desenharCatalogo()"></div>
+          <div class="col-md-4">
+            <select class="form-select" id="catalogo-filtro" onchange="desenharCatalogo()">
+              <option value="">Todas as situações</option>
+              <option>Ativa</option><option>Desatualizada</option><option>Sem ficha</option><option>Inativo</option>
+            </select>
+          </div>
+        </div>
+        <table class="table table-hover bg-white">
+          <thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Ficha</th><th>Custo</th><th>Situação</th><th></th></tr></thead>
+          <tbody id="tabela-catalogo"></tbody>
+        </table>
+      </section>
+
+      <!-- ---------- PRODUTOS ---------- -->
+      <section id="aba-produtos">
+        <h2>Produtos</h2>
+        <form class="card card-body mb-4" onsubmit="salvar(event, 'produtos')">
+          <div class="row g-2">
+            <div class="col-md-3"><label class="form-label">Código</label><input class="form-control" name="codigo" maxlength="20" required></div>
+            <div class="col-md-5"><label class="form-label">Nome</label><input class="form-control" name="nome" maxlength="80" required></div>
+            <div class="col-md-4"><label class="form-label">Categoria</label><select class="form-select" name="categoria_id" id="produto-categoria" required></select></div>
+          </div>
+          <div class="mt-3"><button class="btn btn-laranja">Cadastrar</button> <button type="button" class="btn btn-outline-secondary" onclick="limpar(this.form)">Limpar</button></div>
+        </form>
+        <table class="table table-hover bg-white">
+          <thead><tr><th>Código</th><th>Nome</th><th>Categoria</th><th>Situação</th><th></th></tr></thead>
+          <tbody id="tabela-produtos"></tbody>
+        </table>
+      </section>
+
+      <!-- ---------- FICHA TÉCNICA ---------- -->
+      <section id="aba-ficha">
+        <h2>Ficha Técnica</h2>
+        <div class="card card-body mb-3">
+          <label class="form-label">Produto</label>
+          <select class="form-select" id="ficha-produto" onchange="escolherProdutoFicha()"></select>
+          <div class="small text-muted mt-2" id="ficha-info"></div>
+        </div>
+        <div id="ficha-editor" hidden>
+          <div class="card card-body mb-3">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-6"><label class="form-label">Insumo</label><select class="form-select" id="ficha-insumo"></select></div>
+              <div class="col-md-3"><label class="form-label">Quantidade</label><input class="form-control" id="ficha-quantidade" type="number" step="0.001" min="0"></div>
+              <div class="col-md-3"><button class="btn btn-outline-primary w-100" onclick="adicionarItemFicha()">Adicionar</button></div>
+            </div>
+          </div>
+          <table class="table bg-white">
+            <thead><tr><th>Insumo</th><th>Quantidade</th><th>Custo unitário</th><th>Subtotal</th><th></th></tr></thead>
+            <tbody id="tabela-ficha"></tbody>
+            <tfoot><tr><th colspan="3" class="text-end">Custo total</th><th id="ficha-total"></th><th></th></tr></tfoot>
+          </table>
+          <button class="btn btn-laranja" onclick="salvarFicha()">Salvar nova versão</button>
+          <h3 class="h6 mt-4">Histórico de versões</h3>
+          <ul class="list-group" id="ficha-versoes"></ul>
+        </div>
+      </section>
+
+      <!-- ---------- INSUMOS ---------- -->
+      <section id="aba-insumos">
+        <h2>Insumos</h2>
+        <form class="card card-body mb-4" onsubmit="salvar(event, 'insumos')">
+          <div class="row g-2">
+            <div class="col-md-5"><label class="form-label">Nome</label><input class="form-control" name="nome" maxlength="60" required></div>
+            <div class="col-md-3">
+              <label class="form-label">Unidade</label>
+              <select class="form-select" name="unidade">
+                <option value="KG">KG (quilo)</option><option value="G">G (grama)</option><option value="L">L (litro)</option>
+                <option value="ML">ML (mililitro)</option><option value="UN">UN (unidade)</option>
+              </select>
+            </div>
+            <div class="col-md-4"><label class="form-label">Custo por unidade (R$)</label><input class="form-control" name="custo" type="number" step="0.0001" min="0" required></div>
+          </div>
+          <div class="mt-3"><button class="btn btn-laranja">Cadastrar</button> <button type="button" class="btn btn-outline-secondary" onclick="limpar(this.form)">Limpar</button></div>
+        </form>
+        <table class="table table-hover bg-white">
+          <thead><tr><th>Nome</th><th>Unidade</th><th>Custo</th><th></th></tr></thead>
+          <tbody id="tabela-insumos"></tbody>
+        </table>
+      </section>
+
+      <!-- ---------- CATEGORIAS ---------- -->
+      <section id="aba-categorias">
+        <h2>Categorias</h2>
+        <form class="card card-body mb-4" onsubmit="salvar(event, 'categorias')">
+          <label class="form-label">Nome</label><input class="form-control" name="nome" maxlength="50" required>
+          <div class="mt-3"><button class="btn btn-laranja">Cadastrar</button> <button type="button" class="btn btn-outline-secondary" onclick="limpar(this.form)">Limpar</button></div>
+        </form>
+        <table class="table table-hover bg-white">
+          <thead><tr><th>Nome</th><th></th></tr></thead>
+          <tbody id="tabela-categorias"></tbody>
+        </table>
+      </section>
+
+      <!-- ---------- RELATÓRIO ---------- -->
+      <section id="aba-relatorio">
+        <h2 class="no-print">Relatório de Custo</h2>
+        <div class="card card-body mb-3 no-print">
+          <div class="d-flex justify-content-between mb-2">
+            <strong>Produtos com ficha técnica</strong>
+            <button class="btn btn-sm btn-outline-secondary" onclick="marcarTodos()">Marcar todos</button>
+          </div>
+          <div id="relatorio-produtos" class="lista-marcar mb-3"></div>
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4"><label class="form-label">Ficha válida na data (opcional)</label><input class="form-control" id="relatorio-data" type="date"></div>
+            <div class="col-md-8">
+              <button class="btn btn-laranja" onclick="gerarRelatorio()">Gerar</button>
+              <button class="btn btn-outline-secondary" id="botao-imprimir" onclick="window.print()" hidden>Imprimir</button>
+            </div>
+          </div>
+        </div>
+        <div id="relatorio-resultado"></div>
+      </section>
+
+      <!-- ---------- USUÁRIOS ---------- -->
+      <section id="aba-usuarios">
+        <h2>Usuários</h2>
+        <form class="card card-body mb-4" onsubmit="salvar(event, 'usuarios')">
+          <div class="row g-2">
+            <div class="col-md-3"><label class="form-label">Nome</label><input class="form-control" name="nome" required></div>
+            <div class="col-md-3"><label class="form-label">Login</label><input class="form-control" name="login" required></div>
+            <div class="col-md-3"><label class="form-label">Senha</label><input class="form-control" name="senha" type="password" autocomplete="new-password" required></div>
+            <div class="col-md-3">
+              <label class="form-label">Perfil</label>
+              <select class="form-select" name="perfil">
+                <option value="entrega">Entrega (só consulta)</option>
+                <option value="recepcao">Recepção (administrador)</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-3"><button class="btn btn-laranja">Cadastrar</button></div>
+        </form>
+        <table class="table table-hover bg-white">
+          <thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th></th></tr></thead>
+          <tbody id="tabela-usuarios"></tbody>
+        </table>
+      </section>
+
+      <!-- ---------- AUDITORIA ---------- -->
+      <section id="aba-auditoria">
+        <h2>Auditoria</h2>
+        <table class="table table-sm table-striped bg-white">
+          <thead><tr><th>Data/hora</th><th>Usuário</th><th>Ação</th><th>Item</th><th>Detalhe</th></tr></thead>
+          <tbody id="tabela-auditoria"></tbody>
+        </table>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Aviso flutuante de sucesso/erro -->
+  <div id="mensagem" class="no-print"></div>
+
+  <!-- Janela com os detalhes da ficha (aberta pelo Catálogo) -->
+  <dialog id="janela-ficha" class="janela janela-grande">
+    <form method="dialog" class="d-flex justify-content-between">
+      <h5 id="janela-ficha-titulo"></h5>
+      <button class="btn-close"></button>
+    </form>
+    <div id="janela-ficha-corpo"></div>
+  </dialog>
+
+  <!-- Janela de confirmação (antes de excluir) -->
+  <dialog id="janela-confirmar" class="janela text-center">
+    <form method="dialog">
+      <p class="fw-bold" id="confirmar-texto"></p>
+      <button class="btn btn-outline-secondary" value="nao">Cancelar</button>
+      <button class="btn btn-danger" value="sim">Excluir</button>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
