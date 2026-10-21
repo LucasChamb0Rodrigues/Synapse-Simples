@@ -1,55 +1,82 @@
 // Tabela produto (e a lista do catálogo).
-const { sql } = require('./banco');
+const banco = require('./banco');
+const Modelo = require('./Modelo');
+const ErroApp = require('./ErroApp');
+const Ficha = require('./fichaModel');
 
-// Todos os produtos com a ficha ATUAL (maior versão), o custo pelo preço atual dos insumos
-// e quantos insumos mudaram de preço desde que a ficha foi salva.
-function listarCatalogo() {
-  return sql(`
-    SELECT p.id, p.codigo, p.nome, p.ativo, p.categoria_id, c.nome AS categoria,
-           f.id AS ficha_id, f.versao, t.custo_atual, t.insumos_alterados
-      FROM produto p
-      JOIN categoria c ON c.id = p.categoria_id
-      LEFT JOIN ficha_tecnica f
-             ON f.produto_id = p.id
-            AND f.versao = (SELECT MAX(versao) FROM ficha_tecnica WHERE produto_id = p.id)
-      LEFT JOIN (SELECT i.ficha_id,
-                        ROUND(SUM(i.quantidade * s.custo), 2) AS custo_atual,
-                        SUM(i.custo_unitario <> s.custo)      AS insumos_alterados
-                   FROM item_ficha i JOIN insumo s ON s.id = i.insumo_id
-                  GROUP BY i.ficha_id) t ON t.ficha_id = f.id
-     ORDER BY p.nome`);
+class Produto extends Modelo {
+  static tabela = 'produto';
+  static campos = ['codigo', 'nome', 'categoria_id'];
+  static naoEncontrado = 'Produto não encontrado.';
+
+  // Todos os produtos com a ficha ATUAL (maior versão), o custo pelo preço atual dos insumos
+  // e quantos insumos mudaram de preço desde que a ficha foi salva.
+  static async listarCatalogo() {
+    const linhas = await banco.sql(`
+      SELECT p.id, p.codigo, p.nome, p.ativo, p.categoria_id, c.nome AS categoria,
+             f.id AS ficha_id, f.versao, t.custo_atual, t.insumos_alterados
+        FROM produto p
+        JOIN categoria c ON c.id = p.categoria_id
+        LEFT JOIN ficha_tecnica f
+               ON f.produto_id = p.id
+              AND f.versao = (SELECT MAX(versao) FROM ficha_tecnica WHERE produto_id = p.id)
+        LEFT JOIN (SELECT i.ficha_id,
+                          ROUND(SUM(i.quantidade * s.custo), 2) AS custo_atual,
+                          SUM(i.custo_unitario <> s.custo)      AS insumos_alterados
+                     FROM item_ficha i JOIN insumo s ON s.id = i.insumo_id
+                    GROUP BY i.ficha_id) t ON t.ficha_id = f.id
+       ORDER BY p.nome`);
+    return linhas.map((linha) => {
+      const produto = new Produto(linha);
+      produto.situacao = produto.calcularSituacao();
+      return produto;
+    });
+  }
+
+  // Produto com o nome da categoria (substitui o buscarPorId do Modelo).
+  static async buscarPorId(id) {
+    const [linha] = await banco.sql(
+      'SELECT p.*, c.nome AS categoria FROM produto p JOIN categoria c ON c.id = p.categoria_id WHERE p.id = ?',
+      [id],
+    );
+    return linha && new Produto(linha);
+  }
+
+  async validar() {
+    this.codigo = Modelo.texto(this.codigo).toUpperCase();
+    this.nome = Modelo.texto(this.nome);
+    if (!/^[A-Z0-9._-]{1,20}$/.test(this.codigo)) throw new ErroApp(400, 'O código deve ter de 1 a 20 caracteres (letras, números, ponto, hífen ou _).');
+    if (!this.nome) throw new ErroApp(400, 'Informe o nome do produto.');
+    if (!this.categoria_id) throw new ErroApp(400, 'Selecione uma categoria.');
+
+    // Código e nome não podem repetir (o próprio produto, na alteração, não conta).
+    const repetidos = await banco.sql('SELECT id FROM produto WHERE (codigo = ? OR nome = ?) AND id <> ?', [this.codigo, this.nome, this.id || 0]);
+    if (repetidos.length > 0) throw new ErroApp(409, 'Já existe um produto com esse código ou nome.');
+  }
+
+  descricao() {
+    return `${this.codigo} - ${this.nome}`;
+  }
+
+  // Situação do produto (diagrama de estados do projeto).
+  calcularSituacao() {
+    if (!this.ativo) return 'Inativo';
+    if (!this.ficha_id) return 'Sem ficha';
+    if (this.insumos_alterados > 0) return 'Desatualizada'; // preço de insumo mudou
+    return 'Ativa';
+  }
+
+  // Inativar (descontinuar) ou reativar.
+  async mudarAtivo(ativo) {
+    await banco.sql('UPDATE produto SET ativo = ? WHERE id = ?', [ativo, this.id]);
+    this.ativo = ativo;
+  }
+
+  // Começa uma nova versão da ficha técnica deste produto (ainda não gravada).
+  novaFicha(itens) {
+    if (!this.ativo) throw new ErroApp(400, 'Produto inativo não pode receber ficha técnica.');
+    return new Ficha({ produto: this, itens });
+  }
 }
 
-// Produto com o nome da categoria.
-async function buscarPorId(id) {
-  const [produto] = await sql(
-    'SELECT p.*, c.nome AS categoria FROM produto p JOIN categoria c ON c.id = p.categoria_id WHERE p.id = ?',
-    [id],
-  );
-  return produto;
-}
-
-// Código e nome não podem repetir. "idAtual" é o próprio produto (na alteração), que não conta.
-async function existeRepetido(codigo, nome, idAtual = 0) {
-  const repetidos = await sql('SELECT id FROM produto WHERE (codigo = ? OR nome = ?) AND id <> ?', [codigo, nome, idAtual]);
-  return repetidos.length > 0;
-}
-
-function criar({ codigo, nome, categoria_id }) {
-  return sql('INSERT INTO produto (codigo, nome, categoria_id) VALUES (?, ?, ?)', [codigo, nome, categoria_id]);
-}
-
-function alterar(id, { codigo, nome, categoria_id }) {
-  return sql('UPDATE produto SET codigo = ?, nome = ?, categoria_id = ? WHERE id = ?', [codigo, nome, categoria_id, id]);
-}
-
-function mudarAtivo(id, ativo) {
-  return sql('UPDATE produto SET ativo = ? WHERE id = ?', [ativo, id]);
-}
-
-// As fichas do produto são apagadas junto (ON DELETE CASCADE no banco).
-function excluir(id) {
-  return sql('DELETE FROM produto WHERE id = ?', [id]);
-}
-
-module.exports = { listarCatalogo, buscarPorId, existeRepetido, criar, alterar, mudarAtivo, excluir };
+module.exports = Produto;

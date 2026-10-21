@@ -6,15 +6,50 @@ body { background: #f4f5f7; }
 .btn-laranja { background: var(--laranja); color: #fff; }
 .btn-laranja:hover { background: #d95813; color: #fff; }
 
-/* Tela de login centralizada */
-.tela-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
-.cartao-login { width: 100%; max-width: 380px; }
+/* Tela de login: logo à esquerda (com borda curva) e formulário à direita */
+.tela-login { min-height: 100vh; display: flex; background: var(--menu); }
+.tela-login[hidden] { display: none; }
+.login-marca {
+  width: 50%; display: flex; align-items: center; justify-content: center;
+  background: #f4f5f7; padding: 24px;
+  border-top-right-radius: 25% 50%; border-bottom-right-radius: 25% 50%;
+}
+.logo { display: flex; align-items: center; gap: 16px; }
+.logo svg { width: 88px; height: 88px; color: var(--laranja); }
+.logo span { font-size: 4rem; font-weight: 700; color: var(--menu); letter-spacing: -1px; }
+.login-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.login-form { width: 100%; max-width: 420px; color: #fff; }
+.login-form h1 { font-size: 4rem; font-weight: 400; margin-bottom: 8px; }
+.login-titulo { color: #cfd4da; margin-bottom: 32px; }
+.login-form .form-control { border: 0; border-radius: 10px; padding: 12px 16px; }
+.login-form .btn { border-radius: 10px; padding: 12px; font-weight: 600; }
 
 /* Menu à esquerda + conteúdo à direita */
 .layout { display: flex; min-height: 100vh; }
-.menu { width: 240px; flex-shrink: 0; background: var(--menu); color: #fff; padding: 20px 16px; }
-.menu button { display: block; width: 100%; text-align: left; background: none; border: 0; border-radius: 6px; color: #cfd4da; padding: 8px 12px; }
-.menu button.ativo { background: var(--laranja); color: #fff; }
+.menu {
+  width: 260px; flex-shrink: 0; background: var(--menu); color: #fff; padding: 24px 20px;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column;
+}
+.menu-logo { display: flex; align-items: center; gap: 10px; font-size: 1.9rem; font-weight: 700; color: #fff; margin-bottom: 28px; }
+.menu-logo .icone { width: 34px; height: 34px; color: var(--laranja); }
+.menu-empresa { margin-bottom: 24px; }
+.menu-empresa strong { display: block; color: #fff; }
+.menu-empresa span, .menu-usuario span { display: block; font-size: 0.85rem; color: #9aa1a9; }
+.menu-itens { display: flex; flex-direction: column; gap: 4px; }
+.menu button {
+  display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: none; border: 0;
+  border-radius: 8px; color: #cfd4da; padding: 11px 16px; font-size: 1rem;
+}
+.menu button:hover { background: rgb(255 255 255 / 0.08); color: #fff; }
+.menu button.ativo { background: var(--laranja); color: #fff; font-weight: 600; }
+.menu-rodape { margin-top: auto; padding-top: 24px; }
+.menu-usuario { display: flex; align-items: center; gap: 12px; border-top: 1px solid rgb(255 255 255 / 0.12); margin-top: 16px; padding-top: 16px; }
+.menu-usuario strong { display: block; font-size: 0.95rem; color: #fff; }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  background: rgb(241 108 34 / 0.2); color: #f89a63; font-weight: 700;
+}
+.icone { width: 22px; height: 22px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .conteudo { flex-grow: 1; padding: 24px; min-width: 0; overflow-x: auto; }
 h2 { margin-bottom: 16px; }
 
@@ -24,6 +59,7 @@ h2 { margin-bottom: 16px; }
 /* Janelas (dialog) */
 .janela { border: 0; border-radius: 8px; padding: 24px; max-width: 95vw; }
 .janela-grande { width: 800px; }
+.janela-media { width: 720px; }
 .janela::backdrop { background: rgb(0 0 0 / 0.5); }
 
 /* Lista de produtos com caixinhas no relatório */
@@ -31,10 +67,18 @@ h2 { margin-bottom: 16px; }
 
 /* Celular: o menu fica em cima, com os botões lado a lado */
 @media (max-width: 767px) {
+  .tela-login { flex-direction: column; }
+  .login-marca { width: auto; padding: 40px 16px; border-radius: 0 0 50% 50% / 0 0 30% 30%; }
+  .logo svg { width: 56px; height: 56px; }
+  .logo span, .login-form h1 { font-size: 2.5rem; }
+  .login-area { padding: 32px 16px; }
   .layout { flex-direction: column; }
-  .menu { width: auto; display: flex; flex-wrap: wrap; gap: 4px; }
-  .menu > div { width: 100%; margin-bottom: 4px !important; }
-  .menu button { width: auto; }
+  .menu { width: auto; height: auto; position: static; padding: 16px; }
+  .menu-logo, .menu-empresa { margin-bottom: 12px; }
+  .menu-itens { flex-direction: row; flex-wrap: wrap; }
+  .menu button { width: auto; padding: 8px 12px; gap: 8px; }
+  .menu-rodape { padding-top: 12px; display: flex; flex-direction: row-reverse; justify-content: space-between; align-items: center; }
+  .menu-usuario { border-top: 0; margin-top: 0; padding-top: 0; }
   .conteudo { padding: 16px; }
 }
 
