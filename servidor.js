@@ -1,11 +1,11 @@
 // Ponto de entrada: configura o Express e liga o servidor.
 // Para rodar: npm start   e abra http://localhost:3000
 //
-// Organização (MVC):
-//   models/       conversam com o MySQL (só SQL)
+// Organização (MVC, orientado a objetos):
+//   models/       classes das entidades (Produto, Insumo...): regras e SQL; herdam de Modelo
 //   views/        as telas que rodam no navegador (HTML, CSS e JS)
-//   controllers/  recebem o pedido, validam os dados, chamam o model e respondem
-//   rotas.js      liga cada endereço da API a uma função de controller
+//   controllers/  classes que recebem o pedido, usam os objetos do model e respondem; herdam de Controller
+//   rotas.js      liga cada endereço da API a um método de controller
 
 try { process.loadEnvFile(); } catch { /* sem .env: o aviso abaixo explica */ }
 if (!process.env.SESSION_SECRET) {
@@ -38,7 +38,7 @@ const ERROS_DO_BANCO = {
   ER_ACCESS_DENIED_ERROR:  [500, 'Sem conexão com o banco de dados. Confira o arquivo .env.'],
 };
 
-// Todo erro dos controllers (inclusive os de falha()) chega aqui.
+// Todo erro dos controllers (inclusive os ErroApp) chega aqui.
 app.use((erro, req, res, next) => {
   if (erro.status) return res.status(erro.status).json({ erro: erro.message });
   if (ERROS_DO_BANCO[erro.code]) {

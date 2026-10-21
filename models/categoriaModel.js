@@ -1,26 +1,16 @@
 // Tabela categoria.
-const { sql } = require('./banco');
+const Modelo = require('./Modelo');
+const ErroApp = require('./ErroApp');
 
-function listar() {
-  return sql('SELECT * FROM categoria ORDER BY nome');
+class Categoria extends Modelo {
+  static tabela = 'categoria';
+  static campos = ['nome'];
+  static naoEncontrado = 'Categoria não encontrada.';
+
+  async validar() {
+    this.nome = Modelo.texto(this.nome);
+    if (!this.nome) throw new ErroApp(400, 'Informe o nome da categoria.');
+  }
 }
 
-async function buscarPorId(id) {
-  const [categoria] = await sql('SELECT * FROM categoria WHERE id = ?', [id]);
-  return categoria;
-}
-
-function criar(nome) {
-  return sql('INSERT INTO categoria (nome) VALUES (?)', [nome]);
-}
-
-function alterar(id, nome) {
-  return sql('UPDATE categoria SET nome = ? WHERE id = ?', [nome, id]);
-}
-
-// Se algum produto usa a categoria, o próprio MySQL bloqueia (chave estrangeira).
-function excluir(id) {
-  return sql('DELETE FROM categoria WHERE id = ?', [id]);
-}
-
-module.exports = { listar, buscarPorId, criar, alterar, excluir };
+module.exports = Categoria;

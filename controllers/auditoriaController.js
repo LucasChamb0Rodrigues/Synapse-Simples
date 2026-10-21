@@ -1,8 +1,11 @@
 // Consulta da auditoria (RNF4).
+const Controller = require('./Controller');
 const Auditoria = require('../models/auditoriaModel');
 
-async function listar(req, res) {
-  res.json(await Auditoria.listarRecentes());
+class AuditoriaController extends Controller {
+  async listar(req, res) {
+    res.json(await Auditoria.listarRecentes());
+  }
 }
 
-module.exports = { listar };
+module.exports = new AuditoriaController();

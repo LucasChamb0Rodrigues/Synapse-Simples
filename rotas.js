@@ -1,4 +1,4 @@
-// Todas as rotas da API: cada endereço aponta para a função do controller que responde a ele.
+// Todas as rotas da API: cada endereço aponta para o método do controller que responde a ele.
 const express = require('express');
 const auth = require('./controllers/authController');
 const catalogo = require('./controllers/catalogoController');
@@ -8,7 +8,7 @@ const categorias = require('./controllers/categoriaController');
 const relatorio = require('./controllers/relatorioController');
 const usuarios = require('./controllers/usuarioController');
 const auditoria = require('./controllers/auditoriaController');
-const { falha } = require('./controllers/ajuda');
+const ErroApp = require('./models/ErroApp');
 
 const rotas = express.Router();
 
@@ -20,7 +20,7 @@ rotas.post('/logout', auth.logout);
 
 // ---------- Daqui para baixo, só quem fez login ----------
 rotas.use((req, res, next) => {
-  if (!req.session.usuario) falha(401, 'Faça login para continuar.');
+  if (!req.session.usuario) throw new ErroApp(401, 'Faça login para continuar.');
   next();
 });
 
@@ -29,7 +29,7 @@ rotas.get('/catalogo/:id', catalogo.detalhe);
 
 // ---------- Daqui para baixo, só o perfil Recepção (administrador) ----------
 rotas.use((req, res, next) => {
-  if (req.session.usuario.perfil !== 'recepcao') falha(403, 'Seu perfil não tem permissão para esta ação.');
+  if (req.session.usuario.perfil !== 'recepcao') throw new ErroApp(403, 'Seu perfil não tem permissão para esta ação.');
   next();
 });
 
