@@ -1,4 +1,4 @@
-// Catálogo de produtos (RF7). Os dois perfis acessam; o perfil Entrega só vê produtos ativos que têm ficha.
+// Catálogo de produtos (RF7). Os dois perfis acessam; o perfil Usuário (entrega) só vê produtos ativos que têm ficha.
 const Controller = require('./Controller');
 const Produto = require('../models/produtoModel');
 const Ficha = require('../models/fichaModel');

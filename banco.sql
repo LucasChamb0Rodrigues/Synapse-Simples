@@ -6,7 +6,7 @@ CREATE DATABASE IF NOT EXISTS synapse_simples CHARACTER SET utf8mb4;
 USE synapse_simples;
 
 -- Pessoas que usam o sistema.
--- perfil "recepcao" = administrador (faz tudo); "entrega" = só consulta o catálogo.
+-- perfil "recepcao" = Admin (faz tudo); "entrega" = Usuário (só consulta o catálogo).
 CREATE TABLE usuario (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   nome        VARCHAR(60)  NOT NULL,

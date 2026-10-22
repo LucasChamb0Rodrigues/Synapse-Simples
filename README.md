@@ -24,7 +24,7 @@ Navegador (views/)  ──pede dados (fetch)──►  Servidor Express (MVC)   
    npm install
    npm start
    ```
-5. Abra <http://localhost:3000>. No primeiro acesso, o sistema pede para criar o usuário da **Recepção** (administrador).
+5. Abra <http://localhost:3000>. No primeiro acesso, o sistema pede para criar o usuário **Admin** (administrador).
 
 ---
 
@@ -72,7 +72,7 @@ controllers/       C: uma classe por assunto; recebem o pedido, usam os objetos 
 ## Como um clique vira dado no banco (exemplo: cadastrar insumo)
 
 1. **View:** o usuário preenche o formulário e clica em **Cadastrar**. O `views/app.js` chama `sistema.abas.insumos.salvar(evento)`, que faz `Api.chamar('POST', '/api/insumos', dados)`.
-2. **Rota:** o `rotas.js` confere se a pessoa está logada e é da Recepção, e chama o método `criar` do `InsumoController`.
+2. **Rota:** o `rotas.js` confere se a pessoa está logada e é Admin, e chama o método `criar` do `InsumoController`.
 3. **Controller:** `controllers/insumoController.js` cria o objeto `new Insumo().preencher(dados)` e chama `insumo.salvar()`.
 4. **Model:** `insumo.salvar()` (herdado de `Modelo`) chama `validar()` da classe `Insumo` e faz o `INSERT` no MySQL. O controller grava a auditoria com `this.auditar(...)`.
 5. O controller responde `{ ok: true }`. A tela mostra "Salvo!" e recarrega a tabela.
@@ -97,8 +97,8 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 | RNF5 Login individual com perfis | `controllers/authController.js` e `rotas.js` (senha com bcrypt) |
 
 **Perfis:**
-- **Recepção:** acessa tudo.
-- **Entrega:** só consulta o catálogo, e só vê produtos ativos que têm ficha.
+- **Admin** (`recepcao` no banco): acessa tudo.
+- **Usuário** (`entrega` no banco): só consulta o catálogo, e só vê produtos ativos que têm ficha.
 
 ## Segurança
 

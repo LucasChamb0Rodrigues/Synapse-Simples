@@ -8,6 +8,7 @@ const categorias = require('./controllers/categoriaController');
 const relatorio = require('./controllers/relatorioController');
 const usuarios = require('./controllers/usuarioController');
 const auditoria = require('./controllers/auditoriaController');
+const perfil = require('./controllers/perfilController');
 const ErroApp = require('./models/ErroApp');
 
 const rotas = express.Router();
@@ -27,7 +28,10 @@ rotas.use((req, res, next) => {
 rotas.get('/catalogo', catalogo.listar);
 rotas.get('/catalogo/:id', catalogo.detalhe);
 
-// ---------- Daqui para baixo, só o perfil Recepção (administrador) ----------
+rotas.get('/perfil', perfil.ver);
+rotas.put('/perfil', perfil.alterar);
+
+// ---------- Daqui para baixo, só o perfil Admin (recepcao no banco) ----------
 rotas.use((req, res, next) => {
   if (req.session.usuario.perfil !== 'recepcao') throw new ErroApp(403, 'Seu perfil não tem permissão para esta ação.');
   next();
@@ -53,6 +57,7 @@ rotas.get('/relatorio', relatorio.gerar);
 
 rotas.get('/usuarios', usuarios.listar);
 rotas.post('/usuarios', usuarios.criar);
+rotas.put('/usuarios/:id', usuarios.alterar);
 rotas.delete('/usuarios/:id', usuarios.excluir);
 
 rotas.get('/auditoria', auditoria.listar);

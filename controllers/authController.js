@@ -9,7 +9,7 @@ class AuthController extends Controller {
     res.json({ primeiroAcesso: (await Usuario.contar()) === 0, usuario: req.session.usuario || null });
   }
 
-  // Cria o primeiro usuário (Recepção) quando o banco ainda não tem nenhum.
+  // Cria o primeiro usuário (Admin) quando o banco ainda não tem nenhum.
   async primeiroAcesso(req, res) {
     if ((await Usuario.contar()) > 0) throw new ErroApp(403, 'O primeiro acesso já foi feito.');
     const usuario = await Usuario.cadastrar(req.body, 'recepcao');
