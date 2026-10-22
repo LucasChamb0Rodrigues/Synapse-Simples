@@ -2,7 +2,7 @@
 //   Api       conversa com o servidor
 //   Tela      funções de apoio (avisos, formatação, janela de confirmação)
 //   Aba       classe base de cada aba do menu; cada aba é uma classe filha com o seu carregar()
-//   Cadastro  aba com formulário + tabela (Produtos, Insumos, Categorias, Usuários): cadastrar, editar, excluir
+//   Cadastro  aba com busca + tabela (Produtos, Insumos, Categorias, Usuários): cadastrar e editar numa janela, excluir
 //   Sistema   login, menu e troca de abas. "sistema" é o objeto usado pelos botões do index.html.
 
 const $ = (seletor) => document.querySelector(seletor);
@@ -30,6 +30,8 @@ class Api {
 class Tela {
   // Aviso no canto da tela. tipo: 'success' (verde) ou 'danger' (vermelho).
   static avisar(texto, tipo = 'success') {
+    // Uma janela aberta fica por cima de tudo; o aviso vai para dentro dela para não ficar escondido.
+    (document.querySelector('dialog[open]') || document.body).append($('#mensagem'));
     $('#mensagem').innerHTML = `<div class="alert alert-${tipo} shadow">${Tela.esc(texto)}</div>`;
     setTimeout(() => { $('#mensagem').innerHTML = ''; }, 4000);
   }
@@ -55,6 +57,11 @@ class Tela {
 
   static linhaVazia(colunas) {
     return `<tr><td colspan="${colunas}" class="text-center text-muted">Nenhum registro.</td></tr>`;
+  }
+
+  // Nome do perfil na tela. No banco continua "recepcao" (Admin) e "entrega" (Usuário).
+  static nomePerfil(perfil) {
+    return perfil === 'recepcao' ? 'Admin' : 'Usuário';
   }
 
   static etiqueta(situacao) {
@@ -93,25 +100,30 @@ class Aba {
 }
 
 // ===================== CADASTRO (Produtos, Insumos, Categorias, Usuários) =====================
-// O formulário do topo da aba só cadastra. Para editar, abre a janela de edição.
+// A aba mostra uma busca e a tabela. Os botões "Novo" e "Editar" abrem a mesma janela com o formulário.
 
 class Cadastro extends Aba {
-  static emEdicao = null; // { cadastro, id } do registro aberto na janela de edição
+  static emEdicao = null; // { cadastro, id } do registro aberto na janela (id null = cadastro novo)
 
-  constructor(nome, item, perguntaExcluir) {
+  constructor(nome, item, perguntaExcluir, feminino = false) {
     super(nome);
-    this.item = item;                       // "produto", "insumo"... (título da janela de edição)
+    this.item = item;                       // "produto", "insumo"... (título da janela)
     this.perguntaExcluir = perguntaExcluir;
+    this.feminino = feminino;               // "Nova categoria" em vez de "Novo categoria"
   }
 
-  async salvar(evento) {
-    evento.preventDefault(); // impede o formulário de recarregar a página
-    const form = evento.target;
-    const dados = Object.fromEntries(new FormData(form)); // { nome: '...', ... } pelos "name" dos campos
-    await Api.chamar('POST', `/api/${this.nome}`, dados);
-    Tela.avisar('Cadastrado!');
-    form.reset();
-    this.carregar();
+  async carregar() {
+    this.lista = await Api.chamar('GET', `/api/${this.nome}`);
+    this.desenhar();
+  }
+
+  // Desenha a tabela com a lista já carregada (chamado também a cada letra digitada na busca).
+  desenhar() {}
+
+  // Registros que contêm o texto da busca da aba (#NOME-busca). campos(registro) diz onde procurar.
+  filtrar(campos) {
+    const busca = $(`#${this.nome}-busca`).value.toLowerCase();
+    return this.lista.filter((registro) => campos(registro).join(' ').toLowerCase().includes(busca));
   }
 
   // Botões "Editar" e "Excluir" de uma linha de tabela.
@@ -120,31 +132,72 @@ class Cadastro extends Aba {
             <button class="btn btn-sm btn-outline-danger" onclick="${this.chamada('excluir', id)}">Excluir</button>`;
   }
 
-  // Abre a janela de edição com uma cópia dos campos do formulário de cadastro da aba,
-  // já preenchidos com os dados do registro.
-  editar(id) {
-    const registro = this.lista.find((r) => r.id === id);
-    const copia = $(`#aba-${this.nome} form`).cloneNode(true);
-    copia.lastElementChild.remove(); // tira os botões "Cadastrar"/"Limpar"
-    copia.querySelectorAll('[id]').forEach((campo) => campo.removeAttribute('id')); // evita ids repetidos
-
-    const campos = $('#editar-campos');
-    campos.replaceChildren(...copia.childNodes);
-    campos.querySelectorAll('[name]').forEach((campo) => { campo.value = registro[campo.name] ?? ''; });
-
-    Cadastro.emEdicao = { cadastro: this, id };
-    $('#editar-titulo').textContent = `Editar ${this.item}`;
-    $('#janela-editar').showModal();
+  novo() {
+    this.abrirJanela(null);
   }
 
-  // A janela de edição é uma só para todos os cadastros, por isso este método é da classe (static).
-  static async salvarEdicao(evento) {
-    evento.preventDefault();
+  editar(id) {
+    this.abrirJanela(id);
+  }
+
+  // Abre a janela com uma cópia dos campos escondidos da aba (.modelo-cadastro).
+  // Na edição, os campos já vêm preenchidos com os dados do registro.
+  abrirJanela(id) {
+    const registro = this.lista.find((r) => r.id === id);
+    const linha = $(`#aba-${this.nome} .modelo-cadastro`).cloneNode(true);
+    linha.hidden = false;
+    linha.querySelectorAll('[id]').forEach((campo) => campo.removeAttribute('id')); // evita ids repetidos
+
+    // Campos numa grade de duas colunas (cada campo numa div com o rótulo).
+    linha.className = 'row g-3';
+    const colunas = [...linha.children];
+    colunas.forEach((coluna) => { coluna.className = colunas.length === 1 ? 'col-12' : 'col-md-6'; });
+
+    const campos = $('#editar-campos');
+    campos.replaceChildren(linha);
+    if (registro) campos.querySelectorAll('[name]').forEach((campo) => { campo.value = registro[campo.name] ?? ''; });
+
+    Cadastro.emEdicao = { cadastro: this, id };
+    $('#editar-icone').setAttribute('href', `#i-${this.nome}`); // mesmo ícone do menu
+    if (registro) {
+      $('#editar-titulo').textContent = `Editar ${this.item}`;
+      $('#editar-subtitulo').textContent = registro.codigo ? `${registro.codigo} - ${registro.nome}` : registro.nome;
+      $('#editar-botao').textContent = 'Salvar alterações';
+    } else {
+      $('#editar-titulo').textContent = `${this.feminino ? 'Nova' : 'Novo'} ${this.item}`;
+      $('#editar-subtitulo').textContent = 'Preencha os dados para cadastrar.';
+      $('#editar-botao').textContent = 'Cadastrar';
+    }
+    $('#janela-editar').showModal();
+    campos.querySelector('[name]').focus();
+  }
+
+  // Texto de ajuda no fim da janela (usado por algumas abas).
+  dica(texto) {
+    const div = document.createElement('div');
+    div.className = 'janela-dica mt-3';
+    div.textContent = texto;
+    $('#editar-campos').append(div);
+  }
+
+  // A janela é uma só para todos os cadastros, por isso este método é da classe (static).
+  static async salvarJanela(evento) {
+    evento.preventDefault(); // impede o formulário de recarregar a página
     const { cadastro, id } = Cadastro.emEdicao;
-    const dados = Object.fromEntries(new FormData(evento.target));
-    const resposta = await Api.chamar('PUT', `/api/${cadastro.nome}/${id}`, dados); // se der erro, a janela continua aberta
+    const dados = Object.fromEntries(new FormData(evento.target)); // { nome: '...', ... } pelos "name" dos campos
+    // Só a janela de usuário tem o campo "confirmarSenha".
+    if ('confirmarSenha' in dados && dados.senha !== dados.confirmarSenha) {
+      return Tela.avisar('A confirmação não confere com a senha.', 'danger');
+    }
+    // Se der erro, a janela continua aberta.
+    if (id === null) {
+      await Api.chamar('POST', `/api/${cadastro.nome}`, dados);
+      Tela.avisar('Cadastrado!');
+    } else {
+      const resposta = await Api.chamar('PUT', `/api/${cadastro.nome}/${id}`, dados);
+      Tela.avisar(resposta.precoMudou ? 'Salvo. O preço mudou: confira as fichas desatualizadas no Catálogo.' : 'Alterações salvas!');
+    }
     $('#janela-editar').close();
-    Tela.avisar(resposta.precoMudou ? 'Salvo. O preço mudou: confira as fichas desatualizadas no Catálogo.' : 'Alterações salvas!');
     cadastro.carregar();
   }
 
@@ -226,8 +279,11 @@ class AbaProdutos extends Cadastro {
 
     $('#produto-categoria').innerHTML = '<option value="">Selecione...</option>' +
       categorias.map((c) => `<option value="${c.id}">${Tela.esc(c.nome)}</option>`).join('');
+    this.desenhar();
+  }
 
-    $('#tabela-produtos').innerHTML = this.lista.map((p) => `
+  desenhar() {
+    $('#tabela-produtos').innerHTML = this.filtrar((p) => [p.codigo, p.nome, p.categoria]).map((p) => `
       <tr>
         <td>${Tela.esc(p.codigo)}</td><td>${Tela.esc(p.nome)}</td><td>${Tela.esc(p.categoria)}</td><td>${Tela.etiqueta(p.situacao)}</td>
         <td class="text-end text-nowrap">
@@ -290,8 +346,10 @@ class AbaFicha extends Aba {
     const quantidade = Number($('#ficha-quantidade').value);
     if (!insumo) return Tela.avisar('Cadastre insumos antes de montar a ficha.', 'danger');
     if (!(quantidade > 0)) return Tela.avisar('Informe uma quantidade maior que zero.', 'danger');
-    if (this.itens.some((item) => item.insumo_id === insumo.id)) {
-      return Tela.avisar('Este insumo já está na ficha. Remova-o para alterar a quantidade.', 'danger');
+    const posicao = this.itens.findIndex((item) => item.insumo_id === insumo.id);
+    if (posicao >= 0) {
+      Tela.avisar('Este insumo já está na ficha. Altere a quantidade direto na tabela.', 'danger');
+      return $(`#ficha-qtd-${posicao}`).select(); // leva o cursor até o campo da linha
     }
     this.itens.push({ insumo_id: insumo.id, nome: insumo.nome, unidade: insumo.unidade, custo: insumo.custo, quantidade });
     $('#ficha-quantidade').value = '';
@@ -303,18 +361,44 @@ class AbaFicha extends Aba {
     this.desenharItens();
   }
 
+  // Campo de quantidade de uma linha da tabela: atualiza subtotal e total sem redesenhar a tabela
+  // (redesenhar tiraria o cursor do campo enquanto a pessoa digita).
+  mudarQuantidade(posicao, valor) {
+    const item = this.itens[posicao];
+    item.quantidade = Number(valor);
+    $(`#ficha-qtd-${posicao}`).classList.toggle('is-invalid', !(item.quantidade > 0));
+    $(`#ficha-subtotal-${posicao}`).textContent = Tela.dinheiro(item.quantidade * item.custo);
+    this.desenharTotal();
+  }
+
   // Prévia do custo (o valor oficial é calculado pelo servidor ao salvar).
   desenharItens() {
     $('#tabela-ficha').innerHTML = this.itens.map((item, posicao) => `
       <tr>
-        <td>${Tela.esc(item.nome)}</td><td>${item.quantidade} ${item.unidade}</td>
-        <td>${Tela.precoInsumo(item.custo)}</td><td>${Tela.dinheiro(item.quantidade * item.custo)}</td>
+        <td>${Tela.esc(item.nome)}</td>
+        <td>
+          <div class="input-group input-group-sm campo-quantidade">
+            <input class="form-control" id="ficha-qtd-${posicao}" type="number" step="0.001" min="0" value="${item.quantidade}"
+                   oninput="${this.chamada('mudarQuantidade', posicao, 'this.value')}">
+            <span class="input-group-text">${item.unidade}</span>
+          </div>
+        </td>
+        <td>${Tela.precoInsumo(item.custo)}</td><td id="ficha-subtotal-${posicao}">${Tela.dinheiro(item.quantidade * item.custo)}</td>
         <td><button class="btn btn-sm btn-outline-danger" onclick="${this.chamada('removerItem', posicao)}">Remover</button></td>
       </tr>`).join('') || Tela.linhaVazia(5);
+    this.desenharTotal();
+  }
+
+  desenharTotal() {
     $('#ficha-total').textContent = Tela.dinheiro(this.itens.reduce((soma, item) => soma + item.quantidade * item.custo, 0));
   }
 
   async salvar() {
+    const invalido = this.itens.findIndex((item) => !(item.quantidade > 0));
+    if (invalido >= 0) {
+      Tela.avisar(`Informe uma quantidade maior que zero para ${this.itens[invalido].nome}.`, 'danger');
+      return $(`#ficha-qtd-${invalido}`).focus();
+    }
     const itens = this.itens.map((item) => ({ insumo_id: item.insumo_id, quantidade: item.quantidade }));
     const resposta = await Api.chamar('POST', `/api/produtos/${$('#ficha-produto').value}/ficha`, { itens });
     Tela.avisar(`Ficha salva: versão ${resposta.versao}, custo ${Tela.dinheiro(resposta.custoTotal)}.`);
@@ -329,13 +413,17 @@ class AbaInsumos extends Cadastro {
     super('insumos', 'insumo', 'Excluir este insumo?');
   }
 
-  async carregar() {
-    this.lista = await Api.chamar('GET', '/api/insumos');
-    $('#tabela-insumos').innerHTML = this.lista.map((i) => `
+  desenhar() {
+    $('#tabela-insumos').innerHTML = this.filtrar((i) => [i.nome, i.unidade]).map((i) => `
       <tr>
         <td>${Tela.esc(i.nome)}</td><td>${i.unidade}</td><td>${Tela.precoInsumo(i.custo)}</td>
         <td class="text-end text-nowrap">${this.botoes(i.id)}</td>
       </tr>`).join('') || Tela.linhaVazia(4);
+  }
+
+  editar(id) {
+    super.editar(id);
+    this.dica('Se você mudar o custo, as fichas técnicas que usam este insumo aparecerão como "Desatualizada" no Catálogo.');
   }
 }
 
@@ -343,12 +431,11 @@ class AbaInsumos extends Cadastro {
 
 class AbaCategorias extends Cadastro {
   constructor() {
-    super('categorias', 'categoria', 'Excluir esta categoria?');
+    super('categorias', 'categoria', 'Excluir esta categoria?', true);
   }
 
-  async carregar() {
-    this.lista = await Api.chamar('GET', '/api/categorias');
-    $('#tabela-categorias').innerHTML = this.lista.map((c) => `
+  desenhar() {
+    $('#tabela-categorias').innerHTML = this.filtrar((c) => [c.nome]).map((c) => `
       <tr><td>${Tela.esc(c.nome)}</td><td class="text-end text-nowrap">${this.botoes(c.id)}</td></tr>`).join('') || Tela.linhaVazia(2);
   }
 }
@@ -404,14 +491,61 @@ class AbaUsuarios extends Cadastro {
     super('usuarios', 'usuário', 'Excluir este usuário? Ele não conseguirá mais entrar no sistema.');
   }
 
-  async carregar() {
-    this.lista = await Api.chamar('GET', '/api/usuarios');
-    $('#tabela-usuarios').innerHTML = this.lista.map((u) => `
+  desenhar() {
+    $('#tabela-usuarios').innerHTML = this.filtrar((u) => [u.nome, u.login]).map((u) => `
       <tr>
-        <td>${Tela.esc(u.nome)}</td><td>${Tela.esc(u.login)}</td><td>${u.perfil === 'recepcao' ? 'Recepção' : 'Entrega'}</td>
-        <td class="text-end">${u.id === sistema.usuario.id ? '<span class="text-muted small">você</span>'
-          : `<button class="btn btn-sm btn-outline-danger" onclick="${this.chamada('excluir', u.id)}">Excluir</button>`}</td>
-      </tr>`).join('');
+        <td>${Tela.esc(u.nome)}</td><td>${Tela.esc(u.login)}</td><td>${Tela.nomePerfil(u.perfil)}</td>
+        <td class="text-end text-nowrap">${u.id === sistema.usuario.id
+          ? `<span class="text-muted small me-2">você</span><button class="btn btn-sm btn-outline-primary" onclick="sistema.abrirAba('perfil')">Meu perfil</button>`
+          : this.botoes(u.id)}</td>
+      </tr>`).join('') || Tela.linhaVazia(4);
+  }
+
+  // A janela de edição de usuário é organizada em duas colunas, com a troca de senha separada:
+  //   Nome | Login
+  //   Perfil
+  //   --- Trocar senha (opcional) ---
+  //   Nova senha | Confirmar nova senha
+  editar(id) {
+    super.editar(id);
+    const coluna = (nome) => $(`#editar-campos [name="${nome}"]`).parentElement; // a div com rótulo + campo
+
+    const senha = coluna('senha');
+    senha.querySelector('label').textContent = 'Nova senha';
+    senha.querySelector('input').required = false; // em branco, continua a mesma
+
+    const confirmar = senha.cloneNode(true);
+    confirmar.querySelector('label').textContent = 'Confirmar nova senha';
+    confirmar.querySelector('input').name = 'confirmarSenha';
+
+    const tituloSenha = document.createElement('div');
+    tituloSenha.className = 'col-12 mt-3 pt-3 border-top';
+    tituloSenha.innerHTML = '<strong>Trocar senha</strong><div class="small text-muted">Deixe em branco para manter a senha atual.</div>';
+
+    $('#editar-campos .row').replaceChildren(coluna('nome'), coluna('login'), coluna('perfil'), tituloSenha, senha, confirmar);
+  }
+}
+
+// ===================== MEU PERFIL =====================
+
+class AbaPerfil extends Aba {
+  async carregar() {
+    const dados = await Api.chamar('GET', '/api/perfil');
+    const form = $('#form-perfil');
+    form.reset();
+    form.nome.value = dados.nome;
+    form.login.value = dados.login;
+    $('#perfil-tipo').textContent = Tela.nomePerfil(dados.perfil);
+  }
+
+  async salvar(evento) {
+    evento.preventDefault();
+    const dados = Object.fromEntries(new FormData(evento.target));
+    if (dados.senha !== dados.confirmarSenha) return Tela.avisar('A confirmação não confere com a nova senha.', 'danger');
+    const { usuario } = await Api.chamar('PUT', '/api/perfil', dados);
+    sistema.mostrarUsuario(usuario);
+    Tela.avisar('Seus dados foram salvos!');
+    this.carregar();
   }
 }
 
@@ -444,6 +578,7 @@ class Sistema {
       relatorio: new AbaRelatorio('relatorio'),
       usuarios: new AbaUsuarios(),
       auditoria: new AbaAuditoria('auditoria'),
+      perfil: new AbaPerfil('perfil'),
     };
     document.querySelectorAll('[data-aba]').forEach((botao) => {
       botao.addEventListener('click', () => this.abrirAba(botao.dataset.aba));
@@ -460,7 +595,7 @@ class Sistema {
     $('#campo-nome').hidden = !this.primeiroAcesso;
     $('#campo-nome input').required = this.primeiroAcesso;
     $('#login-titulo').textContent = this.primeiroAcesso
-      ? 'Primeiro acesso: crie o usuário da Recepção (administrador).'
+      ? 'Primeiro acesso: crie o usuário Admin (administrador).'
       : 'Entre com seu usuário e senha.';
   }
 
@@ -476,14 +611,19 @@ class Sistema {
     this.usuario = usuario;
     $('#tela-login').hidden = true;
     $('#tela-sistema').hidden = false;
-    // Rodapé do menu: iniciais (ex.: "Marina Lopes" -> "ML"), nome e perfil.
+    this.mostrarUsuario(usuario);
+    // O perfil Usuário só vê o catálogo. (O servidor também bloqueia; aqui é só para não mostrar.)
+    document.querySelectorAll('.so-recepcao').forEach((botao) => { botao.hidden = usuario.perfil !== 'recepcao'; });
+    this.abrirAba('catalogo');
+  }
+
+  // Rodapé do menu: iniciais (ex.: "Marina Lopes" -> "ML"), nome e perfil. Também usado depois de editar o próprio perfil.
+  mostrarUsuario(usuario) {
+    this.usuario = usuario;
     const palavras = usuario.nome.trim().split(/\s+/);
     $('#usuario-avatar').textContent = (palavras[0][0] + (palavras.length > 1 ? palavras.at(-1)[0] : '')).toUpperCase();
     $('#usuario-nome').textContent = usuario.nome;
-    $('#usuario-perfil').textContent = usuario.perfil === 'recepcao' ? 'Recepção' : 'Entrega';
-    // O perfil Entrega só vê o catálogo. (O servidor também bloqueia; aqui é só para não mostrar.)
-    document.querySelectorAll('.so-recepcao').forEach((botao) => { botao.hidden = usuario.perfil !== 'recepcao'; });
-    this.abrirAba('catalogo');
+    $('#usuario-perfil').textContent = Tela.nomePerfil(usuario.perfil);
   }
 
   async sair() {

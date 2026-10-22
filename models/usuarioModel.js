@@ -33,6 +33,18 @@ class Usuario extends Modelo {
     return usuario;
   }
 
+  // Altera nome, login e perfil. A senha só muda se uma nova for informada (em branco = mantém a atual).
+  // Devolve true se a senha foi trocada.
+  async alterar(dados) {
+    this.nome = dados.nome;
+    this.login = dados.login;
+    if (dados.perfil !== undefined) this.perfil = dados.perfil;
+    const trocouSenha = String(dados.senha ?? '') !== '';
+    if (trocouSenha) await this.definirSenha(dados.senha);
+    await this.salvar();
+    return trocouSenha;
+  }
+
   // Devolve o usuário se o login e a senha conferem; senão, null.
   static async autenticar(login, senha) {
     const usuario = await Usuario.buscarPorLogin(Modelo.texto(login).toLowerCase());
