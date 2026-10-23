@@ -70,5 +70,12 @@ CREATE TABLE auditoria (
   data_hora     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Quem está logado (sessões de login). A API também cria esta tabela sozinha se ela não existir.
+CREATE TABLE sessao (
+  id         VARCHAR(128) PRIMARY KEY,
+  dados      TEXT   NOT NULL,
+  expira_em  BIGINT NOT NULL                    -- milissegundos
+);
+
 -- Categorias iniciais da Gebon
 INSERT INTO categoria (nome) VALUES ('Picolé'), ('Pote 2L'), ('Sorvete de Massa'), ('Açaí');
