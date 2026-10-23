@@ -31,9 +31,9 @@ rotas.get('/catalogo/:id', catalogo.detalhe);
 rotas.get('/perfil', perfil.ver);
 rotas.put('/perfil', perfil.alterar);
 
-// ---------- Daqui para baixo, só o perfil Admin (recepcao no banco) ----------
+// ---------- Daqui para baixo, só o perfil Admin ----------
 rotas.use((req, res, next) => {
-  if (req.session.usuario.perfil !== 'recepcao') throw new ErroApp(403, 'Seu perfil não tem permissão para esta ação.');
+  if (req.session.usuario.perfil !== 'admin') throw new ErroApp(403, 'Seu perfil não tem permissão para esta ação.');
   next();
 });
 

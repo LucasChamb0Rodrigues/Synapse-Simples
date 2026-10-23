@@ -56,7 +56,7 @@ class Usuario extends Modelo {
     this.login = Modelo.texto(this.login).toLowerCase();
     if (!this.nome) throw new ErroApp(400, 'Informe o nome.');
     if (!/^[a-z0-9._-]{3,30}$/.test(this.login)) throw new ErroApp(400, 'O login deve ter de 3 a 30 caracteres (letras minúsculas, números, ponto, hífen ou _).');
-    if (this.perfil !== 'recepcao' && this.perfil !== 'entrega') throw new ErroApp(400, 'Perfil inválido.');
+    if (this.perfil !== 'admin' && this.perfil !== 'usuario') throw new ErroApp(400, 'Perfil inválido.');
   }
 
   // A senha nunca é guardada, só o hash.

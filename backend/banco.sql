@@ -6,13 +6,13 @@ CREATE DATABASE IF NOT EXISTS synapse_simples CHARACTER SET utf8mb4;
 USE synapse_simples;
 
 -- Pessoas que usam o sistema.
--- perfil "recepcao" = Admin (faz tudo); "entrega" = Usuário (só consulta o catálogo).
+-- perfil "admin" = Admin (faz tudo); "usuario" = Usuário (só consulta o catálogo).
 CREATE TABLE usuario (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   nome        VARCHAR(60)  NOT NULL,
   login       VARCHAR(30)  NOT NULL UNIQUE,
   senha_hash  VARCHAR(100) NOT NULL,          -- a senha nunca é guardada, só o "hash" dela
-  perfil      ENUM('recepcao', 'entrega') NOT NULL
+  perfil      ENUM('admin', 'usuario') NOT NULL
 );
 
 CREATE TABLE categoria (
