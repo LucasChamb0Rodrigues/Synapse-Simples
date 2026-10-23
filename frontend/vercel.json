@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/:caminho*", "destination": "https://synapse-api.vercel.app/api/:caminho*" }
+    { "source": "/api/:caminho*", "destination": "https://synapse-simples-backend.vercel.app/api/:caminho*" }
   ]
 }
