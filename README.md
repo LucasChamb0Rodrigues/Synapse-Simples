@@ -71,7 +71,7 @@ As telas repassam os pedidos `/api/...` para a API (arquivo `frontend/vercel.jso
 4. **Deploy**. Abra o endereço do projeto: deve aparecer `{"sistema":"Synapse API","ok":true}`.
 
 ### 3. Telas na Vercel
-1. Confira o endereço da API (passo 2). Se não for `https://synapse-api.vercel.app`, corrija em `frontend/vercel.json` e faça `git push`.
+1. Confira o endereço da API (passo 2). Se for diferente de `https://synapse-simples-backend.vercel.app`, corrija em `frontend/vercel.json` e faça `git push`.
 2. Na Vercel → **Add New → Project** → importe **o mesmo repositório** de novo.
 3. **Project Name**: `synapse` · **Root Directory**: `frontend` · **Framework Preset**: `Other` · sem variáveis de ambiente.
 4. **Deploy**. O sistema abre em `https://synapse.vercel.app` (ou o nome que a Vercel der). Com o banco vazio, o primeiro acesso pede para criar o Admin.
