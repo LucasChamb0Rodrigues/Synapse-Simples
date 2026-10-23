@@ -34,9 +34,49 @@ O endereço da API que as telas usam fica em `frontend/config.js`. No computador
 
 ---
 
-## Como publicar num servidor
+## Como publicar num servidor (Vercel + Aiven)
 
-Em preparação: as telas e a API vão para a **Vercel** e o banco MySQL para o **Aiven**. O passo a passo entra aqui quando a configuração estiver pronta.
+| Parte | Onde |
+|---|---|
+| Telas (`frontend/`) | projeto **synapse** na Vercel |
+| API (`backend/`) | projeto **synapse-api** na Vercel |
+| Banco MySQL | **Aiven** (plano grátis) |
+
+As telas repassam os pedidos `/api/...` para a API (arquivo `frontend/vercel.json`). Para o navegador fica tudo no mesmo endereço: o login funciona em todos os navegadores e não é preciso CORS. O login fica guardado no MySQL (tabela `sessao`), por isso funciona na Vercel, onde a API liga e desliga a cada pedido.
+
+### 1. Banco no Aiven
+1. Crie uma conta em **aiven.io** → **Create service** → **MySQL** → plano **Free**. Escolha a região mais perto do Brasil disponível.
+2. Na página do serviço (*Overview*), anote **Host**, **Port**, **User** (`avnadmin`) e **Password**, e baixe o **CA certificate** (`ca.pem`).
+3. No MySQL Workbench, crie uma conexão com esses dados. Na aba **SSL**: *Use SSL* = **Require and Verify CA** e, em *SSL CA File*, escolha o `ca.pem`.
+4. Conectado, abra e execute o `backend/banco.sql`.
+   Para levar os dados do seu computador: no banco local, *Server → Data Export* do `synapse_simples`; no Aiven, *Server → Data Import* desse arquivo (em vez de rodar o `banco.sql`).
+
+### 2. API na Vercel
+1. Em **vercel.com** → **Add New → Project** → importe este repositório do GitHub.
+2. **Project Name**: `synapse-api` · **Root Directory**: `backend` · **Framework Preset**: `Other`.
+3. Em **Environment Variables**, cadastre:
+
+   | Nome | Valor |
+   |---|---|
+   | `DB_HOST` | Host do Aiven |
+   | `DB_PORT` | Port do Aiven |
+   | `DB_USER` | `avnadmin` |
+   | `DB_PASSWORD` | Password do Aiven |
+   | `DB_NAME` | `synapse_simples` |
+   | `DB_SSL` | `true` |
+   | `DB_SSL_CA` | todo o conteúdo do `ca.pem` (de `-----BEGIN CERTIFICATE-----` até `-----END CERTIFICATE-----`) |
+   | `DB_TIMEZONE` | `-03:00` |
+   | `SESSION_SECRET` | uma frase longa e nova: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+
+4. **Deploy**. Abra o endereço do projeto: deve aparecer `{"sistema":"Synapse API","ok":true}`.
+
+### 3. Telas na Vercel
+1. Confira o endereço da API (passo 2). Se não for `https://synapse-api.vercel.app`, corrija em `frontend/vercel.json` e faça `git push`.
+2. Na Vercel → **Add New → Project** → importe **o mesmo repositório** de novo.
+3. **Project Name**: `synapse` · **Root Directory**: `frontend` · **Framework Preset**: `Other` · sem variáveis de ambiente.
+4. **Deploy**. O sistema abre em `https://synapse.vercel.app` (ou o nome que a Vercel der). Com o banco vazio, o primeiro acesso pede para criar o Admin.
+
+Depois disso, cada `git push` na `main` atualiza as telas e a API sozinho.
 
 ---
 
@@ -44,7 +84,10 @@ Em preparação: as telas e a API vão para a **Vercel** e o banco MySQL para o 
 
 ```
 backend/             A API (Model + Controller)
-  servidor.js          Liga o servidor: CORS, login (sessão), rotas e erros
+  aplicacao.js         A API: CORS, login (sessão no MySQL), rotas e erros
+  servidor.js          Liga a API no computador (npm start)
+  api/index.js         Entrada da API na Vercel
+  vercel.json          Na Vercel, manda todos os endereços para o api/index.js
   rotas.js             Liga cada endereço da API a um método de controller (e barra quem não tem permissão)
   banco.sql            Criação das tabelas
   .env.example         Modelo das configurações (copie para .env)
@@ -61,6 +104,7 @@ iniciar.js           Só para o computador: "npm start" na raiz liga a API e as 
     usuarioModel.js      Usuario extends Modelo (senha com hash, autenticar)
     fichaModel.js        Ficha: valida os itens e grava uma nova versão (transação)
     auditoriaModel.js    Auditoria: registrar e listar
+    sessaoModel.js       SessaoStore: guarda os logins na tabela sessao
 
   controllers/         C: uma classe por assunto; recebem o pedido, usam os objetos dos models e respondem
     Controller.js           classe base (liga os métodos ao objeto e grava a auditoria)
@@ -72,7 +116,8 @@ iniciar.js           Só para o computador: "npm start" na raiz liga a API e as 
 
 frontend/            V: as telas que rodam no navegador
   index.html           todas as telas (uma aba para cada); os botões chamam o objeto "sistema"
-  config.js            endereço da API (no computador aponta para a porta 3000)
+  config.js            endereço da API (no computador aponta para a porta 3000; na Vercel usa o repasse)
+  vercel.json          na Vercel, repassa /api/... para o projeto da API
   app.js               classes Api, Tela, Aba, Cadastro, uma classe por aba e Sistema
   estilo.css           cores e layout
 ```
@@ -120,7 +165,7 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 ## Segurança
 
 - **Senhas:** guardadas só como hash, com **bcrypt**.
-- **Login:** guardado num cookie `HttpOnly` e `SameSite=Strict` (ou `SameSite=None; Secure` com `COOKIE_CROSS_SITE=true`). A sessão expira após 30 minutos sem uso.
+- **Login:** a sessão fica no MySQL (tabela `sessao`) e o navegador guarda só o identificador, num cookie `HttpOnly` e `SameSite=Strict` (ou `SameSite=None; Secure` com `COOKIE_CROSS_SITE=true`). A sessão expira após 30 minutos sem uso.
 - **CORS:** a API só aceita chamadas de navegador vindas dos endereços listados em `FRONTEND_URL`.
 - **Banco:** todo SQL usa parâmetros `?`, o que protege contra *SQL Injection*.
 - **Telas:** os textos digitados passam pela função `esc()` antes de ir para a tela, o que protege contra *XSS*.
@@ -128,6 +173,5 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 
 ## Limitações conhecidas (melhorias futuras)
 
-- As sessões ficam na memória do servidor: ao reiniciar a API (ou a cada nova publicação), todos precisam entrar de novo.
 - Não há backup automático. Faça backup pelo MySQL Workbench (*Server → Data Export*).
 - Para acesso pela internet, use HTTPS (Railway, Render, Vercel e Netlify já fornecem).
