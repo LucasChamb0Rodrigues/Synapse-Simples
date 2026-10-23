@@ -214,9 +214,9 @@
         <div class="card card-body mb-3 no-print">
           <div class="d-flex justify-content-between mb-2">
             <strong>Produtos com ficha técnica</strong>
-            <button class="btn btn-sm btn-outline-secondary" onclick="sistema.abas.relatorio.marcarTodos()">Marcar todos</button>
+            <button class="btn btn-sm btn-outline-secondary" id="relatorio-marcar" onclick="sistema.abas.relatorio.marcarTodos()">Marcar todos</button>
           </div>
-          <div id="relatorio-produtos" class="lista-marcar mb-3"></div>
+          <div id="relatorio-produtos" class="lista-marcar mb-3" onchange="sistema.abas.relatorio.atualizarBotaoMarcar()"></div>
           <div class="row g-2 align-items-end">
             <div class="col-md-4"><label class="form-label">Ficha válida na data (opcional)</label><input class="form-control" id="relatorio-data" type="date"></div>
             <div class="col-md-8">

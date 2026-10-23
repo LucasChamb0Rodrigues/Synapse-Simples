@@ -462,10 +462,25 @@ class AbaRelatorio extends Aba {
       <label class="form-check">
         <input class="form-check-input" type="checkbox" value="${p.id}"> ${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}
       </label>`).join('') || '<span class="text-muted">Nenhum produto com ficha técnica.</span>';
+    this.atualizarBotaoMarcar();
   }
 
+  // Botão alterna: se todos já estão marcados, desmarca todos; senão, marca todos.
   marcarTodos() {
-    document.querySelectorAll('#relatorio-produtos input').forEach((caixa) => { caixa.checked = true; });
+    const caixas = document.querySelectorAll('#relatorio-produtos input');
+    const marcar = !this.todosMarcados();
+    caixas.forEach((caixa) => { caixa.checked = marcar; });
+    this.atualizarBotaoMarcar();
+  }
+
+  todosMarcados() {
+    const caixas = [...document.querySelectorAll('#relatorio-produtos input')];
+    return caixas.length > 0 && caixas.every((caixa) => caixa.checked);
+  }
+
+  // Texto do botão conforme as caixas (chamado também quando uma caixa é marcada à mão).
+  atualizarBotaoMarcar() {
+    $('#relatorio-marcar').textContent = this.todosMarcados() ? 'Desmarcar todos' : 'Marcar todos';
   }
 
   async gerar() {
