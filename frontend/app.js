@@ -61,9 +61,9 @@ class Tela {
     return `<tr><td colspan="${colunas}" class="text-center text-muted">Nenhum registro.</td></tr>`;
   }
 
-  // Nome do perfil na tela. No banco continua "recepcao" (Admin) e "entrega" (Usuário).
+  // Nome do perfil na tela ("admin" -> "Admin", "usuario" -> "Usuário").
   static nomePerfil(perfil) {
-    return perfil === 'recepcao' ? 'Admin' : 'Usuário';
+    return perfil === 'admin' ? 'Admin' : 'Usuário';
   }
 
   static etiqueta(situacao) {
@@ -668,7 +668,7 @@ class Sistema {
     $('#tela-sistema').hidden = false;
     this.mostrarUsuario(usuario);
     // O perfil Usuário só vê o catálogo. (O servidor também bloqueia; aqui é só para não mostrar.)
-    document.querySelectorAll('.so-recepcao').forEach((botao) => { botao.hidden = usuario.perfil !== 'recepcao'; });
+    document.querySelectorAll('.so-admin').forEach((botao) => { botao.hidden = usuario.perfil !== 'admin'; });
     this.abrirAba('catalogo');
   }
 

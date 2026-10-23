@@ -159,8 +159,8 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 | RNF5 Login individual com perfis | `backend/controllers/authController.js` e `backend/rotas.js` (senha com bcrypt) |
 
 **Perfis:**
-- **Admin** (`recepcao` no banco): acessa tudo.
-- **Usuário** (`entrega` no banco): só consulta o catálogo, e só vê produtos ativos que têm ficha.
+- **Admin** (`admin` no banco): acessa tudo.
+- **Usuário** (`usuario` no banco): só consulta o catálogo, e só vê produtos ativos que têm ficha.
 
 ## Segurança
 

@@ -12,7 +12,7 @@ class AuthController extends Controller {
   // Cria o primeiro usuário (Admin) quando o banco ainda não tem nenhum.
   async primeiroAcesso(req, res) {
     if ((await Usuario.contar()) > 0) throw new ErroApp(403, 'O primeiro acesso já foi feito.');
-    const usuario = await Usuario.cadastrar(req.body, 'recepcao');
+    const usuario = await Usuario.cadastrar(req.body, 'admin');
     req.session.usuario = usuario.dadosDaSessao();
     await this.auditar(req, 'Criou', 'Usuário', `${usuario.nome} (primeiro acesso)`);
     res.status(201).json({ usuario: req.session.usuario });
