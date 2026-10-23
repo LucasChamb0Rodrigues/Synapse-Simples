@@ -23,3 +23,10 @@ CREATE TABLE IF NOT EXISTS sessao (
   expira_em  BIGINT NOT NULL
 );
 DELETE FROM sessao;
+
+-- 5. Auditoria: o texto passa a mostrar o nome da tela, ex.: "Wesley (recepcao)" -> "Wesley (Admin)".
+UPDATE auditoria
+   SET detalhe = REPLACE(REPLACE(REPLACE(REPLACE(detalhe,
+         '(recepcao)', '(Admin)'), '(entrega)', '(Usuário)'),
+         '(admin)', '(Admin)'), '(usuario)', '(Usuário)')
+ WHERE entidade = 'Usuário';
