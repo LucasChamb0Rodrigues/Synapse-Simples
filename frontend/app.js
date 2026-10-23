@@ -11,9 +11,11 @@ const $ = (seletor) => document.querySelector(seletor);
 
 class Api {
   // Chama a API do servidor. Se der erro, mostra a mensagem e interrompe quem chamou.
+  // API_URL vem do config.js (endereço do back-end); "credentials" manda o cookie de login junto.
   static async chamar(metodo, url, dados) {
-    const resposta = await fetch(url, {
+    const resposta = await fetch(API_URL + url, {
       method: metodo,
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: dados && JSON.stringify(dados),
     });
@@ -67,6 +69,17 @@ class Tela {
   static etiqueta(situacao) {
     const cores = { 'Ativa': 'success', 'Desatualizada': 'warning text-dark', 'Sem ficha': 'secondary', 'Inativo': 'dark' };
     return `<span class="badge bg-${cores[situacao]}">${situacao}</span>`;
+  }
+
+  // No celular cada linha da tabela vira um cartão: cada célula ganha o nome da sua coluna (data-label),
+  // que o CSS mostra ao lado do valor. Roda sozinho sempre que uma tabela é desenhada.
+  static rotularTabelas() {
+    document.querySelectorAll('table').forEach((tabela) => {
+      const titulos = [...tabela.querySelectorAll('thead th')].map((th) => th.textContent.trim());
+      tabela.querySelectorAll('tbody tr').forEach((linha) => {
+        [...linha.cells].forEach((celula, i) => { if (celula.colSpan === 1) celula.dataset.label = titulos[i] ?? ''; });
+      });
+    });
   }
 
   // Janela de confirmação. Devolve true se a pessoa clicar no botão de confirmar.
@@ -583,6 +596,15 @@ class Sistema {
     document.querySelectorAll('[data-aba]').forEach((botao) => {
       botao.addEventListener('click', () => this.abrirAba(botao.dataset.aba));
     });
+    // Toda vez que uma tabela é redesenhada, põe o nome das colunas nas células (layout de cartões no celular)
+    new MutationObserver(() => Tela.rotularTabelas()).observe(document.body, { childList: true, subtree: true });
+    // No celular, a tecla Esc também fecha o menu
+    document.addEventListener('keydown', (evento) => { if (evento.key === 'Escape') this.alternarMenu(false); });
+  }
+
+  // Abre ou fecha o menu lateral no celular/tablet (no computador ele fica sempre aberto).
+  alternarMenu(abrir) {
+    $('#tela-sistema').classList.toggle('menu-aberto', abrir);
   }
 
   async iniciar() {
@@ -636,6 +658,7 @@ class Sistema {
   abrirAba(nome) {
     document.querySelectorAll('[data-aba]').forEach((botao) => botao.classList.toggle('ativo', botao.dataset.aba === nome));
     document.querySelectorAll('main section').forEach((secao) => { secao.hidden = secao.id !== `aba-${nome}`; });
+    this.alternarMenu(false); // no celular, fecha o menu depois de escolher a aba
     this.abas[nome].carregar();
   }
 }

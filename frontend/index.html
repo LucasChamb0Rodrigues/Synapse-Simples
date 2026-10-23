@@ -57,7 +57,20 @@
       <symbol id="i-sair"viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
     </svg>
 
-    <nav class="menu">
+    <!-- Barra do topo (só no celular/tablet): botão de 3 risquinhos que abre o menu -->
+    <header class="barra-topo">
+      <button class="botao-menu" onclick="sistema.alternarMenu(true)" aria-label="Abrir menu" aria-controls="menu">
+        <svg class="icone" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+      </button>
+      <div class="menu-logo"><svg class="icone"><use href="#i-logo"/></svg>Synapse</div>
+    </header>
+    <!-- Fundo escuro atrás do menu aberto; clicar nele fecha o menu -->
+    <div class="menu-fundo" onclick="sistema.alternarMenu(false)"></div>
+
+    <nav class="menu" id="menu">
+      <button class="botao-fechar-menu" onclick="sistema.alternarMenu(false)" aria-label="Fechar menu">
+        <svg class="icone" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
       <div class="menu-logo"><svg class="icone"><use href="#i-logo"/></svg>Synapse</div>
       <div class="menu-empresa">
         <strong>Gebon Sorvetes</strong>
@@ -308,6 +321,7 @@
     </form>
   </dialog>
 
+  <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
