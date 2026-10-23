@@ -21,8 +21,27 @@ body { background: #f4f5f7; }
 .login-form { width: 100%; max-width: 420px; color: #fff; }
 .login-form h1 { font-size: 4rem; font-weight: 400; margin-bottom: 8px; }
 .login-titulo { color: #cfd4da; margin-bottom: 32px; }
-.login-form .form-control { border: 0; border-radius: 10px; padding: 12px 16px; }
+.login-form .form-control { border: 0; border-radius: 10px; padding: 12px 16px; font-size: 1rem; }
+.login-form .form-control:focus { box-shadow: 0 0 0 3px rgb(241 108 34 / 0.45); }
 .login-form .btn { border-radius: 10px; padding: 12px; font-weight: 600; }
+.login-form .btn:disabled { opacity: 0.75; }
+.tela-login { min-height: 100dvh; } /* dvh: altura real da tela no celular (sem a barra do navegador) */
+.login-marca-conteudo { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.login-slogan { margin: 0; color: #5f6670; font-size: 1rem; }
+.login-campo { margin-bottom: 20px; }
+.login-campo .form-label { font-size: 0.9rem; color: #cfd4da; margin-bottom: 6px; }
+
+/* Campo com ícone à esquerda (e, na senha, o botão de mostrar à direita) */
+.campo-icone { position: relative; }
+.campo-icone > .icone { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #8a9099; pointer-events: none; }
+.campo-icone .form-control { padding-left: 44px; }
+.campo-icone .form-control[type="password"], .campo-icone .form-control#login-senha { padding-right: 48px; }
+.botao-ver-senha {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 8px; color: #8a9099;
+}
+.botao-ver-senha:hover, .botao-ver-senha.ativo { color: var(--laranja); }
+.botao-ver-senha .icone { width: 20px; height: 20px; }
 
 /* Menu à esquerda + conteúdo à direita */
 .layout { display: flex; min-height: 100vh; }
@@ -126,13 +145,24 @@ h2 { margin-bottom: 16px; }
   .conteudo { padding: 16px; }
 }
 
-/* Celular: login com o logo em cima do formulário */
+/* Celular em pé: logo em cima e o formulário num cartão que sobe um pouco sobre a curva */
 @media (max-width: 767px) {
   .tela-login { flex-direction: column; }
-  .login-marca { width: auto; padding: 40px 16px; border-radius: 0 0 50% 50% / 0 0 30% 30%; }
-  .logo svg { width: 56px; height: 56px; }
-  .logo span, .login-form h1 { font-size: 2.5rem; }
-  .login-area { padding: 32px 16px; }
+  .login-marca { width: auto; flex-shrink: 0; padding: 44px 24px 52px; border-radius: 0 0 50% 50% / 0 0 40px 40px; }
+  .login-marca-conteudo { gap: 6px; }
+  .logo { gap: 12px; }
+  .logo svg { width: 48px; height: 48px; }
+  .logo span { font-size: 2.4rem; }
+  .login-slogan { font-size: 0.85rem; text-align: center; }
+  .login-area { flex-grow: 1; align-items: flex-start; padding: 28px 16px 32px; }
+  .login-form {
+    background: #262d35; border: 1px solid rgb(255 255 255 / 0.06); border-radius: 18px;
+    padding: 28px 20px 24px; box-shadow: 0 18px 40px rgb(0 0 0 / 0.35);
+  }
+  .login-form h1 { font-size: 1.9rem; font-weight: 600; margin-bottom: 4px; }
+  .login-titulo { margin-bottom: 24px; font-size: 0.95rem; }
+  .login-campo { margin-bottom: 16px; }
+  .login-form .btn { margin-top: 8px; padding: 14px; }
   .cabecalho-aba { flex-wrap: wrap; }
 
   /* Tabelas viram cartões: um cartão por linha, com o nome da coluna à esquerda e o valor à direita */
@@ -158,6 +188,22 @@ h2 { margin-bottom: 16px; }
   .table tfoot tr { display: flex; justify-content: space-between; align-items: center; background: #fff8f3; border-color: #f8c9ab; }
   .table tfoot th { padding: 8px 0; border: 0; background: transparent; box-shadow: none; }
   .table tfoot th:empty { display: none; }
+}
+
+/* Celular deitado (tela larga e baixa): tudo menor para o botão "Entrar" caber sem cortar */
+@media (min-width: 768px) and (max-height: 560px) {
+  .login-marca { width: 42%; }
+  .logo { gap: 10px; }
+  .logo svg { width: 48px; height: 48px; }
+  .logo span { font-size: 2.4rem; }
+  .login-slogan { font-size: 0.85rem; text-align: center; }
+  .login-area { align-items: flex-start; padding: 20px 24px; }
+  .login-form h1 { font-size: 1.8rem; margin-bottom: 2px; }
+  .login-titulo { margin-bottom: 14px; }
+  .login-campo { margin-bottom: 10px; }
+  .login-campo .form-label { margin-bottom: 4px; }
+  .login-form .form-control { padding-top: 9px; padding-bottom: 9px; }
+  .login-form .btn { padding: 10px; }
 }
 
 /* Impressão do relatório: esconde menu e botões */

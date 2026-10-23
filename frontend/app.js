@@ -639,9 +639,27 @@ class Sistema {
   async fazerLogin(evento) {
     evento.preventDefault();
     const url = this.primeiroAcesso ? '/api/primeiro-acesso' : '/api/login';
-    const resposta = await Api.chamar('POST', url, Object.fromEntries(new FormData(evento.target)));
-    evento.target.reset();
-    this.entrar(resposta.usuario);
+    // Enquanto espera o servidor, o botão mostra "Entrando..." e não aceita outro clique.
+    const botao = $('#login-botao');
+    botao.disabled = true;
+    botao.textContent = 'Entrando...';
+    try {
+      const resposta = await Api.chamar('POST', url, Object.fromEntries(new FormData(evento.target)));
+      evento.target.reset();
+      this.entrar(resposta.usuario);
+    } finally {
+      botao.disabled = false;
+      botao.textContent = 'Entrar';
+    }
+  }
+
+  // Botão do olho no campo de senha: mostra ou esconde o que foi digitado.
+  alternarSenha(botao) {
+    const campo = $('#login-senha');
+    const mostrar = campo.type === 'password';
+    campo.type = mostrar ? 'text' : 'password';
+    botao.classList.toggle('ativo', mostrar);
+    botao.setAttribute('aria-label', mostrar ? 'Esconder senha' : 'Mostrar senha');
   }
 
   entrar(usuario) {

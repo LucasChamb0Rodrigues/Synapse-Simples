@@ -13,28 +13,48 @@
   <div id="tela-login" class="tela-login" hidden>
     <!-- Lado esquerdo: logo -->
     <div class="login-marca">
-      <div class="logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/><path d="m7.5 5.5 9 5"/>
-        </svg>
-        <span>Synapse</span>
+      <div class="login-marca-conteudo">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/><path d="m7.5 5.5 9 5"/>
+          </svg>
+          <span>Synapse</span>
+        </div>
+        <p class="login-slogan">Fichas técnicas e custos · Gebon Sorvetes</p>
       </div>
     </div>
     <!-- Lado direito: formulário -->
     <div class="login-area">
       <form class="login-form" onsubmit="sistema.fazerLogin(event)">
-        <h1>Bem Vindo!</h1>
+        <h1>Bem-vindo!</h1>
         <p class="login-titulo" id="login-titulo"></p>
         <!-- O campo "nome" só aparece no primeiro acesso -->
-        <div id="campo-nome">
-          <label class="form-label">Seu nome</label>
-          <input class="form-control mb-4" name="nome">
+        <div id="campo-nome" class="login-campo">
+          <label class="form-label" for="login-nome">Seu nome</label>
+          <div class="campo-icone">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+            <input class="form-control" id="login-nome" name="nome" autocomplete="name" placeholder="Ex.: Maria Silva">
+          </div>
         </div>
-        <label class="form-label">Usuário</label>
-        <input class="form-control mb-4" name="login" autocomplete="username" required>
-        <label class="form-label">Senha</label>
-        <input class="form-control mb-4" name="senha" type="password" autocomplete="current-password" required>
-        <button class="btn btn-laranja w-100">Entrar</button>
+        <div class="login-campo">
+          <label class="form-label" for="login-usuario">Usuário</label>
+          <div class="campo-icone">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+            <!-- autocapitalize/autocorrect: o celular não troca a 1ª letra por maiúscula nem "corrige" o login -->
+            <input class="form-control" id="login-usuario" name="login" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="seu.login" required>
+          </div>
+        </div>
+        <div class="login-campo">
+          <label class="form-label" for="login-senha">Senha</label>
+          <div class="campo-icone">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <input class="form-control" id="login-senha" name="senha" type="password" autocomplete="current-password" placeholder="••••••" required>
+            <button type="button" class="botao-ver-senha" onclick="sistema.alternarSenha(this)" aria-label="Mostrar senha">
+              <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-laranja w-100" id="login-botao" enterkeyhint="go">Entrar</button>
       </form>
     </div>
   </div>
