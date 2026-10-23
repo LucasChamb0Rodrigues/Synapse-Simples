@@ -71,6 +71,11 @@ class Usuario extends Modelo {
     return bcrypt.compare(String(senha ?? ''), this.senha_hash);
   }
 
+  // Nome do perfil como aparece na tela (usado no texto da auditoria).
+  nomePerfil() {
+    return this.perfil === 'admin' ? 'Admin' : 'Usuário';
+  }
+
   // O que fica guardado na sessão (login) e é mandado para a tela.
   dadosDaSessao() {
     return { id: this.id, nome: this.nome, perfil: this.perfil };

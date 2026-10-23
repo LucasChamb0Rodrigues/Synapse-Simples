@@ -10,7 +10,7 @@ class UsuarioController extends Controller {
 
   async criar(req, res) {
     const novo = await Usuario.cadastrar(req.body, req.body.perfil);
-    await this.auditar(req, 'Criou', 'Usuário', `${novo.nome} (${novo.perfil})`);
+    await this.auditar(req, 'Criou', 'Usuário', `${novo.nome} (${novo.nomePerfil()})`);
     res.status(201).json({ ok: true });
   }
 
@@ -25,7 +25,7 @@ class UsuarioController extends Controller {
     const nomeAnterior = usuario.nome;
     const trocouSenha = await usuario.alterar(req.body);
     if (eu) req.session.usuario = usuario.dadosDaSessao();
-    await this.auditar(req, 'Alterou', 'Usuário', `${nomeAnterior} -> ${usuario.nome} (${usuario.perfil})${trocouSenha ? ', senha trocada' : ''}`);
+    await this.auditar(req, 'Alterou', 'Usuário', `${nomeAnterior} -> ${usuario.nome} (${usuario.nomePerfil()})${trocouSenha ? ', senha trocada' : ''}`);
     res.json({ ok: true });
   }
 
