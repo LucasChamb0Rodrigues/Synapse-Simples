@@ -2,15 +2,8 @@
   "name": "synapse-simples",
   "version": "1.0.0",
   "private": true,
-  "description": "Synapse (versão simplificada) — fichas técnicas e custo de produtos da Gebon Sorvetes",
-  "main": "servidor.js",
+  "description": "Synapse (versão simplificada) — liga a API (backend/) e as telas (frontend/) juntas no computador",
   "scripts": {
-    "start": "node servidor.js"
-  },
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "express": "^5.1.0",
-    "express-session": "^1.18.1",
-    "mysql2": "^3.11.0"
+    "start": "node iniciar.js"
   }
 }

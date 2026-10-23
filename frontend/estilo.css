@@ -89,26 +89,80 @@ h2 { margin-bottom: 16px; }
 /* Lista de produtos com caixinhas no relatório */
 .lista-marcar { max-height: 220px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px 12px; }
 
-/* Celular: o menu fica em cima, com os botões lado a lado */
+/* Barra do topo, botão de 3 risquinhos e fundo escuro: só aparecem no celular/tablet */
+.barra-topo, .menu-fundo, .menu .botao-fechar-menu { display: none; }
+
+/* Celular e tablet: o menu vira uma gaveta que entra pela esquerda ao tocar nos 3 risquinhos */
+@media (max-width: 991px) {
+  .layout { flex-direction: column; }
+  .barra-topo {
+    display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 1000;
+    background: var(--menu); padding: 10px 16px; box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+  }
+  .barra-topo .menu-logo { font-size: 1.4rem; margin-bottom: 0; }
+  .barra-topo .menu-logo .icone { width: 28px; height: 28px; }
+  .botao-menu {
+    display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+    background: none; border: 0; border-radius: 8px; color: #fff;
+  }
+  .botao-menu:hover { background: rgb(255 255 255 / 0.08); }
+  .botao-menu .icone { width: 26px; height: 26px; }
+
+  .menu {
+    position: fixed; top: 0; left: 0; z-index: 1100; width: 280px; max-width: 85vw; height: 100vh; height: 100dvh;
+    transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: 4px 0 20px rgb(0 0 0 / 0.3);
+  }
+  .menu .botao-fechar-menu {
+    display: flex; position: absolute; top: 20px; right: 12px; width: 40px; padding: 8px; justify-content: center;
+  }
+  .menu-fundo {
+    display: block; position: fixed; inset: 0; z-index: 1050; background: rgb(0 0 0 / 0.5);
+    opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s;
+  }
+  .menu-aberto .menu { transform: translateX(0); }
+  .menu-aberto .menu-fundo { opacity: 1; visibility: visible; }
+  body:has(.menu-aberto) { overflow: hidden; } /* não deixa a página rolar atrás do menu aberto */
+
+  .conteudo { padding: 16px; }
+}
+
+/* Celular: login com o logo em cima do formulário */
 @media (max-width: 767px) {
   .tela-login { flex-direction: column; }
   .login-marca { width: auto; padding: 40px 16px; border-radius: 0 0 50% 50% / 0 0 30% 30%; }
   .logo svg { width: 56px; height: 56px; }
   .logo span, .login-form h1 { font-size: 2.5rem; }
   .login-area { padding: 32px 16px; }
-  .layout { flex-direction: column; }
-  .menu { width: auto; height: auto; position: static; padding: 16px; }
-  .menu-logo, .menu-empresa { margin-bottom: 12px; }
-  .menu-itens { flex-direction: row; flex-wrap: wrap; }
-  .menu button { width: auto; padding: 8px 12px; gap: 8px; }
-  .menu-rodape { padding-top: 12px; display: flex; flex-direction: row-reverse; justify-content: space-between; align-items: center; }
-  .menu-usuario { border-top: 0; margin-top: 0; padding-top: 0; }
-  .conteudo { padding: 16px; }
+  .cabecalho-aba { flex-wrap: wrap; }
+
+  /* Tabelas viram cartões: um cartão por linha, com o nome da coluna à esquerda e o valor à direita */
+  .table thead { display: none; }
+  .table, .table tbody, .table tfoot { display: block; }
+  .table.bg-white { background: transparent !important; }
+  .table tr {
+    display: block; background: #fff; border: 1px solid #dee2e6; border-radius: 10px;
+    padding: 6px 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgb(0 0 0 / 0.04);
+  }
+  .table td {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding: 8px 0; border-bottom: 1px solid #f0f1f3; text-align: right; overflow-wrap: anywhere;
+  }
+  .table td::before { content: attr(data-label); flex-shrink: 0; font-weight: 600; color: #6c757d; text-align: left; }
+  .table td:last-child { border-bottom: 0; }
+  /* Coluna sem título (os botões): ocupam a largura toda do cartão */
+  .table td[data-label=""] { justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding-top: 12px; }
+  .table td[data-label=""]::before { display: none; }
+  /* Linha "Nenhum registro." */
+  .table td:not([data-label]) { display: block; text-align: center; border: 0; }
+  /* Rodapé com o custo total */
+  .table tfoot tr { display: flex; justify-content: space-between; align-items: center; background: #fff8f3; border-color: #f8c9ab; }
+  .table tfoot th { padding: 8px 0; border: 0; background: transparent; box-shadow: none; }
+  .table tfoot th:empty { display: none; }
 }
 
 /* Impressão do relatório: esconde menu e botões */
 @media print {
-  .no-print, .menu { display: none !important; }
+  .no-print, .menu, .barra-topo, .menu-fundo { display: none !important; }
   .conteudo { padding: 0; }
   body { background: #fff; }
 }
