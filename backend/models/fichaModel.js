@@ -1,15 +1,12 @@
-// Tabelas ficha_tecnica e item_ficha. Cada vez que a ficha é salva, vira uma NOVA versão.
 const banco = require('./banco');
 const Modelo = require('./Modelo');
 const ErroApp = require('./ErroApp');
-const Auditoria = require('./auditoriaModel');
 
 class Ficha {
   constructor(dados = {}) {
     Object.assign(this, dados);
   }
 
-  // Todas as versões da ficha de um produto (a primeira da lista é a atual).
   static listarVersoes(produtoId) {
     return banco.sql(
       'SELECT id, versao, criada_em, usuario_nome, custo_total FROM ficha_tecnica WHERE produto_id = ? ORDER BY versao DESC',
@@ -17,7 +14,6 @@ class Ficha {
     );
   }
 
-  // Insumos de uma ficha, com o subtotal calculado pelo preço ATUAL do insumo.
   static listarItens(fichaId) {
     return banco.sql(
       `SELECT i.insumo_id, s.nome, s.unidade, i.quantidade,
@@ -29,7 +25,6 @@ class Ficha {
     );
   }
 
-  // A versão da ficha que valia numa data (usada no relatório).
   static async buscarVersaoNaData(produtoId, data) {
     const [linha] = await banco.sql(
       `SELECT f.id, f.versao, f.criada_em, p.codigo, p.nome, c.nome AS categoria
@@ -43,13 +38,11 @@ class Ficha {
     return linha && new Ficha(linha);
   }
 
-  // Busca os insumos desta ficha e soma o custo total pelos preços atuais.
   async carregarItens() {
     this.itens = await Ficha.listarItens(this.id);
     this.total = Math.round(this.itens.reduce((soma, item) => soma + item.subtotal, 0) * 100) / 100;
   }
 
-  // O navegador manda só insumo + quantidade; o preço e o custo total são calculados no salvar().
   validar() {
     const itens = Array.isArray(this.itens) ? this.itens : [];
     this.itens = itens.map((item) => ({ insumo_id: Number(item.insumo_id), quantidade: Modelo.numero(item.quantidade) }));
@@ -60,8 +53,6 @@ class Ficha {
     }
   }
 
-  // Grava uma nova versão com o preço atual de cada insumo e calcula o custo total.
-  // Transação: ou grava tudo (ficha + itens + auditoria), ou não grava nada.
   async salvar(usuario) {
     this.validar();
     await banco.transacao(async (conexao) => {
@@ -89,7 +80,6 @@ class Ficha {
           [ficha.insertId, item.insumo_id, item.quantidade, item.custo], conexao,
         );
       }
-      await Auditoria.registrar(usuario, 'Salvou ficha', 'Ficha técnica', `${this.produto.codigo} - v${versao}`, conexao);
 
       this.id = ficha.insertId;
       this.versao = versao;

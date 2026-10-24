@@ -9,9 +9,7 @@
 </head>
 <body>
 
-  <!-- ===================== LOGIN ===================== -->
   <div id="tela-login" class="tela-login" hidden>
-    <!-- Lado esquerdo: logo -->
     <div class="login-marca">
       <div class="login-marca-conteudo">
         <div class="logo">
@@ -23,12 +21,10 @@
         <p class="login-slogan">Fichas técnicas e custos · Gebon Sorvetes</p>
       </div>
     </div>
-    <!-- Lado direito: formulário -->
     <div class="login-area">
       <form class="login-form" onsubmit="sistema.fazerLogin(event)">
         <h1>Bem-vindo!</h1>
         <p class="login-titulo" id="login-titulo"></p>
-        <!-- O campo "nome" só aparece no primeiro acesso -->
         <div id="campo-nome" class="login-campo">
           <label class="form-label" for="login-nome">Seu nome</label>
           <div class="campo-icone">
@@ -40,7 +36,6 @@
           <label class="form-label" for="login-usuario">Usuário</label>
           <div class="campo-icone">
             <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
-            <!-- autocapitalize/autocorrect: o celular não troca a 1ª letra por maiúscula nem "corrige" o login -->
             <input class="form-control" id="login-usuario" name="login" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="seu.login" required>
           </div>
         </div>
@@ -59,10 +54,8 @@
     </div>
   </div>
 
-  <!-- ===================== SISTEMA ===================== -->
   <div id="tela-sistema" class="layout" hidden>
 
-    <!-- Ícones do menu (desenhados uma vez e usados com <use href="#i-...">) -->
     <svg hidden>
       <symbol id="i-logo" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/><path d="m7.5 5.5 9 5"/></symbol>
       <symbol id="i-catalogo" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></symbol>
@@ -72,19 +65,16 @@
       <symbol id="i-categorias" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
       <symbol id="i-relatorio" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17V9"/><path d="m7 10 4-4 4 3 5-5"/></symbol>
       <symbol id="i-usuarios" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
-      <symbol id="i-auditoria" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
       <symbol id="i-perfil" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.66V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.66"/></symbol>
       <symbol id="i-sair"viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
     </svg>
 
-    <!-- Barra do topo (só no celular/tablet): botão de 3 risquinhos que abre o menu -->
     <header class="barra-topo">
       <button class="botao-menu" onclick="sistema.alternarMenu(true)" aria-label="Abrir menu" aria-controls="menu">
         <svg class="icone" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
       </button>
       <div class="menu-logo"><svg class="icone"><use href="#i-logo"/></svg>Synapse</div>
     </header>
-    <!-- Fundo escuro atrás do menu aberto; clicar nele fecha o menu -->
     <div class="menu-fundo" onclick="sistema.alternarMenu(false)"></div>
 
     <nav class="menu" id="menu">
@@ -105,7 +95,6 @@
         <button data-aba="categorias" class="so-admin"><svg class="icone"><use href="#i-categorias"/></svg>Categorias</button>
         <button data-aba="relatorio" class="so-admin"><svg class="icone"><use href="#i-relatorio"/></svg>Relatório de Custo</button>
         <button data-aba="usuarios" class="so-admin"><svg class="icone"><use href="#i-usuarios"/></svg>Usuários</button>
-        <button data-aba="auditoria" class="so-admin"><svg class="icone"><use href="#i-auditoria"/></svg>Auditoria</button>
       </div>
 
       <div class="menu-rodape">
@@ -123,7 +112,6 @@
 
     <main class="conteudo">
 
-      <!-- ---------- CATÁLOGO ---------- -->
       <section id="aba-catalogo">
         <h2>Catálogo de Produtos</h2>
         <div id="aviso-desatualizadas" class="alert alert-warning" hidden></div>
@@ -142,14 +130,12 @@
         </table>
       </section>
 
-      <!-- ---------- PRODUTOS ---------- -->
       <section id="aba-produtos">
         <div class="cabecalho-aba">
           <h2>Produtos</h2>
           <button class="btn btn-laranja" onclick="sistema.abas.produtos.novo()">+ Novo produto</button>
         </div>
         <input class="form-control mb-3" id="produtos-busca" placeholder="Buscar por nome, código ou categoria..." oninput="sistema.abas.produtos.desenhar()">
-        <!-- Campos do cadastro: não aparecem na tela, são copiados para a janela ao cadastrar ou editar -->
         <div class="row modelo-cadastro" hidden>
           <div><label class="form-label">Código</label><input class="form-control" name="codigo" maxlength="20" required></div>
           <div><label class="form-label">Nome</label><input class="form-control" name="nome" maxlength="80" required></div>
@@ -161,7 +147,6 @@
         </table>
       </section>
 
-      <!-- ---------- FICHA TÉCNICA ---------- -->
       <section id="aba-ficha">
         <h2>Ficha Técnica</h2>
         <div class="card card-body mb-3">
@@ -188,7 +173,6 @@
         </div>
       </section>
 
-      <!-- ---------- INSUMOS ---------- -->
       <section id="aba-insumos">
         <div class="cabecalho-aba">
           <h2>Insumos</h2>
@@ -212,7 +196,6 @@
         </table>
       </section>
 
-      <!-- ---------- CATEGORIAS ---------- -->
       <section id="aba-categorias">
         <div class="cabecalho-aba">
           <h2>Categorias</h2>
@@ -228,7 +211,6 @@
         </table>
       </section>
 
-      <!-- ---------- RELATÓRIO ---------- -->
       <section id="aba-relatorio">
         <h2 class="no-print">Relatório de Custo</h2>
         <div class="card card-body mb-3 no-print">
@@ -248,7 +230,6 @@
         <div id="relatorio-resultado"></div>
       </section>
 
-      <!-- ---------- USUÁRIOS ---------- -->
       <section id="aba-usuarios">
         <div class="cabecalho-aba">
           <h2>Usuários</h2>
@@ -273,7 +254,6 @@
         </table>
       </section>
 
-      <!-- ---------- MEU PERFIL (qualquer usuário) ---------- -->
       <section id="aba-perfil">
         <h2>Meu perfil</h2>
         <form class="card card-body mb-4" id="form-perfil" onsubmit="sistema.abas.perfil.salvar(event)">
@@ -289,22 +269,11 @@
         </form>
       </section>
 
-      <!-- ---------- AUDITORIA ---------- -->
-      <section id="aba-auditoria">
-        <h2>Auditoria</h2>
-        <table class="table table-sm table-striped bg-white">
-          <thead><tr><th>Data/hora</th><th>Usuário</th><th>Ação</th><th>Item</th><th>Detalhe</th></tr></thead>
-          <tbody id="tabela-auditoria"></tbody>
-        </table>
-      </section>
-
     </main>
   </div>
 
-  <!-- Aviso flutuante de sucesso/erro -->
   <div id="mensagem" class="no-print"></div>
 
-  <!-- Janela com os detalhes da ficha (aberta pelo Catálogo) -->
   <dialog id="janela-ficha" class="janela janela-grande">
     <form method="dialog" class="d-flex justify-content-between">
       <h5 id="janela-ficha-titulo"></h5>
@@ -313,7 +282,6 @@
     <div id="janela-ficha-corpo"></div>
   </dialog>
 
-  <!-- Janela de cadastro/edição (aberta pelos botões "Novo" e "Editar" de qualquer cadastro) -->
   <dialog id="janela-editar" class="janela janela-media janela-edicao">
     <form onsubmit="Cadastro.salvarJanela(event)">
       <div class="janela-cabecalho">
@@ -332,7 +300,6 @@
     </form>
   </dialog>
 
-  <!-- Janela de confirmação (antes de excluir) -->
   <dialog id="janela-confirmar" class="janela text-center">
     <form method="dialog">
       <p class="fw-bold" id="confirmar-texto"></p>

@@ -1,17 +1,6 @@
-// Todo o JavaScript da tela, organizado em classes:
-//   Api       conversa com o servidor
-//   Tela      funções de apoio (avisos, formatação, janela de confirmação)
-//   Aba       classe base de cada aba do menu; cada aba é uma classe filha com o seu carregar()
-//   Cadastro  aba com busca + tabela (Produtos, Insumos, Categorias, Usuários): cadastrar e editar numa janela, excluir
-//   Sistema   login, menu e troca de abas. "sistema" é o objeto usado pelos botões do index.html.
-
 const $ = (seletor) => document.querySelector(seletor);
 
-// ===================== API =====================
-
 class Api {
-  // Chama a API do servidor. Se der erro, mostra a mensagem e interrompe quem chamou.
-  // API_URL vem do config.js (endereço do back-end); "credentials" manda o cookie de login junto.
   static async chamar(metodo, url, dados) {
     const resposta = await fetch(API_URL + url, {
       method: metodo,
@@ -21,24 +10,19 @@ class Api {
     });
     const corpo = await resposta.json().catch(() => ({}));
     if (resposta.ok) return corpo;
-    if (resposta.status === 401 && sistema.usuario) location.reload(); // sessão expirou: volta ao login
+    if (resposta.status === 401 && sistema.usuario) location.reload();
     Tela.avisar(corpo.erro || 'Erro ao comunicar com o servidor.', 'danger');
     throw new Error(corpo.erro);
   }
 }
 
-// ===================== TELA (funções de apoio) =====================
-
 class Tela {
-  // Aviso no canto da tela. tipo: 'success' (verde) ou 'danger' (vermelho).
   static avisar(texto, tipo = 'success') {
-    // Uma janela aberta fica por cima de tudo; o aviso vai para dentro dela para não ficar escondido.
     (document.querySelector('dialog[open]') || document.body).append($('#mensagem'));
     $('#mensagem').innerHTML = `<div class="alert alert-${tipo} shadow">${Tela.esc(texto)}</div>`;
     setTimeout(() => { $('#mensagem').innerHTML = ''; }, 4000);
   }
 
-  // Protege contra XSS: transforma < > & " ' em texto comum antes de pôr no HTML.
   static esc(texto) {
     return String(texto ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
   }
@@ -47,12 +31,10 @@ class Tela {
     return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  // Preço de insumo pode ter até 4 casas: 0.0035 -> "R$ 0,0035"
   static precoInsumo(valor) {
     return 'R$ ' + Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
   }
 
-  // "2026-10-11 08:56:00" -> "11/10/2026 08:56"
   static dataHora(texto) {
     return texto.slice(0, 10).split('-').reverse().join('/') + ' ' + texto.slice(11, 16);
   }
@@ -61,7 +43,6 @@ class Tela {
     return `<tr><td colspan="${colunas}" class="text-center text-muted">Nenhum registro.</td></tr>`;
   }
 
-  // Nome do perfil na tela ("admin" -> "Admin", "usuario" -> "Usuário").
   static nomePerfil(perfil) {
     return perfil === 'admin' ? 'Admin' : 'Usuário';
   }
@@ -71,8 +52,6 @@ class Tela {
     return `<span class="badge bg-${cores[situacao]}">${situacao}</span>`;
   }
 
-  // No celular cada linha da tabela vira um cartão: cada célula ganha o nome da sua coluna (data-label),
-  // que o CSS mostra ao lado do valor. Roda sozinho sempre que uma tabela é desenhada.
   static rotularTabelas() {
     document.querySelectorAll('table').forEach((tabela) => {
       const titulos = [...tabela.querySelectorAll('thead th')].map((th) => th.textContent.trim());
@@ -82,7 +61,6 @@ class Tela {
     });
   }
 
-  // Janela de confirmação. Devolve true se a pessoa clicar no botão de confirmar.
   static confirmar(texto, botao = 'Excluir') {
     const janela = $('#janela-confirmar');
     $('#confirmar-texto').textContent = texto;
@@ -95,34 +73,27 @@ class Tela {
   }
 }
 
-// ===================== ABA (classe base) =====================
-
 class Aba {
   constructor(nome) {
-    this.nome = nome;  // igual ao data-aba do menu e ao id "aba-NOME" da seção
-    this.lista = [];   // última lista carregada (usada para editar)
+    this.nome = nome;
+    this.lista = [];
   }
 
-  // Busca os dados no servidor e desenha a aba. Cada classe filha faz o seu.
   async carregar() {}
 
-  // Texto que chama um método deste objeto a partir de um botão do HTML: onclick="${this.chamada('editar', 3)}"
   chamada(metodo, ...argumentos) {
     return `sistema.abas.${this.nome}.${metodo}(${argumentos.join(', ')})`;
   }
 }
 
-// ===================== CADASTRO (Produtos, Insumos, Categorias, Usuários) =====================
-// A aba mostra uma busca e a tabela. Os botões "Novo" e "Editar" abrem a mesma janela com o formulário.
-
 class Cadastro extends Aba {
-  static emEdicao = null; // { cadastro, id } do registro aberto na janela (id null = cadastro novo)
+  static emEdicao = null;
 
   constructor(nome, item, perguntaExcluir, feminino = false) {
     super(nome);
-    this.item = item;                       // "produto", "insumo"... (título da janela)
+    this.item = item;
     this.perguntaExcluir = perguntaExcluir;
-    this.feminino = feminino;               // "Nova categoria" em vez de "Novo categoria"
+    this.feminino = feminino;
   }
 
   async carregar() {
@@ -130,16 +101,13 @@ class Cadastro extends Aba {
     this.desenhar();
   }
 
-  // Desenha a tabela com a lista já carregada (chamado também a cada letra digitada na busca).
   desenhar() {}
 
-  // Registros que contêm o texto da busca da aba (#NOME-busca). campos(registro) diz onde procurar.
   filtrar(campos) {
     const busca = $(`#${this.nome}-busca`).value.toLowerCase();
     return this.lista.filter((registro) => campos(registro).join(' ').toLowerCase().includes(busca));
   }
 
-  // Botões "Editar" e "Excluir" de uma linha de tabela.
   botoes(id) {
     return `<button class="btn btn-sm btn-outline-primary" onclick="${this.chamada('editar', id)}">Editar</button>
             <button class="btn btn-sm btn-outline-danger" onclick="${this.chamada('excluir', id)}">Excluir</button>`;
@@ -153,15 +121,12 @@ class Cadastro extends Aba {
     this.abrirJanela(id);
   }
 
-  // Abre a janela com uma cópia dos campos escondidos da aba (.modelo-cadastro).
-  // Na edição, os campos já vêm preenchidos com os dados do registro.
   abrirJanela(id) {
     const registro = this.lista.find((r) => r.id === id);
     const linha = $(`#aba-${this.nome} .modelo-cadastro`).cloneNode(true);
     linha.hidden = false;
-    linha.querySelectorAll('[id]').forEach((campo) => campo.removeAttribute('id')); // evita ids repetidos
+    linha.querySelectorAll('[id]').forEach((campo) => campo.removeAttribute('id'));
 
-    // Campos numa grade de duas colunas (cada campo numa div com o rótulo).
     linha.className = 'row g-3';
     const colunas = [...linha.children];
     colunas.forEach((coluna) => { coluna.className = colunas.length === 1 ? 'col-12' : 'col-md-6'; });
@@ -171,7 +136,7 @@ class Cadastro extends Aba {
     if (registro) campos.querySelectorAll('[name]').forEach((campo) => { campo.value = registro[campo.name] ?? ''; });
 
     Cadastro.emEdicao = { cadastro: this, id };
-    $('#editar-icone').setAttribute('href', `#i-${this.nome}`); // mesmo ícone do menu
+    $('#editar-icone').setAttribute('href', `#i-${this.nome}`);
     if (registro) {
       $('#editar-titulo').textContent = `Editar ${this.item}`;
       $('#editar-subtitulo').textContent = registro.codigo ? `${registro.codigo} - ${registro.nome}` : registro.nome;
@@ -185,7 +150,6 @@ class Cadastro extends Aba {
     campos.querySelector('[name]').focus();
   }
 
-  // Texto de ajuda no fim da janela (usado por algumas abas).
   dica(texto) {
     const div = document.createElement('div');
     div.className = 'janela-dica mt-3';
@@ -193,16 +157,13 @@ class Cadastro extends Aba {
     $('#editar-campos').append(div);
   }
 
-  // A janela é uma só para todos os cadastros, por isso este método é da classe (static).
   static async salvarJanela(evento) {
-    evento.preventDefault(); // impede o formulário de recarregar a página
+    evento.preventDefault();
     const { cadastro, id } = Cadastro.emEdicao;
-    const dados = Object.fromEntries(new FormData(evento.target)); // { nome: '...', ... } pelos "name" dos campos
-    // Só a janela de usuário tem o campo "confirmarSenha".
+    const dados = Object.fromEntries(new FormData(evento.target));
     if ('confirmarSenha' in dados && dados.senha !== dados.confirmarSenha) {
       return Tela.avisar('A confirmação não confere com a senha.', 'danger');
     }
-    // Se der erro, a janela continua aberta.
     if (id === null) {
       await Api.chamar('POST', `/api/${cadastro.nome}`, dados);
       Tela.avisar('Cadastrado!');
@@ -221,8 +182,6 @@ class Cadastro extends Aba {
     this.carregar();
   }
 }
-
-// ===================== CATÁLOGO =====================
 
 class AbaCatalogo extends Aba {
   async carregar() {
@@ -245,7 +204,6 @@ class AbaCatalogo extends Aba {
         <td><button class="btn btn-sm btn-outline-primary" onclick="${this.chamada('verFicha', p.id)}">Ver</button></td>
       </tr>`).join('') || Tela.linhaVazia(7);
 
-    // Alerta: fichas cujo custo mudou porque o preço de algum insumo mudou.
     const desatualizadas = this.lista.filter((p) => p.situacao === 'Desatualizada').length;
     $('#aviso-desatualizadas').hidden = desatualizadas === 0;
     $('#aviso-desatualizadas').textContent = `${desatualizadas} produto(s) com ficha desatualizada: o preço de algum insumo mudou desde que a ficha foi salva.`;
@@ -279,8 +237,6 @@ class AbaCatalogo extends Aba {
   }
 }
 
-// ===================== PRODUTOS =====================
-
 class AbaProdutos extends Cadastro {
   constructor() {
     super('produtos', 'produto', 'Excluir este produto? As fichas técnicas dele também serão apagadas.');
@@ -313,20 +269,17 @@ class AbaProdutos extends Cadastro {
   }
 }
 
-// ===================== FICHA TÉCNICA =====================
-
 class AbaFicha extends Aba {
   constructor() {
     super('ficha');
     this.insumosDisponiveis = [];
-    this.itens = []; // [{ insumo_id, nome, unidade, custo, quantidade }]
+    this.itens = [];
   }
 
   async carregar() {
     const produtos = await Api.chamar('GET', '/api/catalogo');
     this.insumosDisponiveis = await Api.chamar('GET', '/api/insumos');
 
-    // Só produtos ativos podem receber ficha.
     $('#ficha-produto').innerHTML = '<option value="">Selecione o produto...</option>' +
       produtos.filter((p) => p.ativo).map((p) => `<option value="${p.id}">${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}</option>`).join('');
     $('#ficha-insumo').innerHTML = this.insumosDisponiveis
@@ -335,7 +288,6 @@ class AbaFicha extends Aba {
     $('#ficha-info').textContent = '';
   }
 
-  // Ao escolher um produto, carrega a ficha atual dele no editor.
   async escolherProduto() {
     const id = $('#ficha-produto').value;
     $('#ficha-editor').hidden = !id;
@@ -362,7 +314,7 @@ class AbaFicha extends Aba {
     const posicao = this.itens.findIndex((item) => item.insumo_id === insumo.id);
     if (posicao >= 0) {
       Tela.avisar('Este insumo já está na ficha. Altere a quantidade direto na tabela.', 'danger');
-      return $(`#ficha-qtd-${posicao}`).select(); // leva o cursor até o campo da linha
+      return $(`#ficha-qtd-${posicao}`).select();
     }
     this.itens.push({ insumo_id: insumo.id, nome: insumo.nome, unidade: insumo.unidade, custo: insumo.custo, quantidade });
     $('#ficha-quantidade').value = '';
@@ -374,8 +326,6 @@ class AbaFicha extends Aba {
     this.desenharItens();
   }
 
-  // Campo de quantidade de uma linha da tabela: atualiza subtotal e total sem redesenhar a tabela
-  // (redesenhar tiraria o cursor do campo enquanto a pessoa digita).
   mudarQuantidade(posicao, valor) {
     const item = this.itens[posicao];
     item.quantidade = Number(valor);
@@ -384,7 +334,6 @@ class AbaFicha extends Aba {
     this.desenharTotal();
   }
 
-  // Prévia do custo (o valor oficial é calculado pelo servidor ao salvar).
   desenharItens() {
     $('#tabela-ficha').innerHTML = this.itens.map((item, posicao) => `
       <tr>
@@ -419,8 +368,6 @@ class AbaFicha extends Aba {
   }
 }
 
-// ===================== INSUMOS =====================
-
 class AbaInsumos extends Cadastro {
   constructor() {
     super('insumos', 'insumo', 'Excluir este insumo?');
@@ -440,8 +387,6 @@ class AbaInsumos extends Cadastro {
   }
 }
 
-// ===================== CATEGORIAS =====================
-
 class AbaCategorias extends Cadastro {
   constructor() {
     super('categorias', 'categoria', 'Excluir esta categoria?', true);
@@ -453,8 +398,6 @@ class AbaCategorias extends Cadastro {
   }
 }
 
-// ===================== RELATÓRIO DE CUSTO =====================
-
 class AbaRelatorio extends Aba {
   async carregar() {
     const comFicha = (await Api.chamar('GET', '/api/catalogo')).filter((p) => p.ficha_id);
@@ -465,7 +408,6 @@ class AbaRelatorio extends Aba {
     this.atualizarBotaoMarcar();
   }
 
-  // Botão alterna: se todos já estão marcados, desmarca todos; senão, marca todos.
   marcarTodos() {
     const caixas = document.querySelectorAll('#relatorio-produtos input');
     const marcar = !this.todosMarcados();
@@ -478,7 +420,6 @@ class AbaRelatorio extends Aba {
     return caixas.length > 0 && caixas.every((caixa) => caixa.checked);
   }
 
-  // Texto do botão conforme as caixas (chamado também quando uma caixa é marcada à mão).
   atualizarBotaoMarcar() {
     $('#relatorio-marcar').textContent = this.todosMarcados() ? 'Desmarcar todos' : 'Marcar todos';
   }
@@ -512,8 +453,6 @@ class AbaRelatorio extends Aba {
   }
 }
 
-// ===================== USUÁRIOS =====================
-
 class AbaUsuarios extends Cadastro {
   constructor() {
     super('usuarios', 'usuário', 'Excluir este usuário? Ele não conseguirá mais entrar no sistema.');
@@ -529,18 +468,13 @@ class AbaUsuarios extends Cadastro {
       </tr>`).join('') || Tela.linhaVazia(4);
   }
 
-  // A janela de edição de usuário é organizada em duas colunas, com a troca de senha separada:
-  //   Nome | Login
-  //   Perfil
-  //   --- Trocar senha (opcional) ---
-  //   Nova senha | Confirmar nova senha
   editar(id) {
     super.editar(id);
-    const coluna = (nome) => $(`#editar-campos [name="${nome}"]`).parentElement; // a div com rótulo + campo
+    const coluna = (nome) => $(`#editar-campos [name="${nome}"]`).parentElement;
 
     const senha = coluna('senha');
     senha.querySelector('label').textContent = 'Nova senha';
-    senha.querySelector('input').required = false; // em branco, continua a mesma
+    senha.querySelector('input').required = false;
 
     const confirmar = senha.cloneNode(true);
     confirmar.querySelector('label').textContent = 'Confirmar nova senha';
@@ -553,8 +487,6 @@ class AbaUsuarios extends Cadastro {
     $('#editar-campos .row').replaceChildren(coluna('nome'), coluna('login'), coluna('perfil'), tituloSenha, senha, confirmar);
   }
 }
-
-// ===================== MEU PERFIL =====================
 
 class AbaPerfil extends Aba {
   async carregar() {
@@ -577,26 +509,10 @@ class AbaPerfil extends Aba {
   }
 }
 
-// ===================== AUDITORIA =====================
-
-class AbaAuditoria extends Aba {
-  async carregar() {
-    const registros = await Api.chamar('GET', '/api/auditoria');
-    $('#tabela-auditoria').innerHTML = registros.map((r) => `
-      <tr>
-        <td class="text-nowrap">${Tela.dataHora(r.data_hora)}</td><td>${Tela.esc(r.usuario_nome)}</td>
-        <td>${Tela.esc(r.acao)}</td><td>${Tela.esc(r.entidade)}</td><td>${Tela.esc(r.detalhe)}</td>
-      </tr>`).join('') || Tela.linhaVazia(5);
-  }
-}
-
-// ===================== SISTEMA (login, menu e abas) =====================
-
 class Sistema {
   constructor() {
-    this.usuario = null;         // quem está logado
+    this.usuario = null;
     this.primeiroAcesso = false;
-    // Um objeto para cada aba do menu (a chave é o data-aba do botão).
     this.abas = {
       catalogo: new AbaCatalogo('catalogo'),
       produtos: new AbaProdutos(),
@@ -605,19 +521,15 @@ class Sistema {
       categorias: new AbaCategorias(),
       relatorio: new AbaRelatorio('relatorio'),
       usuarios: new AbaUsuarios(),
-      auditoria: new AbaAuditoria('auditoria'),
       perfil: new AbaPerfil('perfil'),
     };
     document.querySelectorAll('[data-aba]').forEach((botao) => {
       botao.addEventListener('click', () => this.abrirAba(botao.dataset.aba));
     });
-    // Toda vez que uma tabela é redesenhada, põe o nome das colunas nas células (layout de cartões no celular)
     new MutationObserver(() => Tela.rotularTabelas()).observe(document.body, { childList: true, subtree: true });
-    // No celular, a tecla Esc também fecha o menu
     document.addEventListener('keydown', (evento) => { if (evento.key === 'Escape') this.alternarMenu(false); });
   }
 
-  // Abre ou fecha o menu lateral no celular/tablet (no computador ele fica sempre aberto).
   alternarMenu(abrir) {
     $('#tela-sistema').classList.toggle('menu-aberto', abrir);
   }
@@ -626,7 +538,6 @@ class Sistema {
     const situacao = await Api.chamar('GET', '/api/situacao');
     if (situacao.usuario) return this.entrar(situacao.usuario);
 
-    // No primeiro acesso a mesma tela serve para criar o usuário administrador.
     this.primeiroAcesso = situacao.primeiroAcesso;
     $('#tela-login').hidden = false;
     $('#campo-nome').hidden = !this.primeiroAcesso;
@@ -639,7 +550,6 @@ class Sistema {
   async fazerLogin(evento) {
     evento.preventDefault();
     const url = this.primeiroAcesso ? '/api/primeiro-acesso' : '/api/login';
-    // Enquanto espera o servidor, o botão mostra "Entrando..." e não aceita outro clique.
     const botao = $('#login-botao');
     botao.disabled = true;
     botao.textContent = 'Entrando...';
@@ -653,7 +563,6 @@ class Sistema {
     }
   }
 
-  // Botão do olho no campo de senha: mostra ou esconde o que foi digitado.
   alternarSenha(botao) {
     const campo = $('#login-senha');
     const mostrar = campo.type === 'password';
@@ -667,12 +576,10 @@ class Sistema {
     $('#tela-login').hidden = true;
     $('#tela-sistema').hidden = false;
     this.mostrarUsuario(usuario);
-    // O perfil Usuário só vê o catálogo. (O servidor também bloqueia; aqui é só para não mostrar.)
     document.querySelectorAll('.so-admin').forEach((botao) => { botao.hidden = usuario.perfil !== 'admin'; });
     this.abrirAba('catalogo');
   }
 
-  // Rodapé do menu: iniciais (ex.: "Marina Lopes" -> "ML"), nome e perfil. Também usado depois de editar o próprio perfil.
   mostrarUsuario(usuario) {
     this.usuario = usuario;
     const palavras = usuario.nome.trim().split(/\s+/);
@@ -687,14 +594,13 @@ class Sistema {
     location.reload();
   }
 
-  // Mostra só a aba escolhida e busca os dados dela no servidor.
   abrirAba(nome) {
     document.querySelectorAll('[data-aba]').forEach((botao) => botao.classList.toggle('ativo', botao.dataset.aba === nome));
     document.querySelectorAll('main section').forEach((secao) => { secao.hidden = secao.id !== `aba-${nome}`; });
-    this.alternarMenu(false); // no celular, fecha o menu depois de escolher a aba
+    this.alternarMenu(false);
     this.abas[nome].carregar();
   }
 }
 
 const sistema = new Sistema();
-sistema.iniciar(); // começa: mostra o login ou o sistema
+sistema.iniciar();
