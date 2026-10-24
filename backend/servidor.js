@@ -1,5 +1,3 @@
-// Liga a API no computador.   Para rodar: npm start
-// (Na Vercel quem usa o app é o api/index.js, sem este arquivo.)
 const app = require('./aplicacao');
 
 const porta = process.env.PORT || 3000;

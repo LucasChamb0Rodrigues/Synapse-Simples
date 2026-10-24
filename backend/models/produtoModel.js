@@ -1,4 +1,3 @@
-// Tabela produto (e a lista do catálogo).
 const banco = require('./banco');
 const Modelo = require('./Modelo');
 const ErroApp = require('./ErroApp');
@@ -9,8 +8,6 @@ class Produto extends Modelo {
   static campos = ['codigo', 'nome', 'categoria_id'];
   static naoEncontrado = 'Produto não encontrado.';
 
-  // Todos os produtos com a ficha ATUAL (maior versão), o custo pelo preço atual dos insumos
-  // e quantos insumos mudaram de preço desde que a ficha foi salva.
   static async listarCatalogo() {
     const linhas = await banco.sql(`
       SELECT p.id, p.codigo, p.nome, p.ativo, p.categoria_id, c.nome AS categoria,
@@ -33,7 +30,6 @@ class Produto extends Modelo {
     });
   }
 
-  // Produto com o nome da categoria (substitui o buscarPorId do Modelo).
   static async buscarPorId(id) {
     const [linha] = await banco.sql(
       'SELECT p.*, c.nome AS categoria FROM produto p JOIN categoria c ON c.id = p.categoria_id WHERE p.id = ?',
@@ -49,7 +45,6 @@ class Produto extends Modelo {
     if (!this.nome) throw new ErroApp(400, 'Informe o nome do produto.');
     if (!this.categoria_id) throw new ErroApp(400, 'Selecione uma categoria.');
 
-    // Código e nome não podem repetir (o próprio produto, na alteração, não conta).
     const repetidos = await banco.sql('SELECT id FROM produto WHERE (codigo = ? OR nome = ?) AND id <> ?', [this.codigo, this.nome, this.id || 0]);
     if (repetidos.length > 0) throw new ErroApp(409, 'Já existe um produto com esse código ou nome.');
   }
@@ -58,21 +53,18 @@ class Produto extends Modelo {
     return `${this.codigo} - ${this.nome}`;
   }
 
-  // Situação do produto (diagrama de estados do projeto).
   calcularSituacao() {
     if (!this.ativo) return 'Inativo';
     if (!this.ficha_id) return 'Sem ficha';
-    if (this.insumos_alterados > 0) return 'Desatualizada'; // preço de insumo mudou
+    if (this.insumos_alterados > 0) return 'Desatualizada';
     return 'Ativa';
   }
 
-  // Inativar (descontinuar) ou reativar.
   async mudarAtivo(ativo) {
     await banco.sql('UPDATE produto SET ativo = ? WHERE id = ?', [ativo, this.id]);
     this.ativo = ativo;
   }
 
-  // Começa uma nova versão da ficha técnica deste produto (ainda não gravada).
   novaFicha(itens) {
     if (!this.ativo) throw new ErroApp(400, 'Produto inativo não pode receber ficha técnica.');
     return new Ficha({ produto: this, itens });

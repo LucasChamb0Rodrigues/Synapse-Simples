@@ -1,4 +1,3 @@
-// Tabela categoria.
 const Modelo = require('./Modelo');
 const ErroApp = require('./ErroApp');
 

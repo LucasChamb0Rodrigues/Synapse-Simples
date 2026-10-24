@@ -1,4 +1,3 @@
-// Todas as rotas da API: cada endereço aponta para o método do controller que responde a ele.
 const express = require('express');
 const auth = require('./controllers/authController');
 const catalogo = require('./controllers/catalogoController');
@@ -7,19 +6,16 @@ const insumos = require('./controllers/insumoController');
 const categorias = require('./controllers/categoriaController');
 const relatorio = require('./controllers/relatorioController');
 const usuarios = require('./controllers/usuarioController');
-const auditoria = require('./controllers/auditoriaController');
 const perfil = require('./controllers/perfilController');
 const ErroApp = require('./models/ErroApp');
 
 const rotas = express.Router();
 
-// ---------- Abertas a todos ----------
 rotas.get('/situacao', auth.situacao);
 rotas.post('/primeiro-acesso', auth.primeiroAcesso);
 rotas.post('/login', auth.login);
 rotas.post('/logout', auth.logout);
 
-// ---------- Daqui para baixo, só quem fez login ----------
 rotas.use((req, res, next) => {
   if (!req.session.usuario) throw new ErroApp(401, 'Faça login para continuar.');
   next();
@@ -31,7 +27,6 @@ rotas.get('/catalogo/:id', catalogo.detalhe);
 rotas.get('/perfil', perfil.ver);
 rotas.put('/perfil', perfil.alterar);
 
-// ---------- Daqui para baixo, só o perfil Admin ----------
 rotas.use((req, res, next) => {
   if (req.session.usuario.perfil !== 'admin') throw new ErroApp(403, 'Seu perfil não tem permissão para esta ação.');
   next();
@@ -60,6 +55,5 @@ rotas.post('/usuarios', usuarios.criar);
 rotas.put('/usuarios/:id', usuarios.alterar);
 rotas.delete('/usuarios/:id', usuarios.excluir);
 
-rotas.get('/auditoria', auditoria.listar);
 
 module.exports = rotas;

@@ -1,20 +1,16 @@
-// Login, logout e primeiro acesso.
 const Controller = require('./Controller');
 const Usuario = require('../models/usuarioModel');
 const ErroApp = require('../models/ErroApp');
 
 class AuthController extends Controller {
-  // Diz à tela se alguém já está logado e se é o primeiro acesso.
   async situacao(req, res) {
     res.json({ primeiroAcesso: (await Usuario.contar()) === 0, usuario: req.session.usuario || null });
   }
 
-  // Cria o primeiro usuário (Admin) quando o banco ainda não tem nenhum.
   async primeiroAcesso(req, res) {
     if ((await Usuario.contar()) > 0) throw new ErroApp(403, 'O primeiro acesso já foi feito.');
     const usuario = await Usuario.cadastrar(req.body, 'admin');
     req.session.usuario = usuario.dadosDaSessao();
-    await this.auditar(req, 'Criou', 'Usuário', `${usuario.nome} (primeiro acesso)`);
     res.status(201).json({ usuario: req.session.usuario });
   }
 

@@ -103,16 +103,15 @@ iniciar.js           Só para o computador: "npm start" na raiz liga a API e as 
     produtoModel.js      Produto extends Modelo (situação no catálogo, inativar, novaFicha)
     usuarioModel.js      Usuario extends Modelo (senha com hash, autenticar)
     fichaModel.js        Ficha: valida os itens e grava uma nova versão (transação)
-    auditoriaModel.js    Auditoria: registrar e listar
     sessaoModel.js       SessaoStore: guarda os logins na tabela sessao
 
   controllers/         C: uma classe por assunto; recebem o pedido, usam os objetos dos models e respondem
-    Controller.js           classe base (liga os métodos ao objeto e grava a auditoria)
+    Controller.js           classe base (liga os métodos ao objeto)
     authController.js       login, logout, primeiro acesso
     catalogoController.js   lista de produtos com situação e custo; detalhe da ficha
     produtoController.js    cadastro de produtos + gravação da ficha técnica
     insumoController.js     categoriaController.js    usuarioController.js
-    relatorioController.js  auditoriaController.js    perfilController.js
+    relatorioController.js  perfilController.js
 
 frontend/            V: as telas que rodam no navegador
   index.html           todas as telas (uma aba para cada); os botões chamam o objeto "sistema"
@@ -136,7 +135,7 @@ frontend/            V: as telas que rodam no navegador
 1. **View:** o usuário preenche o formulário e clica em **Cadastrar**. O `frontend/app.js` chama `Cadastro.salvarJanela(evento)`, que faz `Api.chamar('POST', '/api/insumos', dados)`.
 2. **Rota:** o `backend/rotas.js` confere se a pessoa está logada e é Admin, e chama o método `criar` do `InsumoController`.
 3. **Controller:** `backend/controllers/insumoController.js` cria o objeto `new Insumo().preencher(dados)` e chama `insumo.salvar()`.
-4. **Model:** `insumo.salvar()` (herdado de `Modelo`) chama `validar()` da classe `Insumo` e faz o `INSERT` no MySQL. O controller grava a auditoria com `this.auditar(...)`.
+4. **Model:** `insumo.salvar()` (herdado de `Modelo`) chama `validar()` da classe `Insumo` e faz o `INSERT` no MySQL.
 5. O controller responde `{ ok: true }`. A tela mostra "Salvo!" e recarrega a tabela.
 
 Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela envia um `PUT` em vez de `POST`.
@@ -155,7 +154,6 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 | RF6 Custo calculado automaticamente | o servidor busca o preço dos insumos e calcula (`backend/models/fichaModel.js`) |
 | RF7 Catálogo com busca e situação | `backend/controllers/catalogoController.js` e `frontend/app.js` |
 | Alerta de ficha desatualizada | situação "Desatualizada" quando o preço de um insumo muda |
-| RNF4 Rastreabilidade | tabela `auditoria`, gravada em toda alteração |
 | RNF5 Login individual com perfis | `backend/controllers/authController.js` e `backend/rotas.js` (senha com bcrypt) |
 
 **Perfis:**
