@@ -46,6 +46,10 @@ class SessaoStore extends session.Store {
   destroy(id, callback) {
     this.executar(() => banco.sql('DELETE FROM sessao WHERE id = ?', [id]), callback);
   }
+
+  static encerrarDoUsuario(usuarioId, exceto = '') {
+    return banco.sql("DELETE FROM sessao WHERE JSON_EXTRACT(dados, '$.usuario.id') = ? AND id <> ?", [usuarioId, exceto]);
+  }
 }
 
 module.exports = SessaoStore;

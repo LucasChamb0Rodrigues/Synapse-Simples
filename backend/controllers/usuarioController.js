@@ -1,5 +1,6 @@
 const Controller = require('./Controller');
 const Usuario = require('../models/usuarioModel');
+const SessaoStore = require('../models/sessaoModel');
 const ErroApp = require('../models/ErroApp');
 
 class UsuarioController extends Controller {
@@ -20,6 +21,7 @@ class UsuarioController extends Controller {
     }
     const nomeAnterior = usuario.nome;
     const trocouSenha = await usuario.alterar(req.body);
+    if (trocouSenha) await SessaoStore.encerrarDoUsuario(usuario.id, req.sessionID);
     if (eu) req.session.usuario = usuario.dadosDaSessao();
     res.json({ ok: true });
   }
@@ -28,6 +30,7 @@ class UsuarioController extends Controller {
     if (Number(req.params.id) === req.session.usuario.id) throw new ErroApp(400, 'Você não pode excluir o seu próprio usuário.');
     const usuario = await Usuario.buscarOuFalhar(req.params.id);
     await usuario.excluir();
+    await SessaoStore.encerrarDoUsuario(usuario.id);
     res.json({ ok: true });
   }
 }

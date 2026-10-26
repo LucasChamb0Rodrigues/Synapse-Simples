@@ -57,4 +57,10 @@ CREATE TABLE sessao (
   expira_em  BIGINT NOT NULL
 );
 
+CREATE TABLE tentativa_login (
+  login     VARCHAR(30) NOT NULL,
+  feita_em  BIGINT      NOT NULL,
+  INDEX (login, feita_em)
+);
+
 INSERT INTO categoria (nome) VALUES ('Picolé'), ('Pote 2L'), ('Sorvete de Massa'), ('Açaí');
