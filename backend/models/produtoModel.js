@@ -45,7 +45,15 @@ class Produto extends Modelo {
     if (!this.nome) throw new ErroApp(400, 'Informe o nome do produto.');
     if (!this.categoria_id) throw new ErroApp(400, 'Selecione uma categoria.');
 
-    const repetidos = await banco.sql('SELECT id FROM produto WHERE (codigo = ? OR nome = ?) AND id <> ?', [this.codigo, this.nome, this.id || 0]);
+    const [categoria] = await banco.sql('SELECT ativo FROM categoria WHERE id = ?', [this.categoria_id]);
+    if (!categoria) throw new ErroApp(400, 'A categoria escolhida não existe mais.');
+    if (!categoria.ativo) {
+      const [salvo] = this.id ? await banco.sql('SELECT categoria_id FROM produto WHERE id = ?', [this.id]) : [];
+      if (salvo?.categoria_id !== Number(this.categoria_id)) throw new ErroApp(400, 'Esta categoria está inativa. Escolha outra ou reative-a em Categorias.');
+    }
+
+    const repetidos = await banco.sql('SELECT id, ativo FROM produto WHERE (codigo = ? OR nome = ?) AND id <> ?', [this.codigo, this.nome, this.id || 0]);
+    if (repetidos.some((p) => !p.ativo)) throw new ErroApp(409, 'Já existe um produto inativo com esse código ou nome. Reative-o na lista de produtos.');
     if (repetidos.length > 0) throw new ErroApp(409, 'Já existe um produto com esse código ou nome.');
   }
 
@@ -58,11 +66,6 @@ class Produto extends Modelo {
     if (!this.ficha_id) return 'Sem ficha';
     if (this.insumos_alterados > 0) return 'Desatualizada';
     return 'Ativa';
-  }
-
-  async mudarAtivo(ativo) {
-    await banco.sql('UPDATE produto SET ativo = ? WHERE id = ?', [ativo, this.id]);
-    this.ativo = ativo;
   }
 
   novaFicha(itens) {

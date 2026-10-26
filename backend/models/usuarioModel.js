@@ -28,7 +28,7 @@ class Usuario extends Modelo {
   }
 
   static async listar() {
-    const linhas = await banco.sql('SELECT id, nome, login, perfil FROM usuario ORDER BY nome');
+    const linhas = await banco.sql('SELECT id, nome, login, perfil, ativo FROM usuario ORDER BY nome');
     return linhas.map((linha) => new Usuario(linha));
   }
 
@@ -55,7 +55,9 @@ class Usuario extends Modelo {
       await bcrypt.compare(String(senha ?? ''), HASH_FALSO);
       return null;
     }
-    return (await usuario.conferirSenha(senha)) ? usuario : null;
+    if (!(await usuario.conferirSenha(senha))) return null;
+    if (!usuario.ativo) throw new ErroApp(403, 'Este usuário está inativo. Fale com um administrador.');
+    return usuario;
   }
 
   async validar() {

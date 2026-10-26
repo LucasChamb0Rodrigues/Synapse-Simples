@@ -90,6 +90,7 @@ backend/             A API (Model + Controller)
   vercel.json          Na Vercel, manda todos os endereços para o api/index.js
   rotas.js             Liga cada endereço da API a um método de controller (e barra quem não tem permissão)
   banco.sql            Criação das tabelas
+  migracao-inativar.sql  Só para bancos antigos: acrescenta a coluna "ativo" (rodar uma vez)
   .env.example         Modelo das configurações (copie para .env)
 
 iniciar.js           Só para o computador: "npm start" na raiz liga a API e as telas juntas
@@ -97,10 +98,10 @@ iniciar.js           Só para o computador: "npm start" na raiz liga a API e as 
   models/              M: uma classe por entidade (cada objeto é uma linha da tabela)
     banco.js             classe Banco: conexão com o MySQL, sql() e transacao()
     ErroApp.js           classe ErroApp: erro com status HTTP que vira mensagem na tela
-    Modelo.js            classe base: listar, buscarPorId, buscarOuFalhar, preencher, validar, salvar, excluir
+    Modelo.js            classe base: listar, buscarPorId, buscarOuFalhar, preencher, validar, salvar, mudarAtivo (inativar/reativar)
     categoriaModel.js    Categoria extends Modelo
     insumoModel.js       Insumo extends Modelo
-    produtoModel.js      Produto extends Modelo (situação no catálogo, inativar, novaFicha)
+    produtoModel.js      Produto extends Modelo (situação no catálogo, novaFicha)
     usuarioModel.js      Usuario extends Modelo (senha com hash, autenticar)
     fichaModel.js        Ficha: valida os itens e grava uma nova versão (transação)
     sessaoModel.js       SessaoStore: guarda os logins na tabela sessao
@@ -146,15 +147,17 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 
 | Requisito | Onde está |
 |---|---|
-| RF1 Produtos (cadastrar, alterar, inativar, excluir) | `backend/controllers/produtoController.js` |
-| RF2 Insumos (não exclui se estiver em ficha) | `backend/controllers/insumoController.js` |
-| RF3 Categorias (não exclui se tiver produto) | `backend/controllers/categoriaController.js` |
+| RF1 Produtos (cadastrar, alterar, inativar/reativar) | `backend/controllers/produtoController.js` |
+| RF2 Insumos (inativo não entra em ficha nova, mas continua nas antigas) | `backend/controllers/insumoController.js` |
+| RF3 Categorias (inativa não pode ser escolhida para produto) | `backend/controllers/categoriaController.js` |
 | RF4 Relatório de custo (data, impressão) | `backend/controllers/relatorioController.js` |
 | RF5 Ficha técnica com versões | tabelas `ficha_tecnica` e `item_ficha`; `backend/models/fichaModel.js` |
 | RF6 Custo calculado automaticamente | o servidor busca o preço dos insumos e calcula (`backend/models/fichaModel.js`) |
 | RF7 Catálogo com busca e situação | `backend/controllers/catalogoController.js` e `frontend/app.js` |
 | Alerta de ficha desatualizada | situação "Desatualizada" quando o preço de um insumo muda |
 | RNF5 Login individual com perfis | `backend/controllers/authController.js` e `backend/rotas.js` (senha com bcrypt) |
+
+**Nada é excluído:** produtos, insumos, categorias e usuários são **inativados** em vez de apagados, então o histórico (fichas, versões e custos) nunca se perde e tudo pode ser reativado. Usuário inativo não consegue entrar.
 
 **Perfis:**
 - **Admin** (`admin` no banco): acessa tudo.

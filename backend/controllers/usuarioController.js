@@ -26,11 +26,12 @@ class UsuarioController extends Controller {
     res.json({ ok: true });
   }
 
-  async excluir(req, res) {
-    if (Number(req.params.id) === req.session.usuario.id) throw new ErroApp(400, 'Você não pode excluir o seu próprio usuário.');
+  async mudarAtivo(req, res) {
+    if (Number(req.params.id) === req.session.usuario.id) throw new ErroApp(400, 'Você não pode inativar o seu próprio usuário.');
     const usuario = await Usuario.buscarOuFalhar(req.params.id);
-    await usuario.excluir();
-    await SessaoStore.encerrarDoUsuario(usuario.id);
+    const ativo = req.body.ativo === true;
+    await usuario.mudarAtivo(ativo);
+    if (!ativo) await SessaoStore.encerrarDoUsuario(usuario.id);
     res.json({ ok: true });
   }
 }

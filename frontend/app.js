@@ -48,7 +48,7 @@ class Tela {
   }
 
   static etiqueta(situacao) {
-    const cores = { 'Ativa': 'success', 'Desatualizada': 'warning text-dark', 'Sem ficha': 'secondary', 'Inativo': 'dark' };
+    const cores = { 'Ativa': 'success', 'Ativo': 'success', 'Desatualizada': 'warning text-dark', 'Sem ficha': 'secondary', 'Inativo': 'dark', 'Inativa': 'dark' };
     return `<span class="badge bg-${cores[situacao]}">${situacao}</span>`;
   }
 
@@ -61,7 +61,7 @@ class Tela {
     });
   }
 
-  static confirmar(texto, botao = 'Excluir') {
+  static confirmar(texto, botao = 'Confirmar') {
     const janela = $('#janela-confirmar');
     $('#confirmar-texto').textContent = texto;
     $('#confirmar-botao').textContent = botao;
@@ -89,10 +89,10 @@ class Aba {
 class Cadastro extends Aba {
   static emEdicao = null;
 
-  constructor(nome, item, perguntaExcluir, feminino = false) {
+  constructor(nome, item, perguntaInativar, feminino = false) {
     super(nome);
     this.item = item;
-    this.perguntaExcluir = perguntaExcluir;
+    this.perguntaInativar = perguntaInativar;
     this.feminino = feminino;
   }
 
@@ -105,12 +105,19 @@ class Cadastro extends Aba {
 
   filtrar(campos) {
     const busca = $(`#${this.nome}-busca`).value.toLowerCase();
-    return this.lista.filter((registro) => campos(registro).join(' ').toLowerCase().includes(busca));
+    const situacao = $(`#${this.nome}-situacao`).value;
+    return this.lista.filter((registro) => campos(registro).join(' ').toLowerCase().includes(busca)
+      && (!situacao || (situacao === 'ativos') === Boolean(registro.ativo)));
   }
 
-  botoes(id) {
-    return `<button class="btn btn-sm btn-outline-primary" onclick="${this.chamada('editar', id)}">Editar</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="${this.chamada('excluir', id)}">Excluir</button>`;
+  situacao(registro) {
+    const final = this.feminino ? 'a' : 'o';
+    return Tela.etiqueta(registro.ativo ? `Ativ${final}` : `Inativ${final}`);
+  }
+
+  botoes(registro) {
+    return `<button class="btn btn-sm btn-outline-primary" onclick="${this.chamada('editar', registro.id)}">Editar</button>
+            <button class="btn btn-sm btn-outline-${registro.ativo ? 'danger' : 'success'}" onclick="${this.chamada('alternarAtivo', registro.id, !registro.ativo)}">${registro.ativo ? 'Inativar' : 'Reativar'}</button>`;
   }
 
   novo() {
@@ -175,10 +182,11 @@ class Cadastro extends Aba {
     cadastro.carregar();
   }
 
-  async excluir(id) {
-    if (!(await Tela.confirmar(this.perguntaExcluir))) return;
-    await Api.chamar('DELETE', `/api/${this.nome}/${id}`);
-    Tela.avisar('Excluído.');
+  async alternarAtivo(id, ativo) {
+    if (!ativo && !(await Tela.confirmar(this.perguntaInativar, 'Inativar'))) return;
+    await Api.chamar('PATCH', `/api/${this.nome}/${id}/ativo`, { ativo });
+    const final = this.feminino ? 'a' : 'o';
+    Tela.avisar(ativo ? `Reativad${final}.` : `Inativad${final}.`);
     this.carregar();
   }
 }
@@ -239,33 +247,29 @@ class AbaCatalogo extends Aba {
 
 class AbaProdutos extends Cadastro {
   constructor() {
-    super('produtos', 'produto', 'Excluir este produto? As fichas técnicas dele também serão apagadas.');
+    super('produtos', 'produto', 'Inativar este produto? Ele sai do catálogo de consulta e não recebe novas fichas, mas o histórico fica guardado.');
   }
 
   async carregar() {
-    const categorias = await Api.chamar('GET', '/api/categorias');
+    this.categorias = await Api.chamar('GET', '/api/categorias');
     this.lista = await Api.chamar('GET', '/api/catalogo');
-
-    $('#produto-categoria').innerHTML = '<option value="">Selecione...</option>' +
-      categorias.map((c) => `<option value="${c.id}">${Tela.esc(c.nome)}</option>`).join('');
     this.desenhar();
+  }
+
+  abrirJanela(id) {
+    const atual = this.lista.find((p) => p.id === id)?.categoria_id;
+    $('#produto-categoria').innerHTML = '<option value="">Selecione...</option>' +
+      this.categorias.filter((c) => c.ativo || c.id === atual)
+        .map((c) => `<option value="${c.id}">${Tela.esc(c.nome)}${c.ativo ? '' : ' (inativa)'}</option>`).join('');
+    super.abrirJanela(id);
   }
 
   desenhar() {
     $('#tabela-produtos').innerHTML = this.filtrar((p) => [p.codigo, p.nome, p.categoria]).map((p) => `
       <tr>
         <td>${Tela.esc(p.codigo)}</td><td>${Tela.esc(p.nome)}</td><td>${Tela.esc(p.categoria)}</td><td>${Tela.etiqueta(p.situacao)}</td>
-        <td class="text-end text-nowrap">
-          <button class="btn btn-sm btn-outline-secondary" onclick="${this.chamada('alternarAtivo', p.id, !p.ativo)}">${p.ativo ? 'Inativar' : 'Reativar'}</button>
-          ${this.botoes(p.id)}
-        </td>
+        <td class="text-end text-nowrap">${this.botoes(p)}</td>
       </tr>`).join('') || Tela.linhaVazia(5);
-  }
-
-  async alternarAtivo(id, ativo) {
-    await Api.chamar('PATCH', `/api/produtos/${id}/ativo`, { ativo });
-    Tela.avisar(ativo ? 'Produto reativado.' : 'Produto inativado.');
-    this.carregar();
   }
 }
 
@@ -278,7 +282,7 @@ class AbaFicha extends Aba {
 
   async carregar() {
     const produtos = await Api.chamar('GET', '/api/catalogo');
-    this.insumosDisponiveis = await Api.chamar('GET', '/api/insumos');
+    this.insumosDisponiveis = (await Api.chamar('GET', '/api/insumos')).filter((i) => i.ativo);
 
     $('#ficha-produto').innerHTML = '<option value="">Selecione o produto...</option>' +
       produtos.filter((p) => p.ativo).map((p) => `<option value="${p.id}">${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}</option>`).join('');
@@ -294,7 +298,7 @@ class AbaFicha extends Aba {
     if (!id) return;
 
     const { versoes, itens } = await Api.chamar('GET', `/api/catalogo/${id}`);
-    this.itens = itens.map((i) => ({ insumo_id: i.insumo_id, nome: i.nome, unidade: i.unidade, custo: i.custo_atual, quantidade: i.quantidade }));
+    this.itens = itens.map((i) => ({ insumo_id: i.insumo_id, nome: i.nome, unidade: i.unidade, custo: i.custo_atual, quantidade: i.quantidade, ativo: i.ativo }));
 
     $('#ficha-info').textContent = versoes.length
       ? `Versão atual: v${versoes[0].versao}. Ao salvar, será criada a versão ${versoes[0].versao + 1}.`
@@ -316,7 +320,7 @@ class AbaFicha extends Aba {
       Tela.avisar('Este insumo já está na ficha. Altere a quantidade direto na tabela.', 'danger');
       return $(`#ficha-qtd-${posicao}`).select();
     }
-    this.itens.push({ insumo_id: insumo.id, nome: insumo.nome, unidade: insumo.unidade, custo: insumo.custo, quantidade });
+    this.itens.push({ insumo_id: insumo.id, nome: insumo.nome, unidade: insumo.unidade, custo: insumo.custo, quantidade, ativo: true });
     $('#ficha-quantidade').value = '';
     this.desenharItens();
   }
@@ -336,8 +340,8 @@ class AbaFicha extends Aba {
 
   desenharItens() {
     $('#tabela-ficha').innerHTML = this.itens.map((item, posicao) => `
-      <tr>
-        <td>${Tela.esc(item.nome)}</td>
+      <tr class="${item.ativo ? '' : 'table-warning'}">
+        <td>${Tela.esc(item.nome)}${item.ativo ? '' : ' <span class="badge bg-dark">inativo</span>'}</td>
         <td>
           <div class="input-group input-group-sm campo-quantidade">
             <input class="form-control" id="ficha-qtd-${posicao}" type="number" step="0.001" min="0" value="${item.quantidade}"
@@ -356,6 +360,8 @@ class AbaFicha extends Aba {
   }
 
   async salvar() {
+    const inativo = this.itens.find((item) => !item.ativo);
+    if (inativo) return Tela.avisar(`O insumo ${inativo.nome} está inativo. Remova-o da ficha ou reative-o em Insumos.`, 'danger');
     const invalido = this.itens.findIndex((item) => !(item.quantidade > 0));
     if (invalido >= 0) {
       Tela.avisar(`Informe uma quantidade maior que zero para ${this.itens[invalido].nome}.`, 'danger');
@@ -370,15 +376,15 @@ class AbaFicha extends Aba {
 
 class AbaInsumos extends Cadastro {
   constructor() {
-    super('insumos', 'insumo', 'Excluir este insumo?');
+    super('insumos', 'insumo', 'Inativar este insumo? Ele não poderá ser usado em novas fichas, mas continua nas fichas já salvas.');
   }
 
   desenhar() {
     $('#tabela-insumos').innerHTML = this.filtrar((i) => [i.nome, i.unidade]).map((i) => `
       <tr>
-        <td>${Tela.esc(i.nome)}</td><td>${i.unidade}</td><td>${Tela.precoInsumo(i.custo)}</td>
-        <td class="text-end text-nowrap">${this.botoes(i.id)}</td>
-      </tr>`).join('') || Tela.linhaVazia(4);
+        <td>${Tela.esc(i.nome)}</td><td>${i.unidade}</td><td>${Tela.precoInsumo(i.custo)}</td><td>${this.situacao(i)}</td>
+        <td class="text-end text-nowrap">${this.botoes(i)}</td>
+      </tr>`).join('') || Tela.linhaVazia(5);
   }
 
   editar(id) {
@@ -389,12 +395,12 @@ class AbaInsumos extends Cadastro {
 
 class AbaCategorias extends Cadastro {
   constructor() {
-    super('categorias', 'categoria', 'Excluir esta categoria?', true);
+    super('categorias', 'categoria', 'Inativar esta categoria? Ela não poderá ser escolhida para novos produtos; os produtos atuais continuam nela.', true);
   }
 
   desenhar() {
     $('#tabela-categorias').innerHTML = this.filtrar((c) => [c.nome]).map((c) => `
-      <tr><td>${Tela.esc(c.nome)}</td><td class="text-end text-nowrap">${this.botoes(c.id)}</td></tr>`).join('') || Tela.linhaVazia(2);
+      <tr><td>${Tela.esc(c.nome)}</td><td>${this.situacao(c)}</td><td class="text-end text-nowrap">${this.botoes(c)}</td></tr>`).join('') || Tela.linhaVazia(3);
   }
 }
 
@@ -455,17 +461,17 @@ class AbaRelatorio extends Aba {
 
 class AbaUsuarios extends Cadastro {
   constructor() {
-    super('usuarios', 'usuário', 'Excluir este usuário? Ele não conseguirá mais entrar no sistema.');
+    super('usuarios', 'usuário', 'Inativar este usuário? Ele não conseguirá mais entrar no sistema até ser reativado.');
   }
 
   desenhar() {
     $('#tabela-usuarios').innerHTML = this.filtrar((u) => [u.nome, u.login]).map((u) => `
       <tr>
-        <td>${Tela.esc(u.nome)}</td><td>${Tela.esc(u.login)}</td><td>${Tela.nomePerfil(u.perfil)}</td>
+        <td>${Tela.esc(u.nome)}</td><td>${Tela.esc(u.login)}</td><td>${Tela.nomePerfil(u.perfil)}</td><td>${this.situacao(u)}</td>
         <td class="text-end text-nowrap">${u.id === sistema.usuario.id
           ? `<span class="text-muted small me-2">você</span><button class="btn btn-sm btn-outline-primary" onclick="sistema.abrirAba('perfil')">Meu perfil</button>`
-          : this.botoes(u.id)}</td>
-      </tr>`).join('') || Tela.linhaVazia(4);
+          : this.botoes(u)}</td>
+      </tr>`).join('') || Tela.linhaVazia(5);
   }
 
   editar(id) {

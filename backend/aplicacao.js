@@ -60,8 +60,7 @@ app.get('/', (req, res) => res.json({ sistema: 'Synapse API', ok: true }));
 app.use('/api', rotas);
 
 const ERROS_DO_BANCO = {
-  ER_DUP_ENTRY:            [409, 'Já existe um cadastro com esses dados (nome, código ou login repetido).'],
-  ER_ROW_IS_REFERENCED_2:  [409, 'Não é possível excluir: este registro está em uso (em uma ficha técnica ou produto).'],
+  ER_DUP_ENTRY:            [409, 'Já existe um cadastro com esses dados (nome, código ou login repetido). Se ele estiver inativo, reative-o.'],
   ER_NO_REFERENCED_ROW_2:  [400, 'Um dos registros escolhidos não existe mais.'],
   ECONNREFUSED:            [500, 'Sem conexão com o banco de dados. Confira o arquivo .env.'],
   ER_ACCESS_DENIED_ERROR:  [500, 'Sem conexão com o banco de dados. Confira o arquivo .env.'],

@@ -15,7 +15,7 @@ const rotas = express.Router();
 rotas.use(async (req, res, next) => {
   if (req.session.usuario) {
     const usuario = await Usuario.buscarPorId(req.session.usuario.id);
-    if (usuario) req.session.usuario = usuario.dadosDaSessao();
+    if (usuario?.ativo) req.session.usuario = usuario.dadosDaSessao();
     else delete req.session.usuario;
   }
   next();
@@ -45,25 +45,24 @@ rotas.use((req, res, next) => {
 rotas.post('/produtos', produtos.criar);
 rotas.put('/produtos/:id', produtos.alterar);
 rotas.patch('/produtos/:id/ativo', produtos.mudarAtivo);
-rotas.delete('/produtos/:id', produtos.excluir);
 rotas.post('/produtos/:id/ficha', produtos.salvarFicha);
 
 rotas.get('/insumos', insumos.listar);
 rotas.post('/insumos', insumos.criar);
 rotas.put('/insumos/:id', insumos.alterar);
-rotas.delete('/insumos/:id', insumos.excluir);
+rotas.patch('/insumos/:id/ativo', insumos.mudarAtivo);
 
 rotas.get('/categorias', categorias.listar);
 rotas.post('/categorias', categorias.criar);
 rotas.put('/categorias/:id', categorias.alterar);
-rotas.delete('/categorias/:id', categorias.excluir);
+rotas.patch('/categorias/:id/ativo', categorias.mudarAtivo);
 
 rotas.get('/relatorio', relatorio.gerar);
 
 rotas.get('/usuarios', usuarios.listar);
 rotas.post('/usuarios', usuarios.criar);
 rotas.put('/usuarios/:id', usuarios.alterar);
-rotas.delete('/usuarios/:id', usuarios.excluir);
+rotas.patch('/usuarios/:id/ativo', usuarios.mudarAtivo);
 
 
 module.exports = rotas;
