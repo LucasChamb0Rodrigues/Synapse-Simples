@@ -61,6 +61,7 @@ CREATE TABLE sessao (
 );
 
 CREATE TABLE tentativa_login (
+  id        BIGINT AUTO_INCREMENT PRIMARY KEY,
   login     VARCHAR(30) NOT NULL,
   feita_em  BIGINT      NOT NULL,
   INDEX (login, feita_em)

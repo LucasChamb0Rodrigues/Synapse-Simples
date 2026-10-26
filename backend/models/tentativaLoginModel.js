@@ -9,6 +9,7 @@ class TentativaLogin {
   static prepararTabela() {
     TentativaLogin.tabelaPronta ??= banco.sql(`
       CREATE TABLE IF NOT EXISTS tentativa_login (
+        id        BIGINT AUTO_INCREMENT PRIMARY KEY,
         login     VARCHAR(30) NOT NULL,
         feita_em  BIGINT      NOT NULL,  -- milissegundos (Date.now())
         INDEX (login, feita_em)
