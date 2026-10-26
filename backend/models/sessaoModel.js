@@ -47,6 +47,13 @@ class SessaoStore extends session.Store {
     this.executar(() => banco.sql('DELETE FROM sessao WHERE id = ?', [id]), callback);
   }
 
+  static encerrarComAviso(usuarioId, exceto, aviso) {
+    return banco.sql(
+      "UPDATE sessao SET dados = JSON_SET(JSON_REMOVE(dados, '$.usuario'), '$.aviso', ?) WHERE JSON_EXTRACT(dados, '$.usuario.id') = ? AND id <> ?",
+      [aviso, usuarioId, exceto],
+    );
+  }
+
   static encerrarDoUsuario(usuarioId, exceto = '') {
     return banco.sql("DELETE FROM sessao WHERE JSON_EXTRACT(dados, '$.usuario.id') = ? AND id <> ?", [usuarioId, exceto]);
   }

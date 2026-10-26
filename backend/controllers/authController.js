@@ -1,11 +1,14 @@
 const Controller = require('./Controller');
 const Usuario = require('../models/usuarioModel');
 const TentativaLogin = require('../models/tentativaLoginModel');
+const SessaoStore = require('../models/sessaoModel');
 const ErroApp = require('../models/ErroApp');
 
 class AuthController extends Controller {
   async situacao(req, res) {
-    res.json({ primeiroAcesso: (await Usuario.contar()) === 0, usuario: req.session.usuario || null });
+    const aviso = req.session.aviso || null;
+    delete req.session.aviso;
+    res.json({ primeiroAcesso: (await Usuario.contar()) === 0, usuario: req.session.usuario || null, aviso });
   }
 
   async primeiroAcesso(req, res) {
@@ -23,6 +26,7 @@ class AuthController extends Controller {
     }
     await TentativaLogin.limpar(req.body.login);
     await this.iniciarSessao(req, usuario);
+    await SessaoStore.encerrarComAviso(usuario.id, req.sessionID, 'Sua sessão foi encerrada porque sua conta entrou em outro dispositivo.');
     res.json({ usuario: req.session.usuario });
   }
 
