@@ -582,33 +582,44 @@
 
         <section id="aba-relatorio">
           <h2 class="no-print">Relatório de Custo</h2>
-          <div class="card card-body mb-3 no-print">
-            <div class="d-flex justify-content-between mb-2">
-              <strong>Produtos com ficha técnica</strong>
-              <button
-                class="btn btn-sm btn-outline-secondary"
-                id="relatorio-marcar"
-                onclick="sistema.abas.relatorio.marcarTodos()"
-              >
-                Marcar todos
-              </button>
+          <div class="card card-body mb-3 no-print relatorio-filtros">
+            <div class="relatorio-filtros-topo">
+              <div>
+                <strong>Escolha os produtos</strong>
+                <div class="small text-muted" id="relatorio-contagem"></div>
+              </div>
+              <div class="relatorio-filtros-acoes">
+                <input
+                  class="form-control form-control-sm"
+                  id="relatorio-busca"
+                  placeholder="Buscar produto..."
+                  oninput="sistema.abas.relatorio.filtrar()"
+                />
+                <button
+                  class="btn btn-sm btn-outline-secondary text-nowrap"
+                  id="relatorio-marcar"
+                  onclick="sistema.abas.relatorio.marcarTodos()"
+                >
+                  Marcar todos
+                </button>
+              </div>
             </div>
             <div
               id="relatorio-produtos"
-              class="lista-marcar mb-3"
-              onchange="sistema.abas.relatorio.atualizarBotaoMarcar()"
+              class="relatorio-produtos"
+              onchange="sistema.abas.relatorio.atualizarSelecao()"
             ></div>
-            <div class="row g-2 align-items-end">
+            <div class="row g-2 align-items-end mt-2">
               <div class="col-md-4">
-                <label class="form-label">Ficha válida na data (opcional)</label
-                ><input class="form-control" id="relatorio-data" type="date" />
+                <label class="form-label" for="relatorio-data">Ficha válida na data (opcional)</label>
+                <input class="form-control" id="relatorio-data" type="date" />
               </div>
-              <div class="col-md-8">
+              <div class="col-md-8 d-flex gap-2">
                 <button
                   class="btn btn-laranja"
                   onclick="sistema.abas.relatorio.gerar()"
                 >
-                  Gerar
+                  Gerar relatório
                 </button>
                 <button
                   class="btn btn-outline-secondary"

@@ -406,56 +406,135 @@ class AbaCategorias extends Cadastro {
 
 class AbaRelatorio extends Aba {
   async carregar() {
-    const comFicha = (await Api.chamar('GET', '/api/catalogo')).filter((p) => p.ficha_id);
-    $('#relatorio-produtos').innerHTML = comFicha.map((p) => `
-      <label class="form-check">
-        <input class="form-check-input" type="checkbox" value="${p.id}"> ${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}
+    this.lista = (await Api.chamar('GET', '/api/catalogo')).filter((p) => p.ficha_id);
+    $('#relatorio-busca').value = '';
+    $('#relatorio-produtos').innerHTML = this.lista.map((p) => `
+      <label class="produto-opcao">
+        <input class="form-check-input" type="checkbox" value="${p.id}">
+        <span class="produto-opcao-corpo">
+          <span class="produto-opcao-codigo">${Tela.esc(p.codigo)}</span>
+          <strong>${Tela.esc(p.nome)}</strong>
+          <span class="produto-opcao-info">${Tela.esc(p.categoria)} · ficha v${p.versao}</span>
+        </span>
+        <span class="produto-opcao-custo">${p.custo_atual !== null ? Tela.dinheiro(p.custo_atual) : '—'}</span>
       </label>`).join('') || '<span class="text-muted">Nenhum produto com ficha técnica.</span>';
-    this.atualizarBotaoMarcar();
+    this.atualizarSelecao();
+  }
+
+  caixas(visiveis = false) {
+    return [...document.querySelectorAll('#relatorio-produtos input')].filter((caixa) => !visiveis || !caixa.closest('label').hidden);
+  }
+
+  filtrar() {
+    const busca = $('#relatorio-busca').value.toLowerCase();
+    this.caixas().forEach((caixa) => {
+      const opcao = caixa.closest('label');
+      opcao.hidden = !opcao.textContent.toLowerCase().includes(busca);
+    });
+    this.atualizarSelecao();
   }
 
   marcarTodos() {
-    const caixas = document.querySelectorAll('#relatorio-produtos input');
-    const marcar = !this.todosMarcados();
+    const caixas = this.caixas(true);
+    const marcar = !caixas.every((caixa) => caixa.checked);
     caixas.forEach((caixa) => { caixa.checked = marcar; });
-    this.atualizarBotaoMarcar();
+    this.atualizarSelecao();
   }
 
-  todosMarcados() {
-    const caixas = [...document.querySelectorAll('#relatorio-produtos input')];
-    return caixas.length > 0 && caixas.every((caixa) => caixa.checked);
-  }
-
-  atualizarBotaoMarcar() {
-    $('#relatorio-marcar').textContent = this.todosMarcados() ? 'Desmarcar todos' : 'Marcar todos';
+  atualizarSelecao() {
+    const visiveis = this.caixas(true);
+    const marcados = this.caixas().filter((caixa) => caixa.checked).length;
+    $('#relatorio-marcar').textContent = visiveis.length > 0 && visiveis.every((caixa) => caixa.checked) ? 'Desmarcar todos' : 'Marcar todos';
+    $('#relatorio-contagem').textContent = marcados === 0
+      ? 'Nenhum produto selecionado'
+      : `${marcados} de ${this.lista.length} produto(s) selecionado(s)`;
   }
 
   async gerar() {
-    const marcados = [...document.querySelectorAll('#relatorio-produtos input:checked')].map((caixa) => caixa.value);
+    const marcados = this.caixas().filter((caixa) => caixa.checked).map((caixa) => caixa.value);
     const data = $('#relatorio-data').value;
     const { produtos, semFicha } = await Api.chamar('GET', `/api/relatorio?produtos=${marcados.join(',')}&data=${data}`);
 
-    let html = `<p class="small text-muted">Gerado por ${Tela.esc(sistema.usuario.nome)} em ${new Date().toLocaleString('pt-BR')}
-                ${data ? ' — fichas válidas em ' + data.split('-').reverse().join('/') : ''}</p>`;
+    let html = `
+      <div class="relatorio-cabecalho">
+        <h3 class="d-none d-print-block">Relatório de Custo</h3>
+        <div class="small text-muted">Gerado por ${Tela.esc(sistema.usuario.nome)} em ${new Date().toLocaleString('pt-BR')}
+          · ${data ? 'fichas válidas em ' + data.split('-').reverse().join('/') : 'fichas atuais'} · custos pelos preços atuais dos insumos</div>
+      </div>`;
     if (semFicha > 0) {
       html += `<div class="alert alert-warning no-print">${semFicha} produto(s) não tinham ficha técnica nessa data e ficaram de fora.</div>`;
     }
-    for (const p of produtos) {
-      html += `
-        <div class="card mb-3">
-          <div class="card-header"><strong>${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}</strong>
-            <span class="text-muted">· ${Tela.esc(p.categoria)} · ficha v${p.versao} (${Tela.dataHora(p.criada_em)})</span></div>
-          <table class="table table-sm mb-0">
-            <thead><tr><th>Insumo</th><th>Quantidade</th><th>Custo unitário</th><th>Subtotal</th></tr></thead>
-            <tbody>${p.itens.map((i) => `
-              <tr><td>${Tela.esc(i.nome)}</td><td>${i.quantidade} ${i.unidade}</td><td>${Tela.precoInsumo(i.custo_atual)}</td><td>${Tela.dinheiro(i.subtotal)}</td></tr>`).join('')}
-            </tbody>
-            <tfoot><tr><th colspan="3" class="text-end">Custo total</th><th>${Tela.dinheiro(p.total)}</th></tr></tfoot>
-          </table>
-        </div>`;
-    }
+    if (produtos.length > 0) html += this.resumo(produtos) + this.comparativo(produtos) + produtos.map((p) => this.cartaoProduto(p)).join('');
+
     $('#relatorio-resultado').innerHTML = html;
+    document.querySelectorAll('#relatorio-resultado [data-largura]').forEach((barra) => { barra.style.width = `${barra.dataset.largura}%`; });
     $('#botao-imprimir').hidden = produtos.length === 0;
+  }
+
+  resumo(produtos) {
+    const ordenados = [...produtos].sort((a, b) => b.total - a.total);
+    const media = produtos.reduce((soma, p) => soma + p.total, 0) / produtos.length;
+    const indicador = (rotulo, valor, detalhe = '') => `
+      <div class="indicador">
+        <span class="indicador-rotulo">${rotulo}</span>
+        <strong class="indicador-valor">${valor}</strong>
+        <span class="indicador-detalhe">${detalhe}</span>
+      </div>`;
+    return `<div class="relatorio-indicadores">
+      ${indicador('Produtos no relatório', produtos.length)}
+      ${indicador('Custo médio', Tela.dinheiro(media), 'por produto')}
+      ${indicador('Maior custo', Tela.dinheiro(ordenados[0].total), Tela.esc(ordenados[0].nome))}
+      ${indicador('Menor custo', Tela.dinheiro(ordenados.at(-1).total), Tela.esc(ordenados.at(-1).nome))}
+    </div>`;
+  }
+
+  comparativo(produtos) {
+    if (produtos.length < 2) return '';
+    const ordenados = [...produtos].sort((a, b) => b.total - a.total);
+    const maior = ordenados[0].total || 1;
+    return `
+      <div class="card relatorio-bloco">
+        <h4>Custo por produto</h4>
+        <div class="grafico-barras" role="list">
+          ${ordenados.map((p) => `
+            <div class="grafico-linha" role="listitem" title="${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}: ${Tela.dinheiro(p.total)}">
+              <span class="grafico-rotulo">${Tela.esc(p.nome)}</span>
+              <span class="grafico-trilho"><span class="grafico-barra" data-largura="${(p.total / maior) * 100}"></span></span>
+              <span class="grafico-valor">${Tela.dinheiro(p.total)}</span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  cartaoProduto(p) {
+    const itens = [...p.itens].sort((a, b) => b.subtotal - a.subtotal);
+    const parte = (item) => (p.total > 0 ? (item.subtotal / p.total) * 100 : 0);
+    const porcentagem = (valor) => `${valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+    const principal = itens[0];
+    return `
+      <div class="card relatorio-bloco relatorio-produto">
+        <div class="relatorio-produto-topo">
+          <div>
+            <span class="produto-opcao-codigo">${Tela.esc(p.codigo)}</span>
+            <h4>${Tela.esc(p.nome)}</h4>
+            <div class="small text-muted">${Tela.esc(p.categoria)} · ficha v${p.versao} de ${Tela.dataHora(p.criada_em)}</div>
+          </div>
+          <div class="relatorio-produto-total">
+            <span>Custo total</span>
+            <strong>${Tela.dinheiro(p.total)}</strong>
+          </div>
+        </div>
+        ${principal ? `<div class="relatorio-destaque">Maior peso no custo: <strong>${Tela.esc(principal.nome)}</strong> (${porcentagem(parte(principal))})</div>` : ''}
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Insumo</th><th>Quantidade</th><th>Custo unitário</th><th>Subtotal</th><th>Participação</th></tr></thead>
+          <tbody>${itens.map((i) => `
+            <tr>
+              <td>${Tela.esc(i.nome)}</td><td>${i.quantidade} ${i.unidade}</td><td>${Tela.precoInsumo(i.custo_atual)}</td><td>${Tela.dinheiro(i.subtotal)}</td>
+              <td><span class="participacao"><span class="grafico-trilho"><span class="grafico-barra" data-largura="${parte(i)}"></span></span>${porcentagem(parte(i))}</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
   }
 }
 
