@@ -20,9 +20,9 @@ class InsumoController extends Controller {
     res.json({ ok: true, precoMudou });
   }
 
-  async excluir(req, res) {
+  async mudarAtivo(req, res) {
     const insumo = await Insumo.buscarOuFalhar(req.params.id);
-    await insumo.excluir();
+    await insumo.mudarAtivo(req.body.ativo === true);
     res.json({ ok: true });
   }
 }

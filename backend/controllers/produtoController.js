@@ -16,14 +16,7 @@ class ProdutoController extends Controller {
 
   async mudarAtivo(req, res) {
     const produto = await Produto.buscarOuFalhar(req.params.id);
-    const ativo = req.body.ativo === true;
-    await produto.mudarAtivo(ativo);
-    res.json({ ok: true });
-  }
-
-  async excluir(req, res) {
-    const produto = await Produto.buscarOuFalhar(req.params.id);
-    await produto.excluir();
+    await produto.mudarAtivo(req.body.ativo === true);
     res.json({ ok: true });
   }
 

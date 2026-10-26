@@ -19,9 +19,9 @@ class CategoriaController extends Controller {
     res.json({ ok: true });
   }
 
-  async excluir(req, res) {
+  async mudarAtivo(req, res) {
     const categoria = await Categoria.buscarOuFalhar(req.params.id);
-    await categoria.excluir();
+    await categoria.mudarAtivo(req.body.ativo === true);
     res.json({ ok: true });
   }
 }

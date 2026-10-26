@@ -16,7 +16,7 @@ class Ficha {
 
   static listarItens(fichaId) {
     return banco.sql(
-      `SELECT i.insumo_id, s.nome, s.unidade, i.quantidade,
+      `SELECT i.insumo_id, s.nome, s.unidade, s.ativo, i.quantidade,
               i.custo_unitario AS custo_na_ficha, s.custo AS custo_atual,
               ROUND(i.quantidade * s.custo, 2) AS subtotal
          FROM item_ficha i JOIN insumo s ON s.id = i.insumo_id
@@ -63,8 +63,9 @@ class Ficha {
 
       let custoTotal = 0;
       for (const item of this.itens) {
-        const [insumo] = await banco.sql('SELECT custo FROM insumo WHERE id = ?', [item.insumo_id], conexao);
+        const [insumo] = await banco.sql('SELECT nome, custo, ativo FROM insumo WHERE id = ?', [item.insumo_id], conexao);
         if (!insumo) throw new ErroApp(400, 'Um dos insumos da ficha não existe mais.');
+        if (!insumo.ativo) throw new ErroApp(400, `O insumo "${insumo.nome}" está inativo. Remova-o da ficha ou reative-o em Insumos.`);
         item.custo = insumo.custo;
         custoTotal += item.quantidade * insumo.custo;
       }

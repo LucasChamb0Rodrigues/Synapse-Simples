@@ -50,8 +50,9 @@ class Modelo {
     }
   }
 
-  excluir() {
-    return banco.sql(`DELETE FROM ${this.constructor.tabela} WHERE id = ?`, [this.id]);
+  async mudarAtivo(ativo) {
+    await banco.sql(`UPDATE ${this.constructor.tabela} SET ativo = ? WHERE id = ?`, [ativo, this.id]);
+    this.ativo = ativo;
   }
 
   static texto(valor) {

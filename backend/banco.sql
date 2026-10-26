@@ -6,19 +6,22 @@ CREATE TABLE usuario (
   nome        VARCHAR(60)  NOT NULL,
   login       VARCHAR(30)  NOT NULL UNIQUE,
   senha_hash  VARCHAR(100) NOT NULL,
-  perfil      ENUM('admin', 'usuario') NOT NULL
+  perfil      ENUM('admin', 'usuario') NOT NULL,
+  ativo       BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE categoria (
-  id    INT AUTO_INCREMENT PRIMARY KEY,
-  nome  VARCHAR(50) NOT NULL UNIQUE
+  id     INT AUTO_INCREMENT PRIMARY KEY,
+  nome   VARCHAR(50) NOT NULL UNIQUE,
+  ativo  BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE insumo (
   id       INT AUTO_INCREMENT PRIMARY KEY,
   nome     VARCHAR(60) NOT NULL UNIQUE,
   unidade  ENUM('KG', 'G', 'L', 'ML', 'UN') NOT NULL,
-  custo    DECIMAL(10,4) NOT NULL
+  custo    DECIMAL(10,4) NOT NULL,
+  ativo    BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE produto (
