@@ -3,14 +3,23 @@ const banco = require('./banco');
 const Modelo = require('./Modelo');
 const ErroApp = require('./ErroApp');
 
+const HASH_FALSO = '$2a$10$xCbNh57FJmfLgyiU3.9O3O4e0KFQbXoN23KR/m3laH7nihGjw7DqG';
+
 class Usuario extends Modelo {
   static tabela = 'usuario';
   static campos = ['nome', 'login', 'senha_hash', 'perfil'];
   static naoEncontrado = 'Usuário não encontrado.';
 
-  static async contar() {
-    const [{ total }] = await banco.sql('SELECT COUNT(*) AS total FROM usuario');
+  static async contar(conexao) {
+    const [{ total }] = await banco.sql('SELECT COUNT(*) AS total FROM usuario', [], conexao);
     return total;
+  }
+
+  static cadastrarPrimeiroAdmin(dados) {
+    return banco.comTrava('synapse_primeiro_acesso', async (conexao) => {
+      if ((await Usuario.contar(conexao)) > 0) throw new ErroApp(403, 'O primeiro acesso já foi feito.');
+      return Usuario.cadastrar(dados, 'admin', conexao);
+    });
   }
 
   static async buscarPorLogin(login) {
@@ -23,10 +32,10 @@ class Usuario extends Modelo {
     return linhas.map((linha) => new Usuario(linha));
   }
 
-  static async cadastrar(dados, perfil) {
+  static async cadastrar(dados, perfil, conexao) {
     const usuario = new Usuario({ nome: dados.nome, login: dados.login, perfil });
     await usuario.definirSenha(dados.senha);
-    await usuario.salvar();
+    await usuario.salvar(conexao);
     return usuario;
   }
 
@@ -42,7 +51,11 @@ class Usuario extends Modelo {
 
   static async autenticar(login, senha) {
     const usuario = await Usuario.buscarPorLogin(Modelo.texto(login).toLowerCase());
-    return usuario && (await usuario.conferirSenha(senha)) ? usuario : null;
+    if (!usuario) {
+      await bcrypt.compare(String(senha ?? ''), HASH_FALSO);
+      return null;
+    }
+    return (await usuario.conferirSenha(senha)) ? usuario : null;
   }
 
   async validar() {
@@ -55,7 +68,7 @@ class Usuario extends Modelo {
 
   async definirSenha(senha) {
     senha = String(senha ?? '');
-    if (senha.length < 6) throw new ErroApp(400, 'A senha deve ter pelo menos 6 caracteres.');
+    if (senha.length < 8) throw new ErroApp(400, 'A senha deve ter pelo menos 8 caracteres.');
     this.senha_hash = await bcrypt.hash(senha, 10);
   }
 

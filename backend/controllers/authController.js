@@ -1,5 +1,6 @@
 const Controller = require('./Controller');
 const Usuario = require('../models/usuarioModel');
+const TentativaLogin = require('../models/tentativaLoginModel');
 const ErroApp = require('../models/ErroApp');
 
 class AuthController extends Controller {
@@ -8,21 +9,35 @@ class AuthController extends Controller {
   }
 
   async primeiroAcesso(req, res) {
-    if ((await Usuario.contar()) > 0) throw new ErroApp(403, 'O primeiro acesso já foi feito.');
-    const usuario = await Usuario.cadastrar(req.body, 'admin');
-    req.session.usuario = usuario.dadosDaSessao();
+    const usuario = await Usuario.cadastrarPrimeiroAdmin(req.body);
+    await this.iniciarSessao(req, usuario);
     res.status(201).json({ usuario: req.session.usuario });
   }
 
   async login(req, res) {
+    await TentativaLogin.conferir(req.body.login);
     const usuario = await Usuario.autenticar(req.body.login, req.body.senha);
-    if (!usuario) throw new ErroApp(401, 'Usuário ou senha incorretos.');
-    req.session.usuario = usuario.dadosDaSessao();
+    if (!usuario) {
+      await TentativaLogin.registrarFalha(req.body.login);
+      throw new ErroApp(401, 'Usuário ou senha incorretos.');
+    }
+    await TentativaLogin.limpar(req.body.login);
+    await this.iniciarSessao(req, usuario);
     res.json({ usuario: req.session.usuario });
   }
 
   logout(req, res) {
     req.session.destroy(() => res.json({ ok: true }));
+  }
+
+  iniciarSessao(req, usuario) {
+    return new Promise((resolver, rejeitar) => {
+      req.session.regenerate((erro) => {
+        if (erro) return rejeitar(erro);
+        req.session.usuario = usuario.dadosDaSessao();
+        resolver();
+      });
+    });
   }
 }
 

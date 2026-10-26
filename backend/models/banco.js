@@ -24,6 +24,18 @@ class Banco {
       conexao.release();
     }
   }
+
+  async comTrava(nome, tarefa) {
+    const conexao = await this.pool.getConnection();
+    try {
+      const [{ obtida }] = await this.sql('SELECT GET_LOCK(?, 10) AS obtida', [nome], conexao);
+      if (obtida !== 1) throw new Error(`Não foi possível obter a trava ${nome}.`);
+      return await tarefa(conexao);
+    } finally {
+      await this.sql('SELECT RELEASE_LOCK(?)', [nome], conexao).catch(() => {});
+      conexao.release();
+    }
+  }
 }
 
 const banco = new Banco({

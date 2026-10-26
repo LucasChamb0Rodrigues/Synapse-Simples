@@ -12,8 +12,20 @@ const FRONTEND_URLS = (process.env.FRONTEND_URL || '').split(',').map((url) => u
 const COOKIE_ENTRE_SITES = process.env.COOKIE_CROSS_SITE === 'true';
 
 const app = express();
-if (COOKIE_ENTRE_SITES) app.set('trust proxy', 1);
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.set({
+    'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'no-referrer',
+    'Cache-Control': 'no-store',
+  });
+  next();
+});
 
 app.use((req, res, next) => {
   const origem = req.headers.origin;
@@ -40,7 +52,7 @@ app.use(session({
     httpOnly: true,
     maxAge: 30 * 60 * 1000,
     sameSite: COOKIE_ENTRE_SITES ? 'none' : 'strict',
-    secure: COOKIE_ENTRE_SITES,
+    secure: COOKIE_ENTRE_SITES ? true : 'auto',
   },
 }));
 

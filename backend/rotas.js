@@ -7,9 +7,19 @@ const categorias = require('./controllers/categoriaController');
 const relatorio = require('./controllers/relatorioController');
 const usuarios = require('./controllers/usuarioController');
 const perfil = require('./controllers/perfilController');
+const Usuario = require('./models/usuarioModel');
 const ErroApp = require('./models/ErroApp');
 
 const rotas = express.Router();
+
+rotas.use(async (req, res, next) => {
+  if (req.session.usuario) {
+    const usuario = await Usuario.buscarPorId(req.session.usuario.id);
+    if (usuario) req.session.usuario = usuario.dadosDaSessao();
+    else delete req.session.usuario;
+  }
+  next();
+});
 
 rotas.get('/situacao', auth.situacao);
 rotas.post('/primeiro-acesso', auth.primeiroAcesso);
