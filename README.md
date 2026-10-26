@@ -90,7 +90,6 @@ backend/             A API (Model + Controller)
   vercel.json          Na Vercel, manda todos os endereços para o api/index.js
   rotas.js             Liga cada endereço da API a um método de controller (e barra quem não tem permissão)
   banco.sql            Criação das tabelas
-  migracao-inativar.sql  Só para bancos antigos: acrescenta a coluna "ativo" (rodar uma vez)
   .env.example         Modelo das configurações (copie para .env)
 
 iniciar.js           Só para o computador: "npm start" na raiz liga a API e as telas juntas
@@ -105,6 +104,7 @@ iniciar.js           Só para o computador: "npm start" na raiz liga a API e as 
     usuarioModel.js      Usuario extends Modelo (senha com hash, autenticar)
     fichaModel.js        Ficha: valida os itens e grava uma nova versão (transação)
     sessaoModel.js       SessaoStore: guarda os logins na tabela sessao
+    estrutura.js         Atualiza o banco sozinho: cria colunas e tabelas novas que faltarem
 
   controllers/         C: uma classe por assunto; recebem o pedido, usam os objetos dos models e respondem
     Controller.js           classe base (liga os métodos ao objeto)
@@ -152,7 +152,9 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 | RF3 Categorias (inativa não pode ser escolhida para produto) | `backend/controllers/categoriaController.js` |
 | RF4 Relatório de custo (data, impressão) | `backend/controllers/relatorioController.js` |
 | RF5 Ficha técnica com versões | tabelas `ficha_tecnica` e `item_ficha`; `backend/models/fichaModel.js` |
-| RF6 Custo calculado automaticamente | o servidor busca o preço dos insumos e calcula (`backend/models/fichaModel.js`) |
+| RF6 Custo calculado automaticamente | o servidor busca o preço dos insumos e calcula o custo da receita (com perda) e o custo por unidade (`backend/models/fichaModel.js`) |
+| Preço de venda e margem | margem de cada produto no catálogo, com alerta abaixo de 30% (`Ficha.custos`) |
+| Histórico de preços dos insumos | tabela `insumo_preco`, com gráfico na tela de Insumos |
 | RF7 Catálogo com busca e situação | `backend/controllers/catalogoController.js` e `frontend/app.js` |
 | Alerta de ficha desatualizada | situação "Desatualizada" quando o preço de um insumo muda |
 | RNF5 Login individual com perfis | `backend/controllers/authController.js` e `backend/rotas.js` (senha com bcrypt) |

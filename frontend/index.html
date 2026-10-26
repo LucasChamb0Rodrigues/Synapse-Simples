@@ -269,6 +269,7 @@
             class="alert alert-warning"
             hidden
           ></div>
+          <div id="aviso-margem" class="alert alert-danger" hidden></div>
           <div class="row g-2 mb-3">
             <div class="col-md-8">
               <input
@@ -289,6 +290,7 @@
                 <option>Desatualizada</option>
                 <option>Sem ficha</option>
                 <option>Inativo</option>
+                <option value="margem">Margem baixa</option>
               </select>
             </div>
           </div>
@@ -299,7 +301,9 @@
                 <th>Produto</th>
                 <th>Categoria</th>
                 <th>Ficha</th>
-                <th>Custo</th>
+                <th>Custo/un.</th>
+                <th>Preço</th>
+                <th>Margem</th>
                 <th>Situação</th>
                 <th></th>
               </tr>
@@ -367,6 +371,16 @@
                 required
               ></select>
             </div>
+            <div>
+              <label class="form-label">Preço de venda por unidade (R$, opcional)</label
+              ><input
+                class="form-control"
+                name="preco_venda"
+                type="number"
+                step="0.01"
+                min="0"
+              />
+            </div>
           </div>
           <table class="table table-hover bg-white">
             <thead>
@@ -374,6 +388,7 @@
                 <th>Código</th>
                 <th>Nome</th>
                 <th>Categoria</th>
+                <th>Preço</th>
                 <th>Situação</th>
                 <th></th>
               </tr>
@@ -433,12 +448,42 @@
               <tbody id="tabela-ficha"></tbody>
               <tfoot>
                 <tr>
-                  <th colspan="3" class="text-end">Custo total</th>
+                  <th colspan="3" class="text-end">Custo dos insumos</th>
                   <th id="ficha-total"></th>
                   <th></th>
                 </tr>
               </tfoot>
             </table>
+            <div class="card card-body mb-3">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                  <label class="form-label" for="ficha-rendimento">Rendimento (unidades por receita)</label>
+                  <input
+                    class="form-control"
+                    id="ficha-rendimento"
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    oninput="sistema.abas.ficha.desenharTotal()"
+                  />
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label" for="ficha-perda">Perda no preparo (%)</label>
+                  <input
+                    class="form-control"
+                    id="ficha-perda"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="99"
+                    oninput="sistema.abas.ficha.desenharTotal()"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <div class="ficha-custos" id="ficha-custos"></div>
+                </div>
+              </div>
+            </div>
             <button
               class="btn btn-laranja"
               onclick="sistema.abas.ficha.salvar()"
