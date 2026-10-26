@@ -16,7 +16,10 @@ class CatalogoController extends Controller {
 
     const versoes = await Ficha.listarVersoes(produto.id);
     const itens = versoes.length ? await Ficha.listarItens(versoes[0].id) : [];
-    res.json({ produto, versoes, itens });
+    const custo = versoes.length
+      ? Ficha.custos(itens.reduce((soma, item) => soma + item.subtotal, 0), versoes[0].rendimento, versoes[0].perda, produto.preco_venda)
+      : null;
+    res.json({ produto, versoes, itens, custo });
   }
 }
 

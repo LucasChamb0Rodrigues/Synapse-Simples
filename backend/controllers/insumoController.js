@@ -9,6 +9,7 @@ class InsumoController extends Controller {
   async criar(req, res) {
     const insumo = new Insumo().preencher(req.body);
     await insumo.salvar();
+    await insumo.registrarPreco(null, req.session.usuario);
     res.status(201).json({ ok: true });
   }
 
@@ -17,7 +18,13 @@ class InsumoController extends Controller {
     const custoAnterior = insumo.custo;
     await insumo.preencher(req.body).salvar();
     const precoMudou = custoAnterior !== insumo.custo;
+    if (precoMudou) await insumo.registrarPreco(custoAnterior, req.session.usuario);
     res.json({ ok: true, precoMudou });
+  }
+
+  async precos(req, res) {
+    const insumo = await Insumo.buscarOuFalhar(req.params.id);
+    res.json({ insumo, precos: await insumo.historicoDePrecos() });
   }
 
   async mudarAtivo(req, res) {

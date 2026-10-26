@@ -48,6 +48,7 @@ rotas.patch('/produtos/:id/ativo', produtos.mudarAtivo);
 rotas.post('/produtos/:id/ficha', produtos.salvarFicha);
 
 rotas.get('/insumos', insumos.listar);
+rotas.get('/insumos/:id/precos', insumos.precos);
 rotas.post('/insumos', insumos.criar);
 rotas.put('/insumos/:id', insumos.alterar);
 rotas.patch('/insumos/:id/ativo', insumos.mudarAtivo);

@@ -15,6 +15,7 @@ class Insumo extends Modelo {
     if (!this.nome) throw new ErroApp(400, 'Informe o nome do insumo.');
     if (!Insumo.UNIDADES.includes(this.unidade)) throw new ErroApp(400, 'Unidade de medida inválida.');
     if (!(this.custo >= 0)) throw new ErroApp(400, 'Informe um custo válido (zero ou maior).');
+    this.custo = Math.round(this.custo * 10000) / 10000;
 
     if (this.id) {
       const salvo = await Insumo.buscarPorId(this.id);
@@ -22,6 +23,20 @@ class Insumo extends Modelo {
         throw new ErroApp(409, 'A unidade não pode ser alterada: o insumo já é usado em ficha técnica.');
       }
     }
+  }
+
+  registrarPreco(custoAnterior, usuario) {
+    return banco.sql(
+      'INSERT INTO insumo_preco (insumo_id, custo_anterior, custo_novo, usuario_nome) VALUES (?, ?, ?, ?)',
+      [this.id, custoAnterior, this.custo, usuario.nome],
+    );
+  }
+
+  historicoDePrecos() {
+    return banco.sql(
+      'SELECT custo_anterior, custo_novo, alterado_em, usuario_nome FROM insumo_preco WHERE insumo_id = ? ORDER BY alterado_em, id',
+      [this.id],
+    );
   }
 
   async contarUsoEmFichas() {

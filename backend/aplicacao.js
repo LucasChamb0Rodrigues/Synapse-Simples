@@ -7,6 +7,7 @@ const express = require('express');
 const session = require('express-session');
 const rotas = require('./rotas');
 const SessaoStore = require('./models/sessaoModel');
+const Estrutura = require('./models/estrutura');
 
 const FRONTEND_URLS = (process.env.FRONTEND_URL || '').split(',').map((url) => url.trim().replace(/\/$/, '')).filter(Boolean);
 const COOKIE_ENTRE_SITES = process.env.COOKIE_CROSS_SITE === 'true';
@@ -57,6 +58,10 @@ app.use(session({
 }));
 
 app.get('/', (req, res) => res.json({ sistema: 'Synapse API', ok: true }));
+app.use('/api', async (req, res, next) => {
+  await Estrutura.preparar();
+  next();
+});
 app.use('/api', rotas);
 
 const ERROS_DO_BANCO = {

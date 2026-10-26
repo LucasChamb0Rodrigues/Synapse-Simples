@@ -5,20 +5,20 @@ const Ficha = require('./fichaModel');
 
 class Produto extends Modelo {
   static tabela = 'produto';
-  static campos = ['codigo', 'nome', 'categoria_id'];
+  static campos = ['codigo', 'nome', 'categoria_id', 'preco_venda'];
   static naoEncontrado = 'Produto não encontrado.';
 
   static async listarCatalogo() {
     const linhas = await banco.sql(`
-      SELECT p.id, p.codigo, p.nome, p.ativo, p.categoria_id, c.nome AS categoria,
-             f.id AS ficha_id, f.versao, t.custo_atual, t.insumos_alterados
+      SELECT p.id, p.codigo, p.nome, p.ativo, p.categoria_id, p.preco_venda, c.nome AS categoria,
+             f.id AS ficha_id, f.versao, f.rendimento, f.perda, t.custo_insumos, t.insumos_alterados
         FROM produto p
         JOIN categoria c ON c.id = p.categoria_id
         LEFT JOIN ficha_tecnica f
                ON f.produto_id = p.id
               AND f.versao = (SELECT MAX(versao) FROM ficha_tecnica WHERE produto_id = p.id)
         LEFT JOIN (SELECT i.ficha_id,
-                          ROUND(SUM(i.quantidade * s.custo), 2) AS custo_atual,
+                          SUM(i.quantidade * s.custo)           AS custo_insumos,
                           SUM(i.custo_unitario <> s.custo)      AS insumos_alterados
                      FROM item_ficha i JOIN insumo s ON s.id = i.insumo_id
                     GROUP BY i.ficha_id) t ON t.ficha_id = f.id
@@ -26,6 +26,8 @@ class Produto extends Modelo {
     return linhas.map((linha) => {
       const produto = new Produto(linha);
       produto.situacao = produto.calcularSituacao();
+      produto.custo = produto.ficha_id ? Ficha.custos(produto.custo_insumos ?? 0, produto.rendimento, produto.perda, produto.preco_venda) : null;
+      delete produto.custo_insumos;
       return produto;
     });
   }
@@ -44,6 +46,8 @@ class Produto extends Modelo {
     if (!/^[A-Z0-9._-]{1,20}$/.test(this.codigo)) throw new ErroApp(400, 'O código deve ter de 1 a 20 caracteres (letras, números, ponto, hífen ou _).');
     if (!this.nome) throw new ErroApp(400, 'Informe o nome do produto.');
     if (!this.categoria_id) throw new ErroApp(400, 'Selecione uma categoria.');
+    this.preco_venda = this.preco_venda === '' || this.preco_venda == null ? null : Number(this.preco_venda);
+    if (this.preco_venda !== null && !(this.preco_venda > 0)) throw new ErroApp(400, 'Informe um preço de venda maior que zero, ou deixe em branco.');
 
     const [categoria] = await banco.sql('SELECT ativo FROM categoria WHERE id = ?', [this.categoria_id]);
     if (!categoria) throw new ErroApp(400, 'A categoria escolhida não existe mais.');
@@ -68,9 +72,9 @@ class Produto extends Modelo {
     return 'Ativa';
   }
 
-  novaFicha(itens) {
+  novaFicha({ itens, rendimento, perda }) {
     if (!this.ativo) throw new ErroApp(400, 'Produto inativo não pode receber ficha técnica.');
-    return new Ficha({ produto: this, itens });
+    return new Ficha({ produto: this, itens, rendimento, perda });
   }
 }
 

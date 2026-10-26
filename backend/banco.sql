@@ -29,6 +29,7 @@ CREATE TABLE produto (
   codigo        VARCHAR(20) NOT NULL UNIQUE,
   nome          VARCHAR(80) NOT NULL,
   categoria_id  INT NOT NULL,
+  preco_venda   DECIMAL(10,2) NULL,
   ativo         BOOLEAN NOT NULL DEFAULT TRUE,
   FOREIGN KEY (categoria_id) REFERENCES categoria(id)
 );
@@ -40,6 +41,8 @@ CREATE TABLE ficha_tecnica (
   criada_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   usuario_nome  VARCHAR(60) NOT NULL,
   custo_total   DECIMAL(10,2) NOT NULL,
+  rendimento    DECIMAL(10,3) NOT NULL DEFAULT 1,
+  perda         DECIMAL(5,2)  NOT NULL DEFAULT 0,
   UNIQUE (produto_id, versao),
   FOREIGN KEY (produto_id) REFERENCES produto(id) ON DELETE CASCADE
 );
@@ -51,6 +54,17 @@ CREATE TABLE item_ficha (
   custo_unitario  DECIMAL(10,4) NOT NULL,
   PRIMARY KEY (ficha_id, insumo_id),
   FOREIGN KEY (ficha_id)  REFERENCES ficha_tecnica(id) ON DELETE CASCADE,
+  FOREIGN KEY (insumo_id) REFERENCES insumo(id)
+);
+
+CREATE TABLE insumo_preco (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  insumo_id       INT NOT NULL,
+  custo_anterior  DECIMAL(10,4) NULL,
+  custo_novo      DECIMAL(10,4) NOT NULL,
+  alterado_em     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  usuario_nome    VARCHAR(60) NOT NULL,
+  INDEX (insumo_id, alterado_em),
   FOREIGN KEY (insumo_id) REFERENCES insumo(id)
 );
 

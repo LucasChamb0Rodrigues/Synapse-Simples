@@ -39,6 +39,27 @@ class Tela {
     return texto.slice(0, 10).split('-').reverse().join('/') + ' ' + texto.slice(11, 16);
   }
 
+  static porcentagem(valor) {
+    return `${Number(valor).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+  }
+
+  static margem(custo) {
+    if (!custo || custo.margem === null) return '<span class="text-muted">—</span>';
+    const cor = custo.margemBaixa ? 'danger' : 'success';
+    return `<span class="badge bg-${cor}" title="Margem mínima: ${custo.margemMinima}%">${Tela.porcentagem(custo.margem)}</span>`;
+  }
+
+  static custosEmQuadros(custo, rendimento, perda, precoVenda) {
+    const quadro = (rotulo, valor, detalhe = '') => `
+      <div class="indicador"><span class="indicador-rotulo">${rotulo}</span><strong class="indicador-valor">${valor}</strong><span class="indicador-detalhe">${detalhe}</span></div>`;
+    return `<div class="relatorio-indicadores">
+      ${quadro('Custo por unidade', Tela.precoInsumo(custo.unitario), `rende ${Number(rendimento).toLocaleString('pt-BR')} un. por receita`)}
+      ${quadro('Custo da receita', Tela.dinheiro(custo.lote), `insumos ${Tela.dinheiro(custo.insumos)} + perda ${Tela.porcentagem(perda)}`)}
+      ${quadro('Preço de venda', precoVenda ? Tela.dinheiro(precoVenda) : '—', precoVenda ? 'por unidade' : 'não informado')}
+      ${quadro('Margem', custo.margem === null ? '—' : Tela.porcentagem(custo.margem), custo.margem === null ? '' : (custo.margemBaixa ? `abaixo do mínimo de ${custo.margemMinima}%` : `mínimo: ${custo.margemMinima}%`))}
+    </div>`;
+  }
+
   static linhaVazia(colunas) {
     return `<tr><td colspan="${colunas}" class="text-center text-muted">Nenhum registro.</td></tr>`;
   }
@@ -70,6 +91,43 @@ class Tela {
     return new Promise((responder) => {
       janela.addEventListener('close', () => responder(janela.returnValue === 'sim'), { once: true });
     });
+  }
+}
+
+class Grafico {
+  static precoNoTempo(pontos, valorAtual) {
+    if (pontos.length === 0) return '<p class="text-muted">Nenhum preço registrado.</p>';
+    const L = 640, A = 220, esq = 70, dir = 16, topo = 14, base = 30;
+    const tempo = (texto) => new Date(texto.replace(' ', 'T')).getTime();
+    const inicio = tempo(pontos[0].data);
+    const fim = Math.max(Date.now(), tempo(pontos.at(-1).data) + 1);
+    const valores = [...pontos.map((p) => p.valor), valorAtual];
+    let min = Math.min(...valores), max = Math.max(...valores);
+    const folga = (max - min) * 0.15 || max * 0.1 || 1;
+    min = Math.max(0, min - folga); max += folga;
+    const x = (t) => esq + ((t - inicio) / (fim - inicio || 1)) * (L - esq - dir);
+    const y = (v) => topo + (1 - (v - min) / (max - min)) * (A - topo - base);
+
+    let caminho = `M${x(inicio)},${y(pontos[0].valor)}`;
+    pontos.slice(1).forEach((p) => { caminho += ` H${x(tempo(p.data))} V${y(p.valor)}`; });
+    caminho += ` H${x(fim)}`;
+
+    const marcas = [min, (min + max) / 2, max].map((v) => `
+      <line x1="${esq}" x2="${L - dir}" y1="${y(v)}" y2="${y(v)}" stroke="#e9ecef"/>
+      <text x="${esq - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#6c757d">${Tela.precoInsumo(v)}</text>`).join('');
+    const data = (t) => new Date(t).toLocaleDateString('pt-BR');
+    const pontosSvg = pontos.map((p) => `
+      <circle cx="${x(tempo(p.data))}" cy="${y(p.valor)}" r="5" fill="#d95813" stroke="#fff" stroke-width="2">
+        <title>${Tela.dataHora(p.data)}: ${Tela.precoInsumo(p.valor)}</title>
+      </circle>`).join('');
+    return `<svg class="grafico-preco" viewBox="0 0 ${L} ${A}" role="img" aria-label="Evolução do preço">
+      ${marcas}
+      <line x1="${esq}" x2="${L - dir}" y1="${A - base}" y2="${A - base}" stroke="#ced4da"/>
+      <path d="${caminho}" fill="none" stroke="#d95813" stroke-width="2"/>
+      ${pontosSvg}
+      <text x="${esq}" y="${A - 8}" font-size="11" fill="#6c757d">${data(inicio)}</text>
+      <text x="${L - dir}" y="${A - 8}" font-size="11" fill="#6c757d" text-anchor="end">hoje</text>
+    </svg>`;
   }
 }
 
@@ -201,33 +259,42 @@ class AbaCatalogo extends Aba {
     const busca = $('#catalogo-busca').value.toLowerCase();
     const filtro = $('#catalogo-filtro').value;
     const lista = this.lista.filter((p) =>
-      `${p.nome} ${p.codigo}`.toLowerCase().includes(busca) && (!filtro || p.situacao === filtro));
+      `${p.nome} ${p.codigo}`.toLowerCase().includes(busca)
+      && (!filtro || (filtro === 'margem' ? p.ativo && p.custo?.margemBaixa : p.situacao === filtro)));
 
     $('#tabela-catalogo').innerHTML = lista.map((p) => `
       <tr>
         <td>${Tela.esc(p.codigo)}</td><td>${Tela.esc(p.nome)}</td><td>${Tela.esc(p.categoria)}</td>
         <td>${p.versao ? 'v' + p.versao : '—'}</td>
-        <td>${p.custo_atual !== null ? Tela.dinheiro(p.custo_atual) : '—'}</td>
+        <td>${p.custo ? Tela.precoInsumo(p.custo.unitario) : '—'}</td>
+        <td>${p.preco_venda ? Tela.dinheiro(p.preco_venda) : '—'}</td>
+        <td>${Tela.margem(p.custo)}</td>
         <td>${Tela.etiqueta(p.situacao)}</td>
         <td><button class="btn btn-sm btn-outline-primary" onclick="${this.chamada('verFicha', p.id)}">Ver</button></td>
-      </tr>`).join('') || Tela.linhaVazia(7);
+      </tr>`).join('') || Tela.linhaVazia(9);
 
     const desatualizadas = this.lista.filter((p) => p.situacao === 'Desatualizada').length;
     $('#aviso-desatualizadas').hidden = desatualizadas === 0;
     $('#aviso-desatualizadas').textContent = `${desatualizadas} produto(s) com ficha desatualizada: o preço de algum insumo mudou desde que a ficha foi salva.`;
+
+    const margemBaixa = this.lista.filter((p) => p.ativo && p.custo?.margemBaixa);
+    $('#aviso-margem').hidden = margemBaixa.length === 0;
+    $('#aviso-margem').textContent = margemBaixa.length
+      ? `${margemBaixa.length} produto(s) com margem abaixo de ${margemBaixa[0].custo.margemMinima}%: o custo por unidade está alto para o preço de venda.`
+      : '';
   }
 
   async verFicha(id) {
-    const { produto, versoes, itens } = await Api.chamar('GET', `/api/catalogo/${id}`);
+    const { produto, versoes, itens, custo } = await Api.chamar('GET', `/api/catalogo/${id}`);
     $('#janela-ficha-titulo').textContent = `${produto.codigo} - ${produto.nome}`;
 
     let html = `<p>Categoria: <strong>${Tela.esc(produto.categoria)}</strong></p>`;
     if (versoes.length === 0) {
       html += '<p class="text-muted">Este produto ainda não tem ficha técnica.</p>';
     } else {
-      const total = itens.reduce((soma, item) => soma + item.subtotal, 0);
       html += `
         <p class="small text-muted">Versão ${versoes[0].versao}, salva em ${Tela.dataHora(versoes[0].criada_em)} por ${Tela.esc(versoes[0].usuario_nome)}</p>
+        ${Tela.custosEmQuadros(custo, versoes[0].rendimento, versoes[0].perda, produto.preco_venda)}
         <table class="table table-sm">
           <thead><tr><th>Insumo</th><th>Quantidade</th><th>Preço na ficha</th><th>Preço atual</th><th>Subtotal</th></tr></thead>
           <tbody>${itens.map((i) => `
@@ -236,7 +303,7 @@ class AbaCatalogo extends Aba {
               <td>${Tela.precoInsumo(i.custo_na_ficha)}</td><td>${Tela.precoInsumo(i.custo_atual)}</td><td>${Tela.dinheiro(i.subtotal)}</td>
             </tr>`).join('')}
           </tbody>
-          <tfoot><tr><th colspan="4" class="text-end">Custo total (preços atuais)</th><th>${Tela.dinheiro(total)}</th></tr></tfoot>
+          <tfoot><tr><th colspan="4" class="text-end">Custo dos insumos (preços atuais)</th><th>${Tela.dinheiro(custo.insumos)}</th></tr></tfoot>
         </table>
         <p class="small text-muted">Linhas em amarelo: o preço do insumo mudou desde que a ficha foi salva.</p>`;
     }
@@ -267,9 +334,10 @@ class AbaProdutos extends Cadastro {
   desenhar() {
     $('#tabela-produtos').innerHTML = this.filtrar((p) => [p.codigo, p.nome, p.categoria]).map((p) => `
       <tr>
-        <td>${Tela.esc(p.codigo)}</td><td>${Tela.esc(p.nome)}</td><td>${Tela.esc(p.categoria)}</td><td>${Tela.etiqueta(p.situacao)}</td>
+        <td>${Tela.esc(p.codigo)}</td><td>${Tela.esc(p.nome)}</td><td>${Tela.esc(p.categoria)}</td>
+        <td>${p.preco_venda ? Tela.dinheiro(p.preco_venda) : '—'}</td><td>${Tela.etiqueta(p.situacao)}</td>
         <td class="text-end text-nowrap">${this.botoes(p)}</td>
-      </tr>`).join('') || Tela.linhaVazia(5);
+      </tr>`).join('') || Tela.linhaVazia(6);
   }
 }
 
@@ -297,7 +365,10 @@ class AbaFicha extends Aba {
     $('#ficha-editor').hidden = !id;
     if (!id) return;
 
-    const { versoes, itens } = await Api.chamar('GET', `/api/catalogo/${id}`);
+    const { produto, versoes, itens } = await Api.chamar('GET', `/api/catalogo/${id}`);
+    this.precoVenda = produto.preco_venda;
+    $('#ficha-rendimento').value = versoes[0]?.rendimento ?? 1;
+    $('#ficha-perda').value = versoes[0]?.perda ?? 0;
     this.itens = itens.map((i) => ({ insumo_id: i.insumo_id, nome: i.nome, unidade: i.unidade, custo: i.custo_atual, quantidade: i.quantidade, ativo: i.ativo }));
 
     $('#ficha-info').textContent = versoes.length
@@ -305,7 +376,7 @@ class AbaFicha extends Aba {
       : 'Este produto ainda não tem ficha. Ao salvar, será criada a versão 1.';
     $('#ficha-versoes').innerHTML = versoes.map((v) => `
       <li class="list-group-item d-flex justify-content-between">
-        <span>v${v.versao} — ${Tela.dataHora(v.criada_em)} — ${Tela.esc(v.usuario_nome)}</span><strong>${Tela.dinheiro(v.custo_total)}</strong>
+        <span>v${v.versao} — ${Tela.dataHora(v.criada_em)} — ${Tela.esc(v.usuario_nome)}</span><strong>${Tela.precoInsumo(v.custo_total / v.rendimento)}/un. <span class="text-muted fw-normal">· receita ${Tela.dinheiro(v.custo_total)}</span></strong>
       </li>`).join('') || '<li class="list-group-item text-muted">Nenhuma versão ainda.</li>';
     this.desenharItens();
   }
@@ -355,8 +426,27 @@ class AbaFicha extends Aba {
     this.desenharTotal();
   }
 
+  custoAtual() {
+    const insumos = this.itens.reduce((soma, item) => soma + item.quantidade * item.custo, 0);
+    const rendimento = Number($('#ficha-rendimento').value);
+    const perda = Number($('#ficha-perda').value) || 0;
+    const lote = Math.round(insumos * (1 + perda / 100) * 100) / 100;
+    const unitario = rendimento > 0 ? lote / rendimento : null;
+    const margem = this.precoVenda > 0 && unitario !== null ? ((this.precoVenda - unitario) / this.precoVenda) * 100 : null;
+    return { insumos, rendimento, perda, lote, unitario, margem };
+  }
+
   desenharTotal() {
-    $('#ficha-total').textContent = Tela.dinheiro(this.itens.reduce((soma, item) => soma + item.quantidade * item.custo, 0));
+    const custo = this.custoAtual();
+    $('#ficha-total').textContent = Tela.dinheiro(custo.insumos);
+    $('#ficha-rendimento').classList.toggle('is-invalid', !(custo.rendimento > 0));
+    $('#ficha-perda').classList.toggle('is-invalid', !(custo.perda >= 0 && custo.perda < 100));
+    const item = (rotulo, valor, destaque = false) => `<div class="${destaque ? 'ficha-custo-destaque' : ''}"><span>${rotulo}</span><strong>${valor}</strong></div>`;
+    $('#ficha-custos').innerHTML = [
+      item('Custo da receita (com perda)', Tela.dinheiro(custo.lote)),
+      item('Custo por unidade', custo.unitario === null ? '—' : Tela.precoInsumo(custo.unitario), true),
+      item('Margem', custo.margem === null ? (this.precoVenda ? '—' : 'sem preço de venda') : Tela.porcentagem(custo.margem)),
+    ].join('');
   }
 
   async salvar() {
@@ -367,9 +457,12 @@ class AbaFicha extends Aba {
       Tela.avisar(`Informe uma quantidade maior que zero para ${this.itens[invalido].nome}.`, 'danger');
       return $(`#ficha-qtd-${invalido}`).focus();
     }
+    const { rendimento, perda } = this.custoAtual();
+    if (!(rendimento > 0)) return Tela.avisar('Informe quantas unidades a receita rende.', 'danger');
+    if (!(perda >= 0 && perda < 100)) return Tela.avisar('A perda deve ser um percentual entre 0 e 99.', 'danger');
     const itens = this.itens.map((item) => ({ insumo_id: item.insumo_id, quantidade: item.quantidade }));
-    const resposta = await Api.chamar('POST', `/api/produtos/${$('#ficha-produto').value}/ficha`, { itens });
-    Tela.avisar(`Ficha salva: versão ${resposta.versao}, custo ${Tela.dinheiro(resposta.custoTotal)}.`);
+    const resposta = await Api.chamar('POST', `/api/produtos/${$('#ficha-produto').value}/ficha`, { itens, rendimento, perda });
+    Tela.avisar(`Ficha salva: versão ${resposta.versao}, custo por unidade ${Tela.precoInsumo(resposta.custoUnitario)}.`);
     this.escolherProduto();
   }
 }
@@ -383,13 +476,48 @@ class AbaInsumos extends Cadastro {
     $('#tabela-insumos').innerHTML = this.filtrar((i) => [i.nome, i.unidade]).map((i) => `
       <tr>
         <td>${Tela.esc(i.nome)}</td><td>${i.unidade}</td><td>${Tela.precoInsumo(i.custo)}</td><td>${this.situacao(i)}</td>
-        <td class="text-end text-nowrap">${this.botoes(i)}</td>
+        <td class="text-end text-nowrap">
+          <button class="btn btn-sm btn-outline-secondary" onclick="${this.chamada('historico', i.id)}">Histórico</button>
+          ${this.botoes(i)}
+        </td>
       </tr>`).join('') || Tela.linhaVazia(5);
   }
 
   editar(id) {
     super.editar(id);
     this.dica('Se você mudar o custo, as fichas técnicas que usam este insumo aparecerão como "Desatualizada" no Catálogo.');
+  }
+
+  async historico(id) {
+    const { insumo, precos } = await Api.chamar('GET', `/api/insumos/${id}/precos`);
+    $('#janela-ficha-titulo').textContent = `Histórico de preços — ${insumo.nome}`;
+    const primeiro = precos[0]?.custo_novo;
+    const variacao = primeiro > 0 ? ((insumo.custo - primeiro) / primeiro) * 100 : null;
+    const sinal = (v) => (v > 0 ? '+' : '') + Tela.porcentagem(v);
+
+    $('#janela-ficha-corpo').innerHTML = `
+      <div class="relatorio-indicadores">
+        <div class="indicador"><span class="indicador-rotulo">Preço atual</span><strong class="indicador-valor">${Tela.precoInsumo(insumo.custo)}</strong><span class="indicador-detalhe">por ${insumo.unidade}</span></div>
+        <div class="indicador"><span class="indicador-rotulo">Primeiro registro</span><strong class="indicador-valor">${primeiro !== undefined ? Tela.precoInsumo(primeiro) : '—'}</strong><span class="indicador-detalhe">${precos[0] ? Tela.dataHora(precos[0].alterado_em).slice(0, 10) : ''}</span></div>
+        <div class="indicador"><span class="indicador-rotulo">Variação no período</span><strong class="indicador-valor">${variacao === null ? '—' : sinal(variacao)}</strong><span class="indicador-detalhe">${Math.max(precos.length - 1, 0)} alteração(ões)</span></div>
+      </div>
+      <div class="relatorio-bloco">
+        <h4>Preço por ${insumo.unidade} ao longo do tempo</h4>
+        ${Grafico.precoNoTempo(precos.map((p) => ({ data: p.alterado_em, valor: p.custo_novo })), insumo.custo)}
+      </div>
+      <table class="table table-sm">
+        <thead><tr><th>Data</th><th>De</th><th>Para</th><th>Variação</th><th>Usuário</th></tr></thead>
+        <tbody>${[...precos].reverse().map((p) => `
+          <tr>
+            <td>${Tela.dataHora(p.alterado_em)}</td>
+            <td>${p.custo_anterior === null ? '—' : Tela.precoInsumo(p.custo_anterior)}</td>
+            <td>${Tela.precoInsumo(p.custo_novo)}</td>
+            <td>${p.custo_anterior > 0 ? sinal(((p.custo_novo - p.custo_anterior) / p.custo_anterior) * 100) : '—'}</td>
+            <td>${Tela.esc(p.usuario_nome)}</td>
+          </tr>`).join('') || Tela.linhaVazia(5)}
+        </tbody>
+      </table>`;
+    $('#janela-ficha').showModal();
   }
 }
 
@@ -416,7 +544,7 @@ class AbaRelatorio extends Aba {
           <strong>${Tela.esc(p.nome)}</strong>
           <span class="produto-opcao-info">${Tela.esc(p.categoria)} · ficha v${p.versao}</span>
         </span>
-        <span class="produto-opcao-custo">${p.custo_atual !== null ? Tela.dinheiro(p.custo_atual) : '—'}</span>
+        <span class="produto-opcao-custo">${p.custo ? `${Tela.precoInsumo(p.custo.unitario)}/un.` : '—'}</span>
       </label>`).join('') || '<span class="text-muted">Nenhum produto com ficha técnica.</span>';
     this.atualizarSelecao();
   }
@@ -472,8 +600,8 @@ class AbaRelatorio extends Aba {
   }
 
   resumo(produtos) {
-    const ordenados = [...produtos].sort((a, b) => b.total - a.total);
-    const media = produtos.reduce((soma, p) => soma + p.total, 0) / produtos.length;
+    const ordenados = [...produtos].sort((a, b) => b.custo.unitario - a.custo.unitario);
+    const media = produtos.reduce((soma, p) => soma + p.custo.unitario, 0) / produtos.length;
     const indicador = (rotulo, valor, detalhe = '') => `
       <div class="indicador">
         <span class="indicador-rotulo">${rotulo}</span>
@@ -482,25 +610,25 @@ class AbaRelatorio extends Aba {
       </div>`;
     return `<div class="relatorio-indicadores">
       ${indicador('Produtos no relatório', produtos.length)}
-      ${indicador('Custo médio', Tela.dinheiro(media), 'por produto')}
-      ${indicador('Maior custo', Tela.dinheiro(ordenados[0].total), Tela.esc(ordenados[0].nome))}
-      ${indicador('Menor custo', Tela.dinheiro(ordenados.at(-1).total), Tela.esc(ordenados.at(-1).nome))}
+      ${indicador('Custo médio por unidade', Tela.precoInsumo(media), 'entre os produtos')}
+      ${indicador('Maior custo por unidade', Tela.precoInsumo(ordenados[0].custo.unitario), Tela.esc(ordenados[0].nome))}
+      ${indicador('Menor custo por unidade', Tela.precoInsumo(ordenados.at(-1).custo.unitario), Tela.esc(ordenados.at(-1).nome))}
     </div>`;
   }
 
   comparativo(produtos) {
     if (produtos.length < 2) return '';
-    const ordenados = [...produtos].sort((a, b) => b.total - a.total);
-    const maior = ordenados[0].total || 1;
+    const ordenados = [...produtos].sort((a, b) => b.custo.unitario - a.custo.unitario);
+    const maior = ordenados[0].custo.unitario || 1;
     return `
       <div class="card relatorio-bloco">
-        <h4>Custo por produto</h4>
+        <h4>Custo por unidade de cada produto</h4>
         <div class="grafico-barras" role="list">
           ${ordenados.map((p) => `
-            <div class="grafico-linha" role="listitem" title="${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}: ${Tela.dinheiro(p.total)}">
+            <div class="grafico-linha" role="listitem" title="${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}: ${Tela.precoInsumo(p.custo.unitario)} por unidade">
               <span class="grafico-rotulo">${Tela.esc(p.nome)}</span>
-              <span class="grafico-trilho"><span class="grafico-barra" data-largura="${(p.total / maior) * 100}"></span></span>
-              <span class="grafico-valor">${Tela.dinheiro(p.total)}</span>
+              <span class="grafico-trilho"><span class="grafico-barra" data-largura="${(p.custo.unitario / maior) * 100}"></span></span>
+              <span class="grafico-valor">${Tela.precoInsumo(p.custo.unitario)}</span>
             </div>`).join('')}
         </div>
       </div>`;
@@ -508,7 +636,7 @@ class AbaRelatorio extends Aba {
 
   cartaoProduto(p) {
     const itens = [...p.itens].sort((a, b) => b.subtotal - a.subtotal);
-    const parte = (item) => (p.total > 0 ? (item.subtotal / p.total) * 100 : 0);
+    const parte = (item) => (p.custo.insumos > 0 ? (item.subtotal / p.custo.insumos) * 100 : 0);
     const porcentagem = (valor) => `${valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
     const principal = itens[0];
     return `
@@ -520,8 +648,10 @@ class AbaRelatorio extends Aba {
             <div class="small text-muted">${Tela.esc(p.categoria)} · ficha v${p.versao} de ${Tela.dataHora(p.criada_em)}</div>
           </div>
           <div class="relatorio-produto-total">
-            <span>Custo total</span>
-            <strong>${Tela.dinheiro(p.total)}</strong>
+            <span>Custo por unidade</span>
+            <strong>${Tela.precoInsumo(p.custo.unitario)}</strong>
+            <span>receita ${Tela.dinheiro(p.custo.lote)} · rende ${Number(p.rendimento).toLocaleString('pt-BR')} un.${p.perda > 0 ? ` · perda ${Tela.porcentagem(p.perda)}` : ''}</span>
+            ${p.preco_venda ? `<span>venda ${Tela.dinheiro(p.preco_venda)} · margem ${Tela.margem(p.custo)}</span>` : ''}
           </div>
         </div>
         ${principal ? `<div class="relatorio-destaque">Maior peso no custo: <strong>${Tela.esc(principal.nome)}</strong> (${porcentagem(parte(principal))})</div>` : ''}
