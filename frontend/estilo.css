@@ -27,6 +27,10 @@ body { background: #f4f5f7; }
 .login-marca-conteudo { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .login-slogan { margin: 0; color: #5f6670; font-size: 1rem; }
 .login-campo { margin-bottom: 20px; }
+.login-aviso {
+  margin: -16px 0 24px; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem;
+  color: #ffd8b0; background: rgb(241 108 34 / 0.14); border: 1px solid rgb(241 108 34 / 0.45);
+}
 .login-campo .form-label { font-size: 0.9rem; color: #cfd4da; margin-bottom: 6px; }
 
 .campo-icone { position: relative; }

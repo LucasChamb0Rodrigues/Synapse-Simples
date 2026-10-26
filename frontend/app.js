@@ -625,6 +625,8 @@ class Sistema {
 
     this.primeiroAcesso = situacao.primeiroAcesso;
     $('#tela-login').hidden = false;
+    $('#login-aviso').hidden = !situacao.aviso;
+    $('#login-aviso').textContent = situacao.aviso || '';
     $('#campo-nome').hidden = !this.primeiroAcesso;
     $('#campo-nome input').required = this.primeiroAcesso;
     $('#login-titulo').textContent = this.primeiroAcesso
@@ -641,6 +643,7 @@ class Sistema {
     try {
       const resposta = await Api.chamar('POST', url, Object.fromEntries(new FormData(evento.target)));
       evento.target.reset();
+      $('#login-aviso').hidden = true;
       this.entrar(resposta.usuario);
     } finally {
       botao.disabled = false;
