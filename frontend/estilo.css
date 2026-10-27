@@ -263,7 +263,11 @@ h2 { margin-bottom: 16px; }
 @media print {
   @page { size: A4; margin: 10mm 12mm; }
   .no-print, .menu, .barra-topo, .menu-fundo { display: none !important; }
+  /* evita a 2ª página em branco: sem altura mínima de página e sem sobra no fim */
+  html, body, .layout, .conteudo, main { height: auto !important; min-height: 0 !important; }
+  .layout { display: block !important; }
   .conteudo { padding: 0; overflow: visible; }
+  main > section:last-child, #relatorio-resultado, #relatorio-resultado > *:last-child { margin-bottom: 0 !important; }
   body { background: #fff; font-size: 10px; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
