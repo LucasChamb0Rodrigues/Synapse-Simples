@@ -5,12 +5,13 @@ const Ficha = require('./fichaModel');
 
 class Produto extends Modelo {
   static tabela = 'produto';
-  static campos = ['codigo', 'nome', 'categoria_id', 'preco_venda'];
+  static campos = ['codigo', 'nome', 'categoria_id', 'preco_venda', 'forma_venda', 'unidades_por_caixa'];
+  static FORMAS_VENDA = ['unidade', 'caixa'];
   static naoEncontrado = 'Produto não encontrado.';
 
   static async listarCatalogo() {
     const linhas = await banco.sql(`
-      SELECT p.id, p.codigo, p.nome, p.ativo, p.categoria_id, p.preco_venda, c.nome AS categoria,
+      SELECT p.id, p.codigo, p.nome, p.ativo, p.categoria_id, p.preco_venda, p.forma_venda, p.unidades_por_caixa, c.nome AS categoria,
              f.id AS ficha_id, f.versao, f.rendimento, f.perda, t.custo_insumos, t.insumos_alterados
         FROM produto p
         JOIN categoria c ON c.id = p.categoria_id
@@ -26,7 +27,7 @@ class Produto extends Modelo {
     return linhas.map((linha) => {
       const produto = new Produto(linha);
       produto.situacao = produto.calcularSituacao();
-      produto.custo = produto.ficha_id ? Ficha.custos(produto.custo_insumos ?? 0, produto.rendimento, produto.perda, produto.preco_venda) : null;
+      produto.custo = produto.ficha_id ? Ficha.custos(produto.custo_insumos ?? 0, produto.rendimento, produto.perda, produto.preco_venda, Ficha.unidadesDeVenda(produto)) : null;
       delete produto.custo_insumos;
       return produto;
     });
@@ -48,6 +49,16 @@ class Produto extends Modelo {
     if (!this.categoria_id) throw new ErroApp(400, 'Selecione uma categoria.');
     this.preco_venda = this.preco_venda === '' || this.preco_venda == null ? null : Number(this.preco_venda);
     if (this.preco_venda !== null && !(this.preco_venda > 0)) throw new ErroApp(400, 'Informe um preço de venda maior que zero, ou deixe em branco.');
+    this.forma_venda = Modelo.texto(this.forma_venda || 'unidade').toLowerCase();
+    if (!Produto.FORMAS_VENDA.includes(this.forma_venda)) throw new ErroApp(400, 'Escolha se o produto é vendido por unidade ou por caixa.');
+    if (this.forma_venda === 'caixa') {
+      this.unidades_por_caixa = Number(this.unidades_por_caixa);
+      if (!Number.isInteger(this.unidades_por_caixa) || this.unidades_por_caixa < 2) {
+        throw new ErroApp(400, 'Informe quantas unidades vêm na caixa (número inteiro, a partir de 2).');
+      }
+    } else {
+      this.unidades_por_caixa = null;
+    }
 
     const [categoria] = await banco.sql('SELECT ativo FROM categoria WHERE id = ?', [this.categoria_id]);
     if (!categoria) throw new ErroApp(400, 'A categoria escolhida não existe mais.');

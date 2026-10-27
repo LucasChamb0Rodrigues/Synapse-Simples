@@ -372,7 +372,28 @@
               ></select>
             </div>
             <div>
-              <label class="form-label">Preço de venda por unidade (R$, opcional)</label
+              <label class="form-label">Vendido por</label
+              ><select
+                class="form-select"
+                name="forma_venda"
+                onchange="sistema.abas.produtos.alternarCaixa()"
+              >
+                <option value="unidade">Unidade</option>
+                <option value="caixa">Caixa</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Unidades por caixa</label
+              ><input
+                class="form-control"
+                name="unidades_por_caixa"
+                type="number"
+                step="1"
+                min="2"
+              />
+            </div>
+            <div>
+              <label class="form-label">Preço de venda (R$, opcional)</label
               ><input
                 class="form-control"
                 name="preco_venda"
@@ -380,6 +401,7 @@
                 step="0.01"
                 min="0"
               />
+              <div class="form-text" data-ajuda-preco>Preço de uma unidade.</div>
             </div>
           </div>
           <table class="table table-hover bg-white">
@@ -388,6 +410,7 @@
                 <th>Código</th>
                 <th>Nome</th>
                 <th>Categoria</th>
+                <th>Venda</th>
                 <th>Preço</th>
                 <th>Situação</th>
                 <th></th>
@@ -456,7 +479,7 @@
             </table>
             <div class="card card-body mb-3">
               <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-6">
                   <label class="form-label" for="ficha-rendimento">Rendimento (unidades por receita)</label>
                   <input
                     class="form-control"
@@ -467,7 +490,7 @@
                     oninput="sistema.abas.ficha.desenharTotal()"
                   />
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-6">
                   <label class="form-label" for="ficha-perda">Perda no preparo (%)</label>
                   <input
                     class="form-control"
@@ -479,7 +502,7 @@
                     oninput="sistema.abas.ficha.desenharTotal()"
                   />
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                   <div class="ficha-custos" id="ficha-custos"></div>
                 </div>
               </div>

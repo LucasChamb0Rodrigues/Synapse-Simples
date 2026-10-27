@@ -153,7 +153,7 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 | RF4 Relatório de custo (data, impressão) | `backend/controllers/relatorioController.js` |
 | RF5 Ficha técnica com versões | tabelas `ficha_tecnica` e `item_ficha`; `backend/models/fichaModel.js` |
 | RF6 Custo calculado automaticamente | o servidor busca o preço dos insumos e calcula o custo da receita (com perda) e o custo por unidade (`backend/models/fichaModel.js`) |
-| Preço de venda e margem | margem de cada produto no catálogo, com alerta abaixo de 30% (`Ficha.custos`) |
+| Preço de venda e margem | produto vendido por unidade ou em caixa (com unidades por caixa); margem sobre o custo da unidade de venda, com alerta abaixo de 30% (`Ficha.custos`) |
 | Histórico de preços dos insumos | tabela `insumo_preco`, com gráfico na tela de Insumos |
 | RF7 Catálogo com busca e situação | `backend/controllers/catalogoController.js` e `frontend/app.js` |
 | Alerta de ficha desatualizada | situação "Desatualizada" quando o preço de um insumo muda |

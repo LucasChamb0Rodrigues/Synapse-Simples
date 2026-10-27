@@ -43,19 +43,32 @@ class Tela {
     return `${Number(valor).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
   }
 
+  static formaVenda(produto) {
+    return produto.forma_venda === 'caixa' ? `Caixa com ${produto.unidades_por_caixa} un.` : 'Unidade';
+  }
+
+  static precoDeVenda(produto) {
+    if (!produto.preco_venda) return '—';
+    const por = produto.forma_venda === 'caixa' ? `/cx (${produto.unidades_por_caixa} un.)` : '/un.';
+    return `${Tela.dinheiro(produto.preco_venda)} <span class="text-muted small">${por}</span>`;
+  }
+
   static margem(custo) {
     if (!custo || custo.margem === null) return '<span class="text-muted">—</span>';
     const cor = custo.margemBaixa ? 'danger' : 'success';
     return `<span class="badge bg-${cor}" title="Margem mínima: ${custo.margemMinima}%">${Tela.porcentagem(custo.margem)}</span>`;
   }
 
-  static custosEmQuadros(custo, rendimento, perda, precoVenda) {
+  static custosEmQuadros(custo, rendimento, perda, produto) {
+    const precoVenda = produto.preco_venda;
+    const caixa = custo.unidadesVenda > 1;
     const quadro = (rotulo, valor, detalhe = '') => `
       <div class="indicador"><span class="indicador-rotulo">${rotulo}</span><strong class="indicador-valor">${valor}</strong><span class="indicador-detalhe">${detalhe}</span></div>`;
     return `<div class="relatorio-indicadores">
       ${quadro('Custo por unidade', Tela.precoInsumo(custo.unitario), `rende ${Number(rendimento).toLocaleString('pt-BR')} un. por receita`)}
       ${quadro('Custo da receita', Tela.dinheiro(custo.lote), `insumos ${Tela.dinheiro(custo.insumos)} + perda ${Tela.porcentagem(perda)}`)}
-      ${quadro('Preço de venda', precoVenda ? Tela.dinheiro(precoVenda) : '—', precoVenda ? 'por unidade' : 'não informado')}
+      ${caixa ? quadro('Custo da caixa', Tela.precoInsumo(custo.venda), `${custo.unidadesVenda} un. por caixa`) : ''}
+      ${quadro('Preço de venda', precoVenda ? Tela.dinheiro(precoVenda) : '—', precoVenda ? (caixa ? `por caixa com ${custo.unidadesVenda} un.` : 'por unidade') : 'não informado')}
       ${quadro('Margem', custo.margem === null ? '—' : Tela.porcentagem(custo.margem), custo.margem === null ? '' : (custo.margemBaixa ? `abaixo do mínimo de ${custo.margemMinima}%` : `mínimo: ${custo.margemMinima}%`))}
     </div>`;
   }
@@ -267,7 +280,7 @@ class AbaCatalogo extends Aba {
         <td>${Tela.esc(p.codigo)}</td><td>${Tela.esc(p.nome)}</td><td>${Tela.esc(p.categoria)}</td>
         <td>${p.versao ? 'v' + p.versao : '—'}</td>
         <td>${p.custo ? Tela.precoInsumo(p.custo.unitario) : '—'}</td>
-        <td>${p.preco_venda ? Tela.dinheiro(p.preco_venda) : '—'}</td>
+        <td>${Tela.precoDeVenda(p)}</td>
         <td>${Tela.margem(p.custo)}</td>
         <td>${Tela.etiqueta(p.situacao)}</td>
         <td><button class="btn btn-sm btn-outline-primary" onclick="${this.chamada('verFicha', p.id)}">Ver</button></td>
@@ -294,7 +307,7 @@ class AbaCatalogo extends Aba {
     } else {
       html += `
         <p class="small text-muted">Versão ${versoes[0].versao}, salva em ${Tela.dataHora(versoes[0].criada_em)} por ${Tela.esc(versoes[0].usuario_nome)}</p>
-        ${Tela.custosEmQuadros(custo, versoes[0].rendimento, versoes[0].perda, produto.preco_venda)}
+        ${Tela.custosEmQuadros(custo, versoes[0].rendimento, versoes[0].perda, produto)}
         <table class="table table-sm">
           <thead><tr><th>Insumo</th><th>Quantidade</th><th>Preço na ficha</th><th>Preço atual</th><th>Subtotal</th></tr></thead>
           <tbody>${itens.map((i) => `
@@ -329,15 +342,25 @@ class AbaProdutos extends Cadastro {
       this.categorias.filter((c) => c.ativo || c.id === atual)
         .map((c) => `<option value="${c.id}">${Tela.esc(c.nome)}${c.ativo ? '' : ' (inativa)'}</option>`).join('');
     super.abrirJanela(id);
+    this.alternarCaixa();
+  }
+
+  alternarCaixa() {
+    const campos = $('#editar-campos');
+    const caixa = campos.querySelector('[name="forma_venda"]').value === 'caixa';
+    const quantidade = campos.querySelector('[name="unidades_por_caixa"]');
+    quantidade.parentElement.hidden = !caixa;
+    quantidade.required = caixa;
+    campos.querySelector('[data-ajuda-preco]').textContent = caixa ? 'Preço da caixa inteira.' : 'Preço de uma unidade.';
   }
 
   desenhar() {
     $('#tabela-produtos').innerHTML = this.filtrar((p) => [p.codigo, p.nome, p.categoria]).map((p) => `
       <tr>
         <td>${Tela.esc(p.codigo)}</td><td>${Tela.esc(p.nome)}</td><td>${Tela.esc(p.categoria)}</td>
-        <td>${p.preco_venda ? Tela.dinheiro(p.preco_venda) : '—'}</td><td>${Tela.etiqueta(p.situacao)}</td>
+        <td>${Tela.formaVenda(p)}</td><td>${Tela.precoDeVenda(p)}</td><td>${Tela.etiqueta(p.situacao)}</td>
         <td class="text-end text-nowrap">${this.botoes(p)}</td>
-      </tr>`).join('') || Tela.linhaVazia(6);
+      </tr>`).join('') || Tela.linhaVazia(7);
   }
 }
 
@@ -367,6 +390,7 @@ class AbaFicha extends Aba {
 
     const { produto, versoes, itens } = await Api.chamar('GET', `/api/catalogo/${id}`);
     this.precoVenda = produto.preco_venda;
+    this.unidadesVenda = produto.forma_venda === 'caixa' && produto.unidades_por_caixa > 0 ? produto.unidades_por_caixa : 1;
     $('#ficha-rendimento').value = versoes[0]?.rendimento ?? 1;
     $('#ficha-perda').value = versoes[0]?.perda ?? 0;
     this.itens = itens.map((i) => ({ insumo_id: i.insumo_id, nome: i.nome, unidade: i.unidade, custo: i.custo_atual, quantidade: i.quantidade, ativo: i.ativo }));
@@ -432,8 +456,9 @@ class AbaFicha extends Aba {
     const perda = Number($('#ficha-perda').value) || 0;
     const lote = Math.round(insumos * (1 + perda / 100) * 100) / 100;
     const unitario = rendimento > 0 ? lote / rendimento : null;
-    const margem = this.precoVenda > 0 && unitario !== null ? ((this.precoVenda - unitario) / this.precoVenda) * 100 : null;
-    return { insumos, rendimento, perda, lote, unitario, margem };
+    const venda = unitario === null ? null : unitario * this.unidadesVenda;
+    const margem = this.precoVenda > 0 && venda !== null ? ((this.precoVenda - venda) / this.precoVenda) * 100 : null;
+    return { insumos, rendimento, perda, lote, unitario, venda, margem };
   }
 
   desenharTotal() {
@@ -445,6 +470,7 @@ class AbaFicha extends Aba {
     $('#ficha-custos').innerHTML = [
       item('Custo da receita (com perda)', Tela.dinheiro(custo.lote)),
       item('Custo por unidade', custo.unitario === null ? '—' : Tela.precoInsumo(custo.unitario), true),
+      this.unidadesVenda > 1 ? item(`Custo da caixa (${this.unidadesVenda} un.)`, custo.venda === null ? '—' : Tela.precoInsumo(custo.venda)) : '',
       item('Margem', custo.margem === null ? (this.precoVenda ? '—' : 'sem preço de venda') : Tela.porcentagem(custo.margem)),
     ].join('');
   }
@@ -651,7 +677,8 @@ class AbaRelatorio extends Aba {
             <span>Custo por unidade</span>
             <strong>${Tela.precoInsumo(p.custo.unitario)}</strong>
             <span>receita ${Tela.dinheiro(p.custo.lote)} · rende ${Number(p.rendimento).toLocaleString('pt-BR')} un.${p.perda > 0 ? ` · perda ${Tela.porcentagem(p.perda)}` : ''}</span>
-            ${p.preco_venda ? `<span>venda ${Tela.dinheiro(p.preco_venda)} · margem ${Tela.margem(p.custo)}</span>` : ''}
+            ${p.custo.unidadesVenda > 1 ? `<span>caixa com ${p.custo.unidadesVenda} un. · custo da caixa ${Tela.precoInsumo(p.custo.venda)}</span>` : ''}
+            ${p.preco_venda ? `<span>venda ${Tela.dinheiro(p.preco_venda)}${p.custo.unidadesVenda > 1 ? '/cx' : '/un.'} · margem ${Tela.margem(p.custo)}</span>` : ''}
           </div>
         </div>
         ${principal ? `<div class="relatorio-destaque">Maior peso no custo: <strong>${Tela.esc(principal.nome)}</strong> (${porcentagem(parte(principal))})</div>` : ''}

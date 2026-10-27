@@ -97,7 +97,7 @@ h2 { margin-bottom: 16px; }
 .min-w-0 { min-width: 0; }
 
 .campo-quantidade { width: 160px; }
-.ficha-custos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ficha-custos { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
 .ficha-custos > div { display: flex; flex-direction: column; background: #f8f9fa; border-radius: 8px; padding: 8px 12px; }
 .ficha-custos span { font-size: 0.8rem; color: #6c757d; }
 .ficha-custos strong { font-size: 1.1rem; }

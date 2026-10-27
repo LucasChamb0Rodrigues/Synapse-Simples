@@ -11,12 +11,17 @@ class Ficha {
     Object.assign(this, dados);
   }
 
-  static custos(custoInsumos, rendimento = 1, perda = 0, precoVenda = null) {
+  static unidadesDeVenda(produto) {
+    return produto?.forma_venda === 'caixa' && produto.unidades_por_caixa > 0 ? produto.unidades_por_caixa : 1;
+  }
+
+  static custos(custoInsumos, rendimento = 1, perda = 0, precoVenda = null, unidadesVenda = 1) {
     const lote = centavos(custoInsumos * (1 + perda / 100));
     const unitario = Math.round((lote / rendimento) * 10000) / 10000;
-    const margem = precoVenda > 0 ? Math.round(((precoVenda - unitario) / precoVenda) * 1000) / 10 : null;
+    const venda = Math.round(unitario * unidadesVenda * 10000) / 10000;
+    const margem = precoVenda > 0 ? Math.round(((precoVenda - venda) / precoVenda) * 1000) / 10 : null;
     return {
-      insumos: centavos(custoInsumos), lote, unitario, margem,
+      insumos: centavos(custoInsumos), lote, unitario, unidadesVenda, venda, margem,
       margemBaixa: margem !== null && margem < Ficha.MARGEM_MINIMA, margemMinima: Ficha.MARGEM_MINIMA,
     };
   }
@@ -41,7 +46,7 @@ class Ficha {
 
   static async buscarVersaoNaData(produtoId, data) {
     const [linha] = await banco.sql(
-      `SELECT f.id, f.versao, f.criada_em, f.rendimento, f.perda, p.codigo, p.nome, p.preco_venda, c.nome AS categoria
+      `SELECT f.id, f.versao, f.criada_em, f.rendimento, f.perda, p.codigo, p.nome, p.preco_venda, p.forma_venda, p.unidades_por_caixa, c.nome AS categoria
          FROM ficha_tecnica f
          JOIN produto p   ON p.id = f.produto_id
          JOIN categoria c ON c.id = p.categoria_id
@@ -54,7 +59,7 @@ class Ficha {
 
   async carregarItens() {
     this.itens = await Ficha.listarItens(this.id);
-    this.custo = Ficha.custos(this.itens.reduce((soma, item) => soma + item.subtotal, 0), this.rendimento, this.perda, this.preco_venda);
+    this.custo = Ficha.custos(this.itens.reduce((soma, item) => soma + item.subtotal, 0), this.rendimento, this.perda, this.preco_venda, Ficha.unidadesDeVenda(this));
     this.total = this.custo.lote;
   }
 
