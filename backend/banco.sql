@@ -30,6 +30,8 @@ CREATE TABLE produto (
   nome          VARCHAR(80) NOT NULL,
   categoria_id  INT NOT NULL,
   preco_venda   DECIMAL(10,2) NULL,
+  forma_venda   ENUM('unidade', 'caixa') NOT NULL DEFAULT 'unidade',
+  unidades_por_caixa INT NULL,
   ativo         BOOLEAN NOT NULL DEFAULT TRUE,
   FOREIGN KEY (categoria_id) REFERENCES categoria(id)
 );

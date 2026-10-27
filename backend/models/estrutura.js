@@ -5,6 +5,8 @@ const COLUNAS = [
   ['categoria', 'ativo', 'BOOLEAN NOT NULL DEFAULT TRUE'],
   ['insumo', 'ativo', 'BOOLEAN NOT NULL DEFAULT TRUE'],
   ['produto', 'preco_venda', 'DECIMAL(10,2) NULL'],
+  ['produto', 'forma_venda', "ENUM('unidade', 'caixa') NOT NULL DEFAULT 'unidade'"],
+  ['produto', 'unidades_por_caixa', 'INT NULL'],
   ['ficha_tecnica', 'rendimento', 'DECIMAL(10,3) NOT NULL DEFAULT 1'],
   ['ficha_tecnica', 'perda', 'DECIMAL(5,2) NOT NULL DEFAULT 0'],
 ];
