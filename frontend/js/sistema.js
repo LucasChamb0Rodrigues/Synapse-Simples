@@ -23,7 +23,17 @@ class Sistema {
     $('#tela-sistema').classList.toggle('menu-aberto', abrir);
   }
 
+  async carregarTelas() {
+    const telas = await Promise.all(Object.keys(this.abas).map(async (nome) => {
+      const resposta = await fetch(`telas/${nome}.html`);
+      if (!resposta.ok) throw new Error(`Não foi possível carregar a tela ${nome}.`);
+      return resposta.text();
+    }));
+    $('main').innerHTML = telas.join('');
+  }
+
   async iniciar() {
+    await this.carregarTelas();
     const situacao = await Api.chamar('GET', '/api/situacao');
     if (situacao.usuario) return this.entrar(situacao.usuario);
 

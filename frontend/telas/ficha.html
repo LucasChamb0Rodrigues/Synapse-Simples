@@ -1,0 +1,97 @@
+<section id="aba-ficha">
+  <h2>Ficha Técnica</h2>
+  <div class="card card-body mb-3">
+    <label class="form-label">Produto</label>
+    <select
+      class="form-select"
+      id="ficha-produto"
+      onchange="sistema.abas.ficha.escolherProduto()"
+    ></select>
+    <div class="small text-muted mt-2" id="ficha-info"></div>
+  </div>
+  <div id="ficha-editor" hidden>
+    <div class="card card-body mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label">Insumo</label
+          ><select class="form-select" id="ficha-insumo"></select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Quantidade</label
+          ><input
+            class="form-control"
+            id="ficha-quantidade"
+            type="number"
+            step="0.001"
+            min="0"
+          />
+        </div>
+        <div class="col-md-3">
+          <button
+            class="btn btn-outline-primary w-100"
+            onclick="sistema.abas.ficha.adicionarItem()"
+          >
+            Adicionar
+          </button>
+        </div>
+      </div>
+    </div>
+    <table class="table bg-white">
+      <thead>
+        <tr>
+          <th>Insumo</th>
+          <th>Quantidade</th>
+          <th>Custo unitário</th>
+          <th>Subtotal</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tabela-ficha"></tbody>
+      <tfoot>
+        <tr>
+          <th colspan="3" class="text-end">Custo dos insumos</th>
+          <th id="ficha-total"></th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
+    <div class="card card-body mb-3">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label" for="ficha-rendimento">Rendimento (unidades por receita)</label>
+          <input
+            class="form-control"
+            id="ficha-rendimento"
+            type="number"
+            step="0.001"
+            min="0"
+            oninput="sistema.abas.ficha.desenharTotal()"
+          />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="ficha-perda">Perda no preparo (%)</label>
+          <input
+            class="form-control"
+            id="ficha-perda"
+            type="number"
+            step="0.1"
+            min="0"
+            max="99"
+            oninput="sistema.abas.ficha.desenharTotal()"
+          />
+        </div>
+        <div class="col-12">
+          <div class="ficha-custos" id="ficha-custos"></div>
+        </div>
+      </div>
+    </div>
+    <button
+      class="btn btn-laranja"
+      onclick="sistema.abas.ficha.salvar()"
+    >
+      Salvar nova versão
+    </button>
+    <h3 class="h6 mt-4">Histórico de versões</h3>
+    <ul class="list-group" id="ficha-versoes"></ul>
+  </div>
+</section>

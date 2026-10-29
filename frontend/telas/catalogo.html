@@ -1,0 +1,44 @@
+<section id="aba-catalogo">
+  <h2>Catálogo de Produtos</h2>
+  <div id="catalogo-resumo" class="relatorio-indicadores"></div>
+  <div class="row g-2 mb-3">
+    <div class="col-md-8">
+      <input
+        class="form-control"
+        id="catalogo-busca"
+        placeholder="Buscar por nome ou código..."
+        oninput="sistema.abas.catalogo.desenhar()"
+      />
+    </div>
+    <div class="col-md-4">
+      <select
+        class="form-select"
+        id="catalogo-filtro"
+        onchange="sistema.abas.catalogo.desenhar()"
+      >
+        <option value="">Todas as situações</option>
+        <option>Ativa</option>
+        <option>Desatualizada</option>
+        <option>Sem ficha</option>
+        <option>Inativo</option>
+        <option value="margem">Margem baixa</option>
+      </select>
+    </div>
+  </div>
+  <table class="table table-hover bg-white">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Produto</th>
+        <th>Categoria</th>
+        <th>Ficha</th>
+        <th>Custo/un.</th>
+        <th>Preço</th>
+        <th>Margem</th>
+        <th>Situação</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tabela-catalogo"></tbody>
+  </table>
+</section>
