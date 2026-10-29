@@ -5,11 +5,11 @@ class AbaPerfil extends Aba {
 
   async carregar() {
     const dados = await Api.chamar('GET', '/api/perfil');
-    const form = $('#form-perfil');
+    const form = Tela.elemento('#form-perfil');
     form.reset();
     form.nome.value = dados.nome;
     form.login.value = dados.login;
-    $('#perfil-tipo').textContent = Tela.nomePerfil(dados.perfil);
+    Tela.elemento('#perfil-tipo').textContent = Tela.nomePerfil(dados.perfil);
   }
 
   async salvar(evento) {

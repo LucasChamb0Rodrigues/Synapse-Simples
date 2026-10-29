@@ -15,7 +15,7 @@ class AbaProdutos extends Cadastro {
 
   abrirJanela(id) {
     const atual = this.lista.find((p) => p.id === id)?.categoria_id;
-    $('#produto-categoria').innerHTML =
+    Tela.elemento('#produto-categoria').innerHTML =
       '<option value="">Selecione...</option>' +
       this.categorias
         .filter((c) => c.ativo || c.id === atual)
@@ -29,7 +29,7 @@ class AbaProdutos extends Cadastro {
   }
 
   alternarCaixa() {
-    const campos = $('#editar-campos');
+    const campos = Tela.elemento('#editar-campos');
     const caixa = campos.querySelector('[name="forma_venda"]').value === 'caixa';
     const quantidade = campos.querySelector('[name="unidades_por_caixa"]');
     quantidade.parentElement.hidden = !caixa;
@@ -40,7 +40,7 @@ class AbaProdutos extends Cadastro {
   }
 
   desenhar() {
-    $('#tabela-produtos').innerHTML =
+    Tela.elemento('#tabela-produtos').innerHTML =
       this.filtrar((p) => [p.codigo, p.nome, p.categoria])
         .map(
           (p) => `

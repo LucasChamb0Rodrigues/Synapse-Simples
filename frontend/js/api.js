@@ -1,6 +1,6 @@
 class Api {
   static async chamar(metodo, url, dados) {
-    const resposta = await fetch(API_URL + url, {
+    const resposta = await fetch(Configuracao.apiUrl() + url, {
       method: metodo,
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },

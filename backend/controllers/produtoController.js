@@ -23,13 +23,11 @@ class ProdutoController {
     const produto = await Produto.buscarOuFalhar(req.params.id);
     const ficha = produto.novaFicha(req.body);
     await ficha.salvar(req.session.usuario);
-    res
-      .status(201)
-      .json({
-        versao: ficha.versao,
-        custoTotal: ficha.custoTotal,
-        custoUnitario: ficha.custoUnitario,
-      });
+    res.status(201).json({
+      versao: ficha.versao,
+      custoTotal: ficha.custoTotal,
+      custoUnitario: ficha.custoUnitario,
+    });
   }
 }
 

@@ -1,51 +1,52 @@
-try {
-  process.loadEnvFile();
-} catch {}
-if (!process.env.SESSION_SECRET) {
-  throw new Error(
-    'Configure o SESSION_SECRET (arquivo .env no computador ou variáveis de ambiente na hospedagem).',
-  );
-}
+const Ambiente = require('./config/ambiente');
+Ambiente.carregar();
 
 const express = require('express');
 const session = require('express-session');
-const rotas = require('./rotas');
+const Rotas = require('./rotas');
 const SessaoStore = require('./models/sessaoModel');
 const Estrutura = require('./config/estrutura');
-const { cabecalhosDeSeguranca, cors } = require('./middlewares/seguranca');
-const tratarErros = require('./middlewares/erros');
+const Seguranca = require('./middlewares/seguranca');
+const TratadorDeErros = require('./middlewares/erros');
 
-const COOKIE_ENTRE_SITES = process.env.COOKIE_CROSS_SITE === 'true';
+class Aplicacao {
+  static criar() {
+    const app = express();
+    app.set('trust proxy', 1);
+    app.disable('x-powered-by');
+    app.use(express.json());
+    app.use(Seguranca.cabecalhos);
+    app.use(Seguranca.cors);
+    app.use(session(Aplicacao.configuracaoDaSessao()));
 
-const app = express();
-app.set('trust proxy', 1);
-app.disable('x-powered-by');
-app.use(express.json());
-app.use(cabecalhosDeSeguranca);
-app.use(cors);
+    app.get('/', (req, res) => res.json({ sistema: 'Synapse API', ok: true }));
+    app.use('/api', Aplicacao.prepararBanco);
+    app.use('/api', Rotas.criar());
+    app.use(TratadorDeErros.tratar);
+    return app;
+  }
 
-app.use(
-  session({
-    store: new SessaoStore(),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    rolling: true,
-    cookie: {
-      httpOnly: true,
-      maxAge: 30 * 60 * 1000,
-      sameSite: COOKIE_ENTRE_SITES ? 'none' : 'strict',
-      secure: COOKIE_ENTRE_SITES ? true : 'auto',
-    },
-  }),
-);
+  static configuracaoDaSessao() {
+    const cookieEntreSites = process.env.COOKIE_CROSS_SITE === 'true';
+    return {
+      store: new SessaoStore(),
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      rolling: true,
+      cookie: {
+        httpOnly: true,
+        maxAge: 30 * 60 * 1000,
+        sameSite: cookieEntreSites ? 'none' : 'strict',
+        secure: cookieEntreSites ? true : 'auto',
+      },
+    };
+  }
 
-app.get('/', (req, res) => res.json({ sistema: 'Synapse API', ok: true }));
-app.use('/api', async (req, res, next) => {
-  await Estrutura.preparar();
-  next();
-});
-app.use('/api', rotas);
-app.use(tratarErros);
+  static async prepararBanco(req, res, next) {
+    await Estrutura.preparar();
+    next();
+  }
+}
 
-module.exports = app;
+module.exports = Aplicacao.criar();

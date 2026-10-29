@@ -8,7 +8,7 @@ class AbaInsumos extends Cadastro {
   }
 
   desenhar() {
-    $('#tabela-insumos').innerHTML =
+    Tela.elemento('#tabela-insumos').innerHTML =
       this.filtrar((i) => [i.nome, i.unidade])
         .map(
           (i) => `
@@ -32,10 +32,10 @@ class AbaInsumos extends Cadastro {
 
   async historico(id) {
     const { insumo, precos } = await Api.chamar('GET', `/api/insumos/${id}/precos`);
-    $('#janela-ficha-titulo').textContent = `Histórico de preços — ${insumo.nome}`;
+    Tela.elemento('#janela-ficha-titulo').textContent = `Histórico de preços — ${insumo.nome}`;
     const primeiro = precos[0]?.custo_novo;
 
-    $('#janela-ficha-corpo').innerHTML = `
+    Tela.elemento('#janela-ficha-corpo').innerHTML = `
       <div class="relatorio-indicadores">
         ${Tela.indicador('Preço atual', Tela.precoInsumo(insumo.custo), `por ${insumo.unidade}`)}
         ${Tela.indicador('Primeiro registro', primeiro !== undefined ? Tela.precoInsumo(primeiro) : '—', precos[0] ? Tela.dataHora(precos[0].alterado_em).slice(0, 10) : '')}
@@ -58,6 +58,6 @@ class AbaInsumos extends Cadastro {
         }
         </tbody>
       </table>`;
-    $('#janela-ficha').showModal();
+    Tela.elemento('#janela-ficha').showModal();
   }
 }

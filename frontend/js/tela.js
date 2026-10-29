@@ -1,11 +1,14 @@
-const $ = (seletor) => document.querySelector(seletor);
-
 class Tela {
+  static elemento(seletor) {
+    return document.querySelector(seletor);
+  }
+
   static avisar(texto, tipo = 'success') {
-    (document.querySelector('dialog[open]') || document.body).append($('#mensagem'));
-    $('#mensagem').innerHTML = `<div class="alert alert-${tipo} shadow">${Tela.esc(texto)}</div>`;
+    (document.querySelector('dialog[open]') || document.body).append(Tela.elemento('#mensagem'));
+    Tela.elemento('#mensagem').innerHTML =
+      `<div class="alert alert-${tipo} shadow">${Tela.esc(texto)}</div>`;
     setTimeout(() => {
-      $('#mensagem').innerHTML = '';
+      Tela.elemento('#mensagem').innerHTML = '';
     }, 4000);
   }
 
@@ -104,9 +107,9 @@ class Tela {
   }
 
   static confirmar(texto, botao = 'Confirmar') {
-    const janela = $('#janela-confirmar');
-    $('#confirmar-texto').textContent = texto;
-    $('#confirmar-botao').textContent = botao;
+    const janela = Tela.elemento('#janela-confirmar');
+    Tela.elemento('#confirmar-texto').textContent = texto;
+    Tela.elemento('#confirmar-botao').textContent = botao;
     janela.returnValue = '';
     janela.showModal();
     return new Promise((responder) => {

@@ -9,22 +9,22 @@ class AbaFicha extends Aba {
     const produtos = await Api.chamar('GET', '/api/catalogo');
     this.insumosDisponiveis = (await Api.chamar('GET', '/api/insumos')).filter((i) => i.ativo);
 
-    $('#ficha-produto').innerHTML =
+    Tela.elemento('#ficha-produto').innerHTML =
       '<option value="">Selecione o produto...</option>' +
       produtos
         .filter((p) => p.ativo)
         .map((p) => `<option value="${p.id}">${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}</option>`)
         .join('');
-    $('#ficha-insumo').innerHTML = this.insumosDisponiveis
+    Tela.elemento('#ficha-insumo').innerHTML = this.insumosDisponiveis
       .map((i) => `<option value="${i.id}">${Tela.esc(i.nome)} (${i.unidade})</option>`)
       .join('');
-    $('#ficha-editor').hidden = true;
-    $('#ficha-info').textContent = '';
+    Tela.elemento('#ficha-editor').hidden = true;
+    Tela.elemento('#ficha-info').textContent = '';
   }
 
   async escolherProduto() {
-    const id = $('#ficha-produto').value;
-    $('#ficha-editor').hidden = !id;
+    const id = Tela.elemento('#ficha-produto').value;
+    Tela.elemento('#ficha-editor').hidden = !id;
     if (!id) return;
 
     const { produto, versoes, itens } = await Api.chamar('GET', `/api/catalogo/${id}`);
@@ -33,8 +33,8 @@ class AbaFicha extends Aba {
       produto.forma_venda === 'caixa' && produto.unidades_por_caixa > 0
         ? produto.unidades_por_caixa
         : 1;
-    $('#ficha-rendimento').value = versoes[0]?.rendimento ?? 1;
-    $('#ficha-perda').value = versoes[0]?.perda ?? 0;
+    Tela.elemento('#ficha-rendimento').value = versoes[0]?.rendimento ?? 1;
+    Tela.elemento('#ficha-perda').value = versoes[0]?.perda ?? 0;
     this.itens = itens.map((i) => ({
       insumo_id: i.insumo_id,
       nome: i.nome,
@@ -44,10 +44,10 @@ class AbaFicha extends Aba {
       ativo: i.ativo,
     }));
 
-    $('#ficha-info').textContent = versoes.length
+    Tela.elemento('#ficha-info').textContent = versoes.length
       ? `Versão atual: v${versoes[0].versao}. Ao salvar, será criada a versão ${versoes[0].versao + 1}.`
       : 'Este produto ainda não tem ficha. Ao salvar, será criada a versão 1.';
-    $('#ficha-versoes').innerHTML =
+    Tela.elemento('#ficha-versoes').innerHTML =
       versoes
         .map(
           (v) => `
@@ -60,14 +60,16 @@ class AbaFicha extends Aba {
   }
 
   adicionarItem() {
-    const insumo = this.insumosDisponiveis.find((i) => i.id === Number($('#ficha-insumo').value));
-    const quantidade = Number($('#ficha-quantidade').value);
+    const insumo = this.insumosDisponiveis.find(
+      (i) => i.id === Number(Tela.elemento('#ficha-insumo').value),
+    );
+    const quantidade = Number(Tela.elemento('#ficha-quantidade').value);
     if (!insumo) return Tela.avisar('Cadastre insumos antes de montar a ficha.', 'danger');
     if (!(quantidade > 0)) return Tela.avisar('Informe uma quantidade maior que zero.', 'danger');
     const posicao = this.itens.findIndex((item) => item.insumo_id === insumo.id);
     if (posicao >= 0) {
       Tela.avisar('Este insumo já está na ficha. Altere a quantidade direto na tabela.', 'danger');
-      return $(`#ficha-qtd-${posicao}`).select();
+      return Tela.elemento(`#ficha-qtd-${posicao}`).select();
     }
     this.itens.push({
       insumo_id: insumo.id,
@@ -77,7 +79,7 @@ class AbaFicha extends Aba {
       quantidade,
       ativo: true,
     });
-    $('#ficha-quantidade').value = '';
+    Tela.elemento('#ficha-quantidade').value = '';
     this.desenharItens();
   }
 
@@ -89,13 +91,15 @@ class AbaFicha extends Aba {
   mudarQuantidade(posicao, valor) {
     const item = this.itens[posicao];
     item.quantidade = Number(valor);
-    $(`#ficha-qtd-${posicao}`).classList.toggle('is-invalid', !(item.quantidade > 0));
-    $(`#ficha-subtotal-${posicao}`).textContent = Tela.dinheiro(item.quantidade * item.custo);
+    Tela.elemento(`#ficha-qtd-${posicao}`).classList.toggle('is-invalid', !(item.quantidade > 0));
+    Tela.elemento(`#ficha-subtotal-${posicao}`).textContent = Tela.dinheiro(
+      item.quantidade * item.custo,
+    );
     this.desenharTotal();
   }
 
   desenharItens() {
-    $('#tabela-ficha').innerHTML =
+    Tela.elemento('#tabela-ficha').innerHTML =
       this.itens
         .map(
           (item, posicao) => `
@@ -118,8 +122,8 @@ class AbaFicha extends Aba {
 
   custoAtual() {
     const insumos = this.itens.reduce((soma, item) => soma + item.quantidade * item.custo, 0);
-    const rendimento = Number($('#ficha-rendimento').value);
-    const perda = Number($('#ficha-perda').value) || 0;
+    const rendimento = Number(Tela.elemento('#ficha-rendimento').value);
+    const perda = Number(Tela.elemento('#ficha-perda').value) || 0;
     const lote = Math.round(insumos * (1 + perda / 100) * 100) / 100;
     const unitario = rendimento > 0 ? lote / rendimento : null;
     const venda = unitario === null ? null : unitario * this.unidadesVenda;
@@ -132,12 +136,15 @@ class AbaFicha extends Aba {
 
   desenharTotal() {
     const custo = this.custoAtual();
-    $('#ficha-total').textContent = Tela.dinheiro(custo.insumos);
-    $('#ficha-rendimento').classList.toggle('is-invalid', !(custo.rendimento > 0));
-    $('#ficha-perda').classList.toggle('is-invalid', !(custo.perda >= 0 && custo.perda < 100));
+    Tela.elemento('#ficha-total').textContent = Tela.dinheiro(custo.insumos);
+    Tela.elemento('#ficha-rendimento').classList.toggle('is-invalid', !(custo.rendimento > 0));
+    Tela.elemento('#ficha-perda').classList.toggle(
+      'is-invalid',
+      !(custo.perda >= 0 && custo.perda < 100),
+    );
     const item = (rotulo, valor, destaque = false) =>
       `<div class="${destaque ? 'ficha-custo-destaque' : ''}"><span>${rotulo}</span><strong>${valor}</strong></div>`;
-    $('#ficha-custos').innerHTML = [
+    Tela.elemento('#ficha-custos').innerHTML = [
       item('Custo da receita (com perda)', Tela.dinheiro(custo.lote)),
       item(
         'Custo por unidade',
@@ -174,7 +181,7 @@ class AbaFicha extends Aba {
         `Informe uma quantidade maior que zero para ${this.itens[invalido].nome}.`,
         'danger',
       );
-      return $(`#ficha-qtd-${invalido}`).focus();
+      return Tela.elemento(`#ficha-qtd-${invalido}`).focus();
     }
     const { rendimento, perda } = this.custoAtual();
     if (!(rendimento > 0))
@@ -185,11 +192,15 @@ class AbaFicha extends Aba {
       insumo_id: item.insumo_id,
       quantidade: item.quantidade,
     }));
-    const resposta = await Api.chamar('POST', `/api/produtos/${$('#ficha-produto').value}/ficha`, {
-      itens,
-      rendimento,
-      perda,
-    });
+    const resposta = await Api.chamar(
+      'POST',
+      `/api/produtos/${Tela.elemento('#ficha-produto').value}/ficha`,
+      {
+        itens,
+        rendimento,
+        perda,
+      },
+    );
     Tela.avisar(
       `Ficha salva: versão ${resposta.versao}, custo por unidade ${Tela.precoInsumo(resposta.custoUnitario)}.`,
     );

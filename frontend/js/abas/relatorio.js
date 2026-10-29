@@ -5,8 +5,8 @@ class AbaRelatorio extends Aba {
 
   async carregar() {
     this.lista = (await Api.chamar('GET', '/api/catalogo')).filter((p) => p.ficha_id);
-    $('#relatorio-busca').value = '';
-    $('#relatorio-produtos').innerHTML =
+    Tela.elemento('#relatorio-busca').value = '';
+    Tela.elemento('#relatorio-produtos').innerHTML =
       this.lista
         .map(
           (p) => `
@@ -31,7 +31,7 @@ class AbaRelatorio extends Aba {
   }
 
   filtrar() {
-    const busca = $('#relatorio-busca').value.toLowerCase();
+    const busca = Tela.elemento('#relatorio-busca').value.toLowerCase();
     this.caixas().forEach((caixa) => {
       const opcao = caixa.closest('label');
       opcao.hidden = !opcao.textContent.toLowerCase().includes(busca);
@@ -51,11 +51,11 @@ class AbaRelatorio extends Aba {
   atualizarSelecao() {
     const visiveis = this.caixas(true);
     const marcados = this.caixas().filter((caixa) => caixa.checked).length;
-    $('#relatorio-marcar').textContent =
+    Tela.elemento('#relatorio-marcar').textContent =
       visiveis.length > 0 && visiveis.every((caixa) => caixa.checked)
         ? 'Desmarcar todos'
         : 'Marcar todos';
-    $('#relatorio-contagem').textContent =
+    Tela.elemento('#relatorio-contagem').textContent =
       marcados === 0
         ? 'Nenhum produto selecionado'
         : `${marcados} de ${this.lista.length} produto(s) selecionado(s)`;
@@ -65,7 +65,7 @@ class AbaRelatorio extends Aba {
     const marcados = this.caixas()
       .filter((caixa) => caixa.checked)
       .map((caixa) => caixa.value);
-    const data = $('#relatorio-data').value;
+    const data = Tela.elemento('#relatorio-data').value;
     const { produtos, semFicha } = await Api.chamar(
       'GET',
       `/api/relatorio?produtos=${marcados.join(',')}&data=${data}`,
@@ -86,11 +86,11 @@ class AbaRelatorio extends Aba {
         this.comparativo(produtos) +
         produtos.map((p) => this.cartaoProduto(p)).join('');
 
-    $('#relatorio-resultado').innerHTML = html;
+    Tela.elemento('#relatorio-resultado').innerHTML = html;
     document.querySelectorAll('#relatorio-resultado [data-largura]').forEach((barra) => {
       barra.style.width = `${barra.dataset.largura}%`;
     });
-    $('#botao-imprimir').hidden = produtos.length === 0;
+    Tela.elemento('#botao-imprimir').hidden = produtos.length === 0;
   }
 
   resumo(produtos) {

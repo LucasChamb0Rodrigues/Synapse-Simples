@@ -3,12 +3,11 @@ const banco = require('../config/banco');
 const Modelo = require('./Modelo');
 const ErroApp = require('../utils/ErroApp');
 
-const HASH_FALSO = '$2a$10$xCbNh57FJmfLgyiU3.9O3O4e0KFQbXoN23KR/m3laH7nihGjw7DqG';
-
 class Usuario extends Modelo {
   static tabela = 'usuario';
   static campos = ['nome', 'login', 'senha_hash', 'perfil'];
   static naoEncontrado = 'Usuário não encontrado.';
+  static HASH_FALSO = '$2a$10$xCbNh57FJmfLgyiU3.9O3O4e0KFQbXoN23KR/m3laH7nihGjw7DqG';
 
   static async contar(conexao) {
     const [{ total }] = await banco.sql('SELECT COUNT(*) AS total FROM usuario', [], conexao);
@@ -55,7 +54,7 @@ class Usuario extends Modelo {
   static async autenticar(login, senha) {
     const usuario = await Usuario.buscarPorLogin(Modelo.texto(login).toLowerCase());
     if (!usuario) {
-      await bcrypt.compare(String(senha ?? ''), HASH_FALSO);
+      await bcrypt.compare(String(senha ?? ''), Usuario.HASH_FALSO);
       return null;
     }
     if (!(await usuario.conferirSenha(senha))) return null;

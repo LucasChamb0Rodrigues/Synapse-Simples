@@ -9,8 +9,8 @@ class AbaCatalogo extends Aba {
   }
 
   desenhar() {
-    const busca = $('#catalogo-busca').value.toLowerCase();
-    const filtro = $('#catalogo-filtro').value;
+    const busca = Tela.elemento('#catalogo-busca').value.toLowerCase();
+    const filtro = Tela.elemento('#catalogo-filtro').value;
     const lista = this.lista.filter(
       (p) =>
         `${p.nome} ${p.codigo}`.toLowerCase().includes(busca) &&
@@ -18,7 +18,7 @@ class AbaCatalogo extends Aba {
           (filtro === 'margem' ? p.ativo && p.custo?.margemBaixa : p.situacao === filtro)),
     );
 
-    $('#tabela-catalogo').innerHTML =
+    Tela.elemento('#tabela-catalogo').innerHTML =
       lista
         .map(
           (p) => `
@@ -43,7 +43,7 @@ class AbaCatalogo extends Aba {
     const margemBaixa = this.lista.filter((p) => p.ativo && p.custo?.margemBaixa).length;
     const margemMinima = this.lista.find((p) => p.custo)?.custo.margemMinima ?? 30;
 
-    $('#catalogo-resumo').innerHTML = [
+    Tela.elemento('#catalogo-resumo').innerHTML = [
       Tela.indicador('Total de produtos', this.lista.length, `${ativos} ativo(s)`),
       Tela.indicador('Fichas desatualizadas', desatualizadas, 'preço de insumo mudou'),
       Tela.indicador('Margem abaixo do mínimo', margemBaixa, `menos de ${margemMinima}%`),
@@ -52,7 +52,7 @@ class AbaCatalogo extends Aba {
 
   async verFicha(id) {
     const { produto, versoes, itens, custo } = await Api.chamar('GET', `/api/catalogo/${id}`);
-    $('#janela-ficha-titulo').textContent = `${produto.codigo} - ${produto.nome}`;
+    Tela.elemento('#janela-ficha-titulo').textContent = `${produto.codigo} - ${produto.nome}`;
 
     let html = `<p>Categoria: <strong>${Tela.esc(produto.categoria)}</strong></p>`;
     if (versoes.length === 0) {
@@ -77,7 +77,7 @@ class AbaCatalogo extends Aba {
         </table>
         <p class="small text-muted">Linhas em amarelo: o preço do insumo mudou desde que a ficha foi salva.</p>`;
     }
-    $('#janela-ficha-corpo').innerHTML = html;
-    $('#janela-ficha').showModal();
+    Tela.elemento('#janela-ficha-corpo').innerHTML = html;
+    Tela.elemento('#janela-ficha').showModal();
   }
 }

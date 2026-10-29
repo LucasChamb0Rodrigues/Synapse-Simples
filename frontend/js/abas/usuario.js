@@ -8,7 +8,7 @@ class AbaUsuarios extends Cadastro {
   }
 
   desenhar() {
-    $('#tabela-usuarios').innerHTML =
+    Tela.elemento('#tabela-usuarios').innerHTML =
       this.filtrar((u) => [u.nome, u.login])
         .map(
           (u) => `
@@ -26,7 +26,7 @@ class AbaUsuarios extends Cadastro {
 
   editar(id) {
     super.editar(id);
-    const coluna = (nome) => $(`#editar-campos [name="${nome}"]`).parentElement;
+    const coluna = (nome) => Tela.elemento(`#editar-campos [name="${nome}"]`).parentElement;
 
     const senha = coluna('senha');
     senha.querySelector('label').textContent = 'Nova senha';
@@ -41,7 +41,7 @@ class AbaUsuarios extends Cadastro {
     tituloSenha.innerHTML =
       '<strong>Trocar senha</strong><div class="small text-muted">Deixe em branco para manter a senha atual.</div>';
 
-    $('#editar-campos .row').replaceChildren(
+    Tela.elemento('#editar-campos .row').replaceChildren(
       coluna('nome'),
       coluna('login'),
       coluna('perfil'),
