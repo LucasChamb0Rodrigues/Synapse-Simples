@@ -6,30 +6,11 @@ class TentativaLogin {
   static LIMITE = 5;
   static JANELA = 15 * 60 * 1000;
 
-  static prepararTabela() {
-    TentativaLogin.tabelaPronta ??= banco
-      .sql(
-        `
-      CREATE TABLE IF NOT EXISTS tentativa_login (
-        id        BIGINT AUTO_INCREMENT PRIMARY KEY,
-        login     VARCHAR(30) NOT NULL,
-        feita_em  BIGINT      NOT NULL,  -- milissegundos (Date.now())
-        INDEX (login, feita_em)
-      )`,
-      )
-      .catch((erro) => {
-        TentativaLogin.tabelaPronta = null;
-        throw erro;
-      });
-    return TentativaLogin.tabelaPronta;
-  }
-
   static chave(login) {
     return Modelo.texto(login).toLowerCase().slice(0, 30);
   }
 
   static async conferir(login) {
-    await TentativaLogin.prepararTabela();
     const [{ total }] = await banco.sql(
       'SELECT COUNT(*) AS total FROM tentativa_login WHERE login = ? AND feita_em > ?',
       [TentativaLogin.chave(login), Date.now() - TentativaLogin.JANELA],

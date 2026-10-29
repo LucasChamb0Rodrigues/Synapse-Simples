@@ -5,7 +5,6 @@ const express = require('express');
 const session = require('express-session');
 const Rotas = require('./rotas');
 const SessaoStore = require('./models/sessaoModel');
-const Estrutura = require('./config/estrutura');
 const Seguranca = require('./middlewares/seguranca');
 const TratadorDeErros = require('./middlewares/erros');
 
@@ -20,7 +19,6 @@ class Aplicacao {
     app.use(session(Aplicacao.configuracaoDaSessao()));
 
     app.get('/', (req, res) => res.json({ sistema: 'Synapse API', ok: true }));
-    app.use('/api', Aplicacao.prepararBanco);
     app.use('/api', Rotas.criar());
     app.use(TratadorDeErros.tratar);
     return app;
@@ -41,11 +39,6 @@ class Aplicacao {
         secure: cookieEntreSites ? true : 'auto',
       },
     };
-  }
-
-  static async prepararBanco(req, res, next) {
-    await Estrutura.preparar();
-    next();
   }
 }
 

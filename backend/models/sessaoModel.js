@@ -2,27 +2,8 @@ const session = require('express-session');
 const banco = require('../config/banco');
 
 class SessaoStore extends session.Store {
-  prepararTabela() {
-    this.tabelaPronta ??= banco
-      .sql(
-        `
-      CREATE TABLE IF NOT EXISTS sessao (
-        id         VARCHAR(128) PRIMARY KEY,
-        dados      TEXT   NOT NULL,
-        expira_em  BIGINT NOT NULL  -- milissegundos (Date.now())
-      )`,
-      )
-      .catch((erro) => {
-        this.tabelaPronta = null;
-        throw erro;
-      });
-    return this.tabelaPronta;
-  }
-
   executar(tarefa, callback = () => {}) {
-    this.prepararTabela()
-      .then(tarefa)
-      .then((resultado) => callback(null, resultado), callback);
+    tarefa().then((resultado) => callback(null, resultado), callback);
   }
 
   static expiracao(sessao) {

@@ -97,7 +97,6 @@ iniciar.js           classe Iniciador (só para o computador): "npm start" na ra
   config/              Configuração
     ambiente.js          classe Ambiente: lê o arquivo .env e confere o SESSION_SECRET
     banco.js             classe Banco: conexão com o MySQL, sql() e transacao()
-    estrutura.js         Atualiza o banco sozinho: cria colunas e tabelas novas que faltarem
 
   middlewares/         Classes com o que roda antes (ou depois) de cada pedido
     seguranca.js         classe Seguranca: cabeçalhos de segurança e CORS
