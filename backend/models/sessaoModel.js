@@ -1,5 +1,5 @@
 const session = require('express-session');
-const banco = require('./banco');
+const banco = require('../config/banco');
 
 class SessaoStore extends session.Store {
   prepararTabela() {

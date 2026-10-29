@@ -1,6 +1,6 @@
-const banco = require('./banco');
+const banco = require('../config/banco');
 const Modelo = require('./Modelo');
-const ErroApp = require('./ErroApp');
+const ErroApp = require('../utils/ErroApp');
 
 class Insumo extends Modelo {
   static tabela = 'insumo';

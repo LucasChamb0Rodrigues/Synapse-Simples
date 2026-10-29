@@ -1,6 +1,6 @@
-const banco = require('./banco');
+const banco = require('../config/banco');
 const Modelo = require('./Modelo');
-const ErroApp = require('./ErroApp');
+const ErroApp = require('../utils/ErroApp');
 const Ficha = require('./fichaModel');
 
 class Produto extends Modelo {
@@ -70,10 +70,6 @@ class Produto extends Modelo {
     const repetidos = await banco.sql('SELECT id, ativo FROM produto WHERE (codigo = ? OR nome = ?) AND id <> ?', [this.codigo, this.nome, this.id || 0]);
     if (repetidos.some((p) => !p.ativo)) throw new ErroApp(409, 'Já existe um produto inativo com esse código ou nome. Reative-o na lista de produtos.');
     if (repetidos.length > 0) throw new ErroApp(409, 'Já existe um produto com esse código ou nome.');
-  }
-
-  descricao() {
-    return `${this.codigo} - ${this.nome}`;
   }
 
   calcularSituacao() {

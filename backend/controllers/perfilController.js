@@ -1,10 +1,9 @@
-const Controller = require('./Controller');
 const Usuario = require('../models/usuarioModel');
 const TentativaLogin = require('../models/tentativaLoginModel');
 const SessaoStore = require('../models/sessaoModel');
-const ErroApp = require('../models/ErroApp');
+const ErroApp = require('../utils/ErroApp');
 
-class PerfilController extends Controller {
+class PerfilController {
   async ver(req, res) {
     const usuario = await Usuario.buscarOuFalhar(req.session.usuario.id);
     res.json({ nome: usuario.nome, login: usuario.login, perfil: usuario.perfil });

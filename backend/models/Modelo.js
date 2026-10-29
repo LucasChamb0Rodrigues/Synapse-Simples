@@ -1,5 +1,5 @@
-const banco = require('./banco');
-const ErroApp = require('./ErroApp');
+const banco = require('../config/banco');
+const ErroApp = require('../utils/ErroApp');
 
 class Modelo {
   static tabela = '';
@@ -33,10 +33,6 @@ class Modelo {
   }
 
   async validar() {}
-
-  descricao() {
-    return this.nome;
-  }
 
   async salvar(conexao) {
     await this.validar();
