@@ -16,7 +16,8 @@ function exigirLogin(req, res, next) {
 }
 
 function exigirAdmin(req, res, next) {
-  if (req.session.usuario.perfil !== 'admin') throw new ErroApp(403, 'Seu perfil não tem permissão para esta ação.');
+  if (req.session.usuario.perfil !== 'admin')
+    throw new ErroApp(403, 'Seu perfil não tem permissão para esta ação.');
   next();
 }
 

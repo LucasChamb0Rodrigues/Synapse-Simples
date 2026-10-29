@@ -4,7 +4,9 @@ class Tela {
   static avisar(texto, tipo = 'success') {
     (document.querySelector('dialog[open]') || document.body).append($('#mensagem'));
     $('#mensagem').innerHTML = `<div class="alert alert-${tipo} shadow">${Tela.esc(texto)}</div>`;
-    setTimeout(() => { $('#mensagem').innerHTML = ''; }, 4000);
+    setTimeout(() => {
+      $('#mensagem').innerHTML = '';
+    }, 4000);
   }
 
   static esc(texto) {
@@ -16,7 +18,10 @@ class Tela {
   }
 
   static precoInsumo(valor) {
-    return 'R$ ' + Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+    return (
+      'R$ ' +
+      Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })
+    );
   }
 
   static dataHora(texto) {
@@ -28,12 +33,15 @@ class Tela {
   }
 
   static formaVenda(produto) {
-    return produto.forma_venda === 'caixa' ? `Caixa com ${produto.unidades_por_caixa} un.` : 'Unidade';
+    return produto.forma_venda === 'caixa'
+      ? `Caixa com ${produto.unidades_por_caixa} un.`
+      : 'Unidade';
   }
 
   static precoDeVenda(produto) {
     if (!produto.preco_venda) return '—';
-    const por = produto.forma_venda === 'caixa' ? `/cx (${produto.unidades_por_caixa} un.)` : '/un.';
+    const por =
+      produto.forma_venda === 'caixa' ? `/cx (${produto.unidades_por_caixa} un.)` : '/un.';
     return `${Tela.dinheiro(produto.preco_venda)} <span class="text-muted small">${por}</span>`;
   }
 
@@ -60,7 +68,7 @@ class Tela {
       ${Tela.indicador('Custo da receita', Tela.dinheiro(custo.lote), `insumos ${Tela.dinheiro(custo.insumos)} + perda ${Tela.porcentagem(perda)}`)}
       ${caixa ? Tela.indicador('Custo da caixa', Tela.precoInsumo(custo.venda), `${custo.unidadesVenda} un. por caixa`) : ''}
       ${Tela.indicador('Preço de venda', precoVenda ? Tela.dinheiro(precoVenda) : '—', precoVenda ? (caixa ? `por caixa com ${custo.unidadesVenda} un.` : 'por unidade') : 'não informado')}
-      ${Tela.indicador('Margem', custo.margem === null ? '—' : Tela.porcentagem(custo.margem), custo.margem === null ? '' : (custo.margemBaixa ? `abaixo do mínimo de ${custo.margemMinima}%` : `mínimo: ${custo.margemMinima}%`))}
+      ${Tela.indicador('Margem', custo.margem === null ? '—' : Tela.porcentagem(custo.margem), custo.margem === null ? '' : custo.margemBaixa ? `abaixo do mínimo de ${custo.margemMinima}%` : `mínimo: ${custo.margemMinima}%`)}
     </div>`;
   }
 
@@ -73,7 +81,14 @@ class Tela {
   }
 
   static etiqueta(situacao) {
-    const cores = { 'Ativa': 'success', 'Ativo': 'success', 'Desatualizada': 'warning text-dark', 'Sem ficha': 'secondary', 'Inativo': 'dark', 'Inativa': 'dark' };
+    const cores = {
+      Ativa: 'success',
+      Ativo: 'success',
+      Desatualizada: 'warning text-dark',
+      'Sem ficha': 'secondary',
+      Inativo: 'dark',
+      Inativa: 'dark',
+    };
     return `<span class="badge bg-${cores[situacao]}">${situacao}</span>`;
   }
 
@@ -81,7 +96,9 @@ class Tela {
     document.querySelectorAll('table').forEach((tabela) => {
       const titulos = [...tabela.querySelectorAll('thead th')].map((th) => th.textContent.trim());
       tabela.querySelectorAll('tbody tr').forEach((linha) => {
-        [...linha.cells].forEach((celula, i) => { if (celula.colSpan === 1) celula.dataset.label = titulos[i] ?? ''; });
+        [...linha.cells].forEach((celula, i) => {
+          if (celula.colSpan === 1) celula.dataset.label = titulos[i] ?? '';
+        });
       });
     });
   }
@@ -93,7 +110,9 @@ class Tela {
     janela.returnValue = '';
     janela.showModal();
     return new Promise((responder) => {
-      janela.addEventListener('close', () => responder(janela.returnValue === 'sim'), { once: true });
+      janela.addEventListener('close', () => responder(janela.returnValue === 'sim'), {
+        once: true,
+      });
     });
   }
 }

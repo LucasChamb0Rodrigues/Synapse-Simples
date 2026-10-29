@@ -39,15 +39,26 @@ class Modelo {
     const { tabela, campos } = this.constructor;
     const valores = campos.map((campo) => this[campo]);
     if (this.id) {
-      await banco.sql(`UPDATE ${tabela} SET ${campos.map((campo) => `${campo} = ?`).join(', ')} WHERE id = ?`, [...valores, this.id], conexao);
+      await banco.sql(
+        `UPDATE ${tabela} SET ${campos.map((campo) => `${campo} = ?`).join(', ')} WHERE id = ?`,
+        [...valores, this.id],
+        conexao,
+      );
     } else {
-      const resultado = await banco.sql(`INSERT INTO ${tabela} (${campos.join(', ')}) VALUES (${campos.map(() => '?').join(', ')})`, valores, conexao);
+      const resultado = await banco.sql(
+        `INSERT INTO ${tabela} (${campos.join(', ')}) VALUES (${campos.map(() => '?').join(', ')})`,
+        valores,
+        conexao,
+      );
       this.id = resultado.insertId;
     }
   }
 
   async mudarAtivo(ativo) {
-    await banco.sql(`UPDATE ${this.constructor.tabela} SET ativo = ? WHERE id = ?`, [ativo, this.id]);
+    await banco.sql(`UPDATE ${this.constructor.tabela} SET ativo = ? WHERE id = ?`, [
+      ativo,
+      this.id,
+    ]);
     this.ativo = ativo;
   }
 

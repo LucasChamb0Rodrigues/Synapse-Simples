@@ -157,6 +157,16 @@ frontend/            V: as telas que rodam no navegador
 
 ---
 
+## Formatação do código
+
+O código segue o padrão do **Prettier** (configuração em `.prettierrc.json`: aspas simples, linhas de até 100 caracteres). Ele não é instalado no projeto; para formatar tudo depois de mexer, rode na raiz:
+
+```bat
+npx prettier --write "**/*.{js,css,html}"
+```
+
+---
+
 ## Como um clique vira dado no banco (exemplo: cadastrar insumo)
 
 1. **View:** o usuário preenche o formulário e clica em **Cadastrar**. O `frontend/js/abas/cadastro.js` chama `Cadastro.salvarJanela(evento)`, que faz `Api.chamar('POST', '/api/insumos', dados)`.

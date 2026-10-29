@@ -1,33 +1,132 @@
-.layout { display: flex; min-height: 100vh; }
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
 .menu {
-  width: 260px; flex-shrink: 0; background: var(--menu); color: #fff; padding: 24px 20px;
-  position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column;
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--menu);
+  color: #fff;
+  padding: 24px 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
-.menu-logo { display: flex; align-items: center; gap: 10px; font-size: 1.9rem; font-weight: 700; color: #fff; margin-bottom: 28px; }
-.menu-logo .icone { width: 34px; height: 34px; color: var(--laranja); }
-.menu-empresa { margin-bottom: 24px; }
-.menu-empresa strong { display: block; color: #fff; }
-.menu-empresa span, .menu-usuario span { display: block; font-size: 0.85rem; color: #9aa1a9; }
-.menu-itens { display: flex; flex-direction: column; gap: 4px; }
+.menu-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 28px;
+}
+.menu-logo .icone {
+  width: 34px;
+  height: 34px;
+  color: var(--laranja);
+}
+.menu-empresa {
+  margin-bottom: 24px;
+}
+.menu-empresa strong {
+  display: block;
+  color: #fff;
+}
+.menu-empresa span,
+.menu-usuario span {
+  display: block;
+  font-size: 0.85rem;
+  color: #9aa1a9;
+}
+.menu-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .menu button {
-  display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: none; border: 0;
-  border-radius: 8px; color: #cfd4da; padding: 11px 16px; font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: #cfd4da;
+  padding: 11px 16px;
+  font-size: 1rem;
 }
-.menu button:hover { background: rgb(255 255 255 / 0.08); color: #fff; }
-.menu button.ativo { background: var(--laranja); color: #fff; font-weight: 600; }
-.menu-rodape { margin-top: auto; padding-top: 24px; }
-.menu-usuario { display: flex; align-items: center; gap: 12px; border-top: 1px solid rgb(255 255 255 / 0.12); margin-top: 16px; padding-top: 16px; }
-.menu-usuario strong { display: block; font-size: 0.95rem; color: #fff; }
+.menu button:hover {
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+}
+.menu button.ativo {
+  background: var(--laranja);
+  color: #fff;
+  font-weight: 600;
+}
+.menu-rodape {
+  margin-top: auto;
+  padding-top: 24px;
+}
+.menu-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  margin-top: 16px;
+  padding-top: 16px;
+}
+.menu-usuario strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #fff;
+}
 .avatar {
-  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  background: rgb(241 108 34 / 0.2); color: #f89a63; font-weight: 700;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(241 108 34 / 0.2);
+  color: #f89a63;
+  font-weight: 700;
 }
 
-.conteudo { flex-grow: 1; padding: 24px; min-width: 0; overflow-x: auto; }
+.conteudo {
+  flex-grow: 1;
+  padding: 24px;
+  min-width: 0;
+  overflow-x: auto;
+}
 
-.cabecalho-aba { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
-.cabecalho-aba h2 { margin-bottom: 0; }
+.cabecalho-aba {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.cabecalho-aba h2 {
+  margin-bottom: 0;
+}
 
-#mensagem { position: fixed; top: 16px; right: 16px; z-index: 2000; max-width: 400px; }
+#mensagem {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2000;
+  max-width: 400px;
+}
 
-.barra-topo, .menu-fundo, .menu .botao-fechar-menu { display: none; }
+.barra-topo,
+.menu-fundo,
+.menu .botao-fechar-menu {
+  display: none;
+}

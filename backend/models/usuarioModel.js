@@ -17,7 +17,8 @@ class Usuario extends Modelo {
 
   static cadastrarPrimeiroAdmin(dados) {
     return banco.comTrava('synapse_primeiro_acesso', async (conexao) => {
-      if ((await Usuario.contar(conexao)) > 0) throw new ErroApp(403, 'O primeiro acesso já foi feito.');
+      if ((await Usuario.contar(conexao)) > 0)
+        throw new ErroApp(403, 'O primeiro acesso já foi feito.');
       return Usuario.cadastrar(dados, 'admin', conexao);
     });
   }
@@ -28,7 +29,9 @@ class Usuario extends Modelo {
   }
 
   static async listar() {
-    const linhas = await banco.sql('SELECT id, nome, login, perfil, ativo FROM usuario ORDER BY nome');
+    const linhas = await banco.sql(
+      'SELECT id, nome, login, perfil, ativo FROM usuario ORDER BY nome',
+    );
     return linhas.map((linha) => new Usuario(linha));
   }
 
@@ -56,7 +59,8 @@ class Usuario extends Modelo {
       return null;
     }
     if (!(await usuario.conferirSenha(senha))) return null;
-    if (!usuario.ativo) throw new ErroApp(403, 'Este usuário está inativo. Fale com um administrador.');
+    if (!usuario.ativo)
+      throw new ErroApp(403, 'Este usuário está inativo. Fale com um administrador.');
     return usuario;
   }
 
@@ -64,8 +68,13 @@ class Usuario extends Modelo {
     this.nome = Modelo.texto(this.nome);
     this.login = Modelo.texto(this.login).toLowerCase();
     if (!this.nome) throw new ErroApp(400, 'Informe o nome.');
-    if (!/^[a-z0-9._-]{3,30}$/.test(this.login)) throw new ErroApp(400, 'O login deve ter de 3 a 30 caracteres (letras minúsculas, números, ponto, hífen ou _).');
-    if (this.perfil !== 'admin' && this.perfil !== 'usuario') throw new ErroApp(400, 'Perfil inválido.');
+    if (!/^[a-z0-9._-]{3,30}$/.test(this.login))
+      throw new ErroApp(
+        400,
+        'O login deve ter de 3 a 30 caracteres (letras minúsculas, números, ponto, hífen ou _).',
+      );
+    if (this.perfil !== 'admin' && this.perfil !== 'usuario')
+      throw new ErroApp(400, 'Perfil inválido.');
   }
 
   async definirSenha(senha) {

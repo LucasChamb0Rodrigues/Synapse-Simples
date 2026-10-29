@@ -15,8 +15,13 @@ class Sistema {
     document.querySelectorAll('[data-aba]').forEach((botao) => {
       botao.addEventListener('click', () => this.abrirAba(botao.dataset.aba));
     });
-    new MutationObserver(() => Tela.rotularTabelas()).observe(document.body, { childList: true, subtree: true });
-    document.addEventListener('keydown', (evento) => { if (evento.key === 'Escape') this.alternarMenu(false); });
+    new MutationObserver(() => Tela.rotularTabelas()).observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+    document.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') this.alternarMenu(false);
+    });
   }
 
   alternarMenu(abrir) {
@@ -24,11 +29,13 @@ class Sistema {
   }
 
   async carregarTelas() {
-    const telas = await Promise.all(Object.keys(this.abas).map(async (nome) => {
-      const resposta = await fetch(`telas/${nome}.html`);
-      if (!resposta.ok) throw new Error(`Não foi possível carregar a tela ${nome}.`);
-      return resposta.text();
-    }));
+    const telas = await Promise.all(
+      Object.keys(this.abas).map(async (nome) => {
+        const resposta = await fetch(`telas/${nome}.html`);
+        if (!resposta.ok) throw new Error(`Não foi possível carregar a tela ${nome}.`);
+        return resposta.text();
+      }),
+    );
     $('main').innerHTML = telas.join('');
   }
 
@@ -55,7 +62,11 @@ class Sistema {
     botao.disabled = true;
     botao.textContent = 'Entrando...';
     try {
-      const resposta = await Api.chamar('POST', url, Object.fromEntries(new FormData(evento.target)));
+      const resposta = await Api.chamar(
+        'POST',
+        url,
+        Object.fromEntries(new FormData(evento.target)),
+      );
       evento.target.reset();
       $('#login-aviso').hidden = true;
       this.entrar(resposta.usuario);
@@ -78,14 +89,18 @@ class Sistema {
     $('#tela-login').hidden = true;
     $('#tela-sistema').hidden = false;
     this.mostrarUsuario(usuario);
-    document.querySelectorAll('.so-admin').forEach((botao) => { botao.hidden = usuario.perfil !== 'admin'; });
+    document.querySelectorAll('.so-admin').forEach((botao) => {
+      botao.hidden = usuario.perfil !== 'admin';
+    });
     this.abrirAba('catalogo');
   }
 
   mostrarUsuario(usuario) {
     this.usuario = usuario;
     const palavras = usuario.nome.trim().split(/\s+/);
-    $('#usuario-avatar').textContent = (palavras[0][0] + (palavras.length > 1 ? palavras.at(-1)[0] : '')).toUpperCase();
+    $('#usuario-avatar').textContent = (
+      palavras[0][0] + (palavras.length > 1 ? palavras.at(-1)[0] : '')
+    ).toUpperCase();
     $('#usuario-nome').textContent = usuario.nome;
     $('#usuario-perfil').textContent = Tela.nomePerfil(usuario.perfil);
   }
@@ -97,8 +112,12 @@ class Sistema {
   }
 
   abrirAba(nome) {
-    document.querySelectorAll('[data-aba]').forEach((botao) => botao.classList.toggle('ativo', botao.dataset.aba === nome));
-    document.querySelectorAll('main section').forEach((secao) => { secao.hidden = secao.id !== `aba-${nome}`; });
+    document
+      .querySelectorAll('[data-aba]')
+      .forEach((botao) => botao.classList.toggle('ativo', botao.dataset.aba === nome));
+    document.querySelectorAll('main section').forEach((secao) => {
+      secao.hidden = secao.id !== `aba-${nome}`;
+    });
     this.alternarMenu(false);
     this.abas[nome].carregar();
   }

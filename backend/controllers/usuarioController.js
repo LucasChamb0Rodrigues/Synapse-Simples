@@ -25,7 +25,8 @@ class UsuarioController {
   }
 
   async mudarAtivo(req, res) {
-    if (Number(req.params.id) === req.session.usuario.id) throw new ErroApp(400, 'Você não pode inativar o seu próprio usuário.');
+    if (Number(req.params.id) === req.session.usuario.id)
+      throw new ErroApp(400, 'Você não pode inativar o seu próprio usuário.');
     const usuario = await Usuario.buscarOuFalhar(req.params.id);
     const ativo = req.body.ativo === true;
     await usuario.mudarAtivo(ativo);

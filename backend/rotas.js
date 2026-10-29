@@ -7,7 +7,11 @@ const categorias = require('./controllers/categoriaController');
 const relatorio = require('./controllers/relatorioController');
 const usuarios = require('./controllers/usuarioController');
 const perfil = require('./controllers/perfilController');
-const { atualizarUsuarioDaSessao, exigirLogin, exigirAdmin } = require('./middlewares/autenticacao');
+const {
+  atualizarUsuarioDaSessao,
+  exigirLogin,
+  exigirAdmin,
+} = require('./middlewares/autenticacao');
 
 const rotas = express.Router();
 rotas.use(atualizarUsuarioDaSessao);

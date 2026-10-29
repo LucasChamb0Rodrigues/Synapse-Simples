@@ -7,13 +7,20 @@ class TentativaLogin {
   static JANELA = 15 * 60 * 1000;
 
   static prepararTabela() {
-    TentativaLogin.tabelaPronta ??= banco.sql(`
+    TentativaLogin.tabelaPronta ??= banco
+      .sql(
+        `
       CREATE TABLE IF NOT EXISTS tentativa_login (
         id        BIGINT AUTO_INCREMENT PRIMARY KEY,
         login     VARCHAR(30) NOT NULL,
         feita_em  BIGINT      NOT NULL,  -- milissegundos (Date.now())
         INDEX (login, feita_em)
-      )`).catch((erro) => { TentativaLogin.tabelaPronta = null; throw erro; });
+      )`,
+      )
+      .catch((erro) => {
+        TentativaLogin.tabelaPronta = null;
+        throw erro;
+      });
     return TentativaLogin.tabelaPronta;
   }
 
@@ -27,12 +34,22 @@ class TentativaLogin {
       'SELECT COUNT(*) AS total FROM tentativa_login WHERE login = ? AND feita_em > ?',
       [TentativaLogin.chave(login), Date.now() - TentativaLogin.JANELA],
     );
-    if (total >= TentativaLogin.LIMITE) throw new ErroApp(429, 'Muitas tentativas com senha errada. Aguarde 15 minutos e tente de novo.');
+    if (total >= TentativaLogin.LIMITE)
+      throw new ErroApp(
+        429,
+        'Muitas tentativas com senha errada. Aguarde 15 minutos e tente de novo.',
+      );
   }
 
   static async registrarFalha(login) {
-    await banco.sql('INSERT INTO tentativa_login (login, feita_em) VALUES (?, ?)', [TentativaLogin.chave(login), Date.now()]);
-    if (Math.random() < 0.05) await banco.sql('DELETE FROM tentativa_login WHERE feita_em < ?', [Date.now() - TentativaLogin.JANELA]);
+    await banco.sql('INSERT INTO tentativa_login (login, feita_em) VALUES (?, ?)', [
+      TentativaLogin.chave(login),
+      Date.now(),
+    ]);
+    if (Math.random() < 0.05)
+      await banco.sql('DELETE FROM tentativa_login WHERE feita_em < ?', [
+        Date.now() - TentativaLogin.JANELA,
+      ]);
   }
 
   static limpar(login) {
