@@ -23,25 +23,21 @@ class AbaInsumos extends Cadastro {
     const { insumo, precos } = await Api.chamar('GET', `/api/insumos/${id}/precos`);
     $('#janela-ficha-titulo').textContent = `Histórico de preços — ${insumo.nome}`;
     const primeiro = precos[0]?.custo_novo;
-    const variacao = primeiro > 0 ? ((insumo.custo - primeiro) / primeiro) * 100 : null;
-    const sinal = (v) => (v > 0 ? '+' : '') + Tela.porcentagem(v);
 
     $('#janela-ficha-corpo').innerHTML = `
       <div class="relatorio-indicadores">
         ${Tela.indicador('Preço atual', Tela.precoInsumo(insumo.custo), `por ${insumo.unidade}`)}
         ${Tela.indicador('Primeiro registro', primeiro !== undefined ? Tela.precoInsumo(primeiro) : '—', precos[0] ? Tela.dataHora(precos[0].alterado_em).slice(0, 10) : '')}
-        ${Tela.indicador('Variação no período', variacao === null ? '—' : sinal(variacao), `${Math.max(precos.length - 1, 0)} alteração(ões)`)}
       </div>
       <table class="table table-sm">
-        <thead><tr><th>Data</th><th>De</th><th>Para</th><th>Variação</th><th>Usuário</th></tr></thead>
+        <thead><tr><th>Data</th><th>De</th><th>Para</th><th>Usuário</th></tr></thead>
         <tbody>${[...precos].reverse().map((p) => `
           <tr>
             <td>${Tela.dataHora(p.alterado_em)}</td>
             <td>${p.custo_anterior === null ? '—' : Tela.precoInsumo(p.custo_anterior)}</td>
             <td>${Tela.precoInsumo(p.custo_novo)}</td>
-            <td>${p.custo_anterior > 0 ? sinal(((p.custo_novo - p.custo_anterior) / p.custo_anterior) * 100) : '—'}</td>
             <td>${Tela.esc(p.usuario_nome)}</td>
-          </tr>`).join('') || Tela.linhaVazia(5)}
+          </tr>`).join('') || Tela.linhaVazia(4)}
         </tbody>
       </table>`;
     $('#janela-ficha').showModal();
