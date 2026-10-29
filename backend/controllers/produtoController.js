@@ -1,7 +1,6 @@
-const Controller = require('./Controller');
 const Produto = require('../models/produtoModel');
 
-class ProdutoController extends Controller {
+class ProdutoController {
   async criar(req, res) {
     const produto = new Produto().preencher(req.body);
     await produto.salvar();

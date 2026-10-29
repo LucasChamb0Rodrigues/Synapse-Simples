@@ -1,8 +1,7 @@
-const Controller = require('./Controller');
 const Ficha = require('../models/fichaModel');
-const ErroApp = require('../models/ErroApp');
+const ErroApp = require('../utils/ErroApp');
 
-class RelatorioController extends Controller {
+class RelatorioController {
   async gerar(req, res) {
     const ids = [...new Set(String(req.query.produtos || '').split(',').map(Number).filter((id) => Number.isInteger(id) && id > 0))];
     if (ids.length === 0) throw new ErroApp(400, 'Selecione pelo menos um produto.');

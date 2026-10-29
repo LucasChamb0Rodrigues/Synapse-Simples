@@ -84,19 +84,29 @@ Depois disso, cada `git push` na `main` atualiza as telas e a API sozinho.
 
 ```
 backend/             A API (Model + Controller)
-  aplicacao.js         A API: CORS, login (sessão no MySQL), rotas e erros
+  aplicacao.js         Monta a API: liga os middlewares, a sessão (login no MySQL) e as rotas
   servidor.js          Liga a API no computador (npm start)
   api/index.js         Entrada da API na Vercel
   vercel.json          Na Vercel, manda todos os endereços para o api/index.js
-  rotas.js             Liga cada endereço da API a um método de controller (e barra quem não tem permissão)
+  rotas.js             Liga cada endereço da API a um método de controller, em 3 blocos: aberto, logado e só Admin
   banco.sql            Criação das tabelas
   .env.example         Modelo das configurações (copie para .env)
 
 iniciar.js           Só para o computador: "npm start" na raiz liga a API e as telas juntas
 
-  models/              M: uma classe por entidade (cada objeto é uma linha da tabela)
+  config/              Configuração do banco de dados
     banco.js             classe Banco: conexão com o MySQL, sql() e transacao()
+    estrutura.js         Atualiza o banco sozinho: cria colunas e tabelas novas que faltarem
+
+  middlewares/         Funções que rodam antes (ou depois) de cada pedido
+    seguranca.js         cabeçalhos de segurança e CORS
+    autenticacao.js      atualiza o usuário da sessão, exige login, exige perfil Admin
+    erros.js             transforma qualquer erro em uma mensagem para a tela
+
+  utils/
     ErroApp.js           classe ErroApp: erro com status HTTP que vira mensagem na tela
+
+  models/              M: uma classe por entidade (cada objeto é uma linha da tabela)
     Modelo.js            classe base: listar, buscarPorId, buscarOuFalhar, preencher, validar, salvar, mudarAtivo (inativar/reativar)
     categoriaModel.js    Categoria extends Modelo
     insumoModel.js       Insumo extends Modelo
@@ -104,10 +114,9 @@ iniciar.js           Só para o computador: "npm start" na raiz liga a API e as 
     usuarioModel.js      Usuario extends Modelo (senha com hash, autenticar)
     fichaModel.js        Ficha: valida os itens e grava uma nova versão (transação)
     sessaoModel.js       SessaoStore: guarda os logins na tabela sessao
-    estrutura.js         Atualiza o banco sozinho: cria colunas e tabelas novas que faltarem
+    tentativaLoginModel.js  TentativaLogin: bloqueia o login depois de 5 senhas erradas
 
   controllers/         C: uma classe por assunto; recebem o pedido, usam os objetos dos models e respondem
-    Controller.js           classe base (liga os métodos ao objeto)
     authController.js       login, logout, primeiro acesso
     catalogoController.js   lista de produtos com situação e custo; detalhe da ficha
     produtoController.js    cadastro de produtos + gravação da ficha técnica
@@ -118,23 +127,30 @@ frontend/            V: as telas que rodam no navegador
   index.html           todas as telas (uma aba para cada); os botões chamam o objeto "sistema"
   config.js            endereço da API (no computador aponta para a porta 3000; na Vercel usa o repasse)
   vercel.json          na Vercel, repassa /api/... para o projeto da API
-  app.js               classes Api, Tela, Aba, Cadastro, uma classe por aba e Sistema
   estilo.css           cores e layout
+  js/                  o JavaScript das telas, um arquivo por classe
+    tela.js              Tela: formata dinheiro e datas, mostra avisos e confirmações
+    api.js               Api: conversa com o back-end (fetch)
+    sistema.js           Sistema: login, menu e troca de abas (é o último a carregar e liga tudo)
+    abas/                uma classe por aba da tela
+      aba.js               classe base de todas as abas
+      cadastro.js          classe base das abas de cadastro (lista, busca, janela de editar, inativar)
+      catalogo.js  produtos.js  ficha.js  insumos.js  categorias.js  relatorio.js  usuarios.js  perfil.js
 ```
 
 **Onde aparece a orientação a objetos:**
 
 - **Classes e objetos:** cada registro do banco vira um objeto (`new Produto(...)`), com dados e comportamento juntos (`produto.salvar()`, `produto.mudarAtivo(false)`, `usuario.conferirSenha(...)`).
-- **Herança:** `Categoria`, `Insumo`, `Produto` e `Usuario` herdam de `Modelo`; os controllers herdam de `Controller`; na tela, as abas herdam de `Aba` e `Cadastro`.
-- **Polimorfismo:** `Modelo.salvar()` chama `this.validar()`, e cada classe filha tem a sua própria validação. O mesmo vale para `descricao()` e, na tela, para o `carregar()` de cada aba.
+- **Herança:** `Categoria`, `Insumo`, `Produto` e `Usuario` herdam de `Modelo`; na tela, as abas herdam de `Aba` e `Cadastro`.
+- **Polimorfismo:** `Modelo.salvar()` chama `this.validar()`, e cada classe filha tem a sua própria validação. Na tela, cada aba tem o seu próprio `carregar()`.
 - **Encapsulamento:** as regras ficam dentro da classe dona delas (ex.: só o `Usuario` sabe gerar e conferir o hash da senha; só a `Ficha` sabe calcular o custo e gravar a versão).
 
 ---
 
 ## Como um clique vira dado no banco (exemplo: cadastrar insumo)
 
-1. **View:** o usuário preenche o formulário e clica em **Cadastrar**. O `frontend/app.js` chama `Cadastro.salvarJanela(evento)`, que faz `Api.chamar('POST', '/api/insumos', dados)`.
-2. **Rota:** o `backend/rotas.js` confere se a pessoa está logada e é Admin, e chama o método `criar` do `InsumoController`.
+1. **View:** o usuário preenche o formulário e clica em **Cadastrar**. O `frontend/js/abas/cadastro.js` chama `Cadastro.salvarJanela(evento)`, que faz `Api.chamar('POST', '/api/insumos', dados)`.
+2. **Rota:** o `backend/rotas.js` passa pelos middlewares de `backend/middlewares/autenticacao.js` (está logada? é Admin?) e chama o método `criar` do `InsumoController`.
 3. **Controller:** `backend/controllers/insumoController.js` cria o objeto `new Insumo().preencher(dados)` e chama `insumo.salvar()`.
 4. **Model:** `insumo.salvar()` (herdado de `Modelo`) chama `validar()` da classe `Insumo` e faz o `INSERT` no MySQL.
 5. O controller responde `{ ok: true }`. A tela mostra "Salvo!" e recarrega a tabela.
@@ -154,10 +170,10 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 | RF5 Ficha técnica com versões | tabelas `ficha_tecnica` e `item_ficha`; `backend/models/fichaModel.js` |
 | RF6 Custo calculado automaticamente | o servidor busca o preço dos insumos e calcula o custo da receita (com perda) e o custo por unidade (`backend/models/fichaModel.js`) |
 | Preço de venda e margem | produto vendido por unidade ou em caixa (com unidades por caixa); margem sobre o custo da unidade de venda, com alerta abaixo de 30% (`Ficha.custos`) |
-| Histórico de preços dos insumos | tabela `insumo_preco`, com gráfico na tela de Insumos |
-| RF7 Catálogo com busca e situação | `backend/controllers/catalogoController.js` e `frontend/app.js` |
+| Histórico de preços dos insumos | tabela `insumo_preco`, com a lista de alterações na tela de Insumos |
+| RF7 Catálogo com busca e situação | `backend/controllers/catalogoController.js` e `frontend/js/abas/catalogo.js` |
 | Alerta de ficha desatualizada | situação "Desatualizada" quando o preço de um insumo muda |
-| RNF5 Login individual com perfis | `backend/controllers/authController.js` e `backend/rotas.js` (senha com bcrypt) |
+| RNF5 Login individual com perfis | `backend/controllers/authController.js` e `backend/middlewares/autenticacao.js` (senha com bcrypt) |
 
 **Nada é excluído:** produtos, insumos, categorias e usuários são **inativados** em vez de apagados, então o histórico (fichas, versões e custos) nunca se perde e tudo pode ser reativado. Usuário inativo não consegue entrar.
 

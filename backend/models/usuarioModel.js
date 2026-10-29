@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
-const banco = require('./banco');
+const banco = require('../config/banco');
 const Modelo = require('./Modelo');
-const ErroApp = require('./ErroApp');
+const ErroApp = require('../utils/ErroApp');
 
 const HASH_FALSO = '$2a$10$xCbNh57FJmfLgyiU3.9O3O4e0KFQbXoN23KR/m3laH7nihGjw7DqG';
 
@@ -76,10 +76,6 @@ class Usuario extends Modelo {
 
   conferirSenha(senha) {
     return bcrypt.compare(String(senha ?? ''), this.senha_hash);
-  }
-
-  nomePerfil() {
-    return this.perfil === 'admin' ? 'Admin' : 'Usuário';
   }
 
   dadosDaSessao() {

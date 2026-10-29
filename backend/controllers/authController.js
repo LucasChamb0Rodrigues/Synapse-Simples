@@ -1,10 +1,9 @@
-const Controller = require('./Controller');
 const Usuario = require('../models/usuarioModel');
 const TentativaLogin = require('../models/tentativaLoginModel');
 const SessaoStore = require('../models/sessaoModel');
-const ErroApp = require('../models/ErroApp');
+const ErroApp = require('../utils/ErroApp');
 
-class AuthController extends Controller {
+class AuthController {
   async situacao(req, res) {
     const aviso = req.session.aviso || null;
     delete req.session.aviso;
@@ -13,7 +12,7 @@ class AuthController extends Controller {
 
   async primeiroAcesso(req, res) {
     const usuario = await Usuario.cadastrarPrimeiroAdmin(req.body);
-    await this.iniciarSessao(req, usuario);
+    await AuthController.iniciarSessao(req, usuario);
     res.status(201).json({ usuario: req.session.usuario });
   }
 
@@ -25,7 +24,7 @@ class AuthController extends Controller {
       throw new ErroApp(401, 'Usuário ou senha incorretos.');
     }
     await TentativaLogin.limpar(req.body.login);
-    await this.iniciarSessao(req, usuario);
+    await AuthController.iniciarSessao(req, usuario);
     await SessaoStore.encerrarComAviso(usuario.id, req.sessionID, 'Sua sessão foi encerrada porque sua conta entrou em outro dispositivo.');
     res.json({ usuario: req.session.usuario });
   }
@@ -34,7 +33,7 @@ class AuthController extends Controller {
     req.session.destroy(() => res.json({ ok: true }));
   }
 
-  iniciarSessao(req, usuario) {
+  static iniciarSessao(req, usuario) {
     return new Promise((resolver, rejeitar) => {
       req.session.regenerate((erro) => {
         if (erro) return rejeitar(erro);

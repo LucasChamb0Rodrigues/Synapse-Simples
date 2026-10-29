@@ -1,6 +1,6 @@
-const banco = require('./banco');
+const banco = require('../config/banco');
 const Modelo = require('./Modelo');
-const ErroApp = require('./ErroApp');
+const ErroApp = require('../utils/ErroApp');
 
 const centavos = (valor) => Math.round(valor * 100) / 100;
 

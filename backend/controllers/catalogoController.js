@@ -1,9 +1,8 @@
-const Controller = require('./Controller');
 const Produto = require('../models/produtoModel');
 const Ficha = require('../models/fichaModel');
-const ErroApp = require('../models/ErroApp');
+const ErroApp = require('../utils/ErroApp');
 
-class CatalogoController extends Controller {
+class CatalogoController {
   async listar(req, res) {
     const produtos = await Produto.listarCatalogo();
     const soConsulta = req.session.usuario.perfil === 'usuario';

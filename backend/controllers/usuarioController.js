@@ -1,15 +1,14 @@
-const Controller = require('./Controller');
 const Usuario = require('../models/usuarioModel');
 const SessaoStore = require('../models/sessaoModel');
-const ErroApp = require('../models/ErroApp');
+const ErroApp = require('../utils/ErroApp');
 
-class UsuarioController extends Controller {
+class UsuarioController {
   async listar(req, res) {
     res.json(await Usuario.listar());
   }
 
   async criar(req, res) {
-    const novo = await Usuario.cadastrar(req.body, req.body.perfil);
+    await Usuario.cadastrar(req.body, req.body.perfil);
     res.status(201).json({ ok: true });
   }
 
@@ -19,7 +18,6 @@ class UsuarioController extends Controller {
     if (eu && req.body.perfil !== undefined && req.body.perfil !== usuario.perfil) {
       throw new ErroApp(400, 'Você não pode mudar o seu próprio perfil.');
     }
-    const nomeAnterior = usuario.nome;
     const trocouSenha = await usuario.alterar(req.body);
     if (trocouSenha) await SessaoStore.encerrarDoUsuario(usuario.id, req.sessionID);
     if (eu) req.session.usuario = usuario.dadosDaSessao();

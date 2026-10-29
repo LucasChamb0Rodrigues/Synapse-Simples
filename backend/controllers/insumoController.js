@@ -1,7 +1,6 @@
-const Controller = require('./Controller');
 const Insumo = require('../models/insumoModel');
 
-class InsumoController extends Controller {
+class InsumoController {
   async listar(req, res) {
     res.json(await Insumo.listar());
   }

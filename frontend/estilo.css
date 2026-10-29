@@ -103,7 +103,6 @@ h2 { margin-bottom: 16px; }
 .ficha-custos strong { font-size: 1.1rem; }
 .ficha-custos .ficha-custo-destaque { background: #fff8f3; border: 1px solid #f8c9ab; }
 .ficha-custos .ficha-custo-destaque strong { color: #b4470e; }
-.grafico-preco { display: block; width: 100%; height: auto; }
 .campo-quantidade .form-control:focus { border-color: var(--laranja); box-shadow: 0 0 0 3px rgb(241 108 34 / 0.15); }
 .campo-quantidade .form-control.is-invalid:focus { border-color: #dc3545; box-shadow: 0 0 0 3px rgb(220 53 69 / 0.15); }
 
