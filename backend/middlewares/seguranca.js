@@ -1,4 +1,7 @@
-const FRONTEND_URLS = (process.env.FRONTEND_URL || '').split(',').map((url) => url.trim().replace(/\/$/, '')).filter(Boolean);
+const FRONTEND_URLS = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((url) => url.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 
 function cabecalhosDeSeguranca(req, res, next) {
   res.set({

@@ -1,6 +1,10 @@
 class AbaProdutos extends Cadastro {
   constructor() {
-    super('produtos', 'produto', 'Inativar este produto? Ele sai do catálogo de consulta e não recebe novas fichas, mas o histórico fica guardado.');
+    super(
+      'produtos',
+      'produto',
+      'Inativar este produto? Ele sai do catálogo de consulta e não recebe novas fichas, mas o histórico fica guardado.',
+    );
   }
 
   async carregar() {
@@ -11,9 +15,15 @@ class AbaProdutos extends Cadastro {
 
   abrirJanela(id) {
     const atual = this.lista.find((p) => p.id === id)?.categoria_id;
-    $('#produto-categoria').innerHTML = '<option value="">Selecione...</option>' +
-      this.categorias.filter((c) => c.ativo || c.id === atual)
-        .map((c) => `<option value="${c.id}">${Tela.esc(c.nome)}${c.ativo ? '' : ' (inativa)'}</option>`).join('');
+    $('#produto-categoria').innerHTML =
+      '<option value="">Selecione...</option>' +
+      this.categorias
+        .filter((c) => c.ativo || c.id === atual)
+        .map(
+          (c) =>
+            `<option value="${c.id}">${Tela.esc(c.nome)}${c.ativo ? '' : ' (inativa)'}</option>`,
+        )
+        .join('');
     super.abrirJanela(id);
     this.alternarCaixa();
   }
@@ -24,15 +34,22 @@ class AbaProdutos extends Cadastro {
     const quantidade = campos.querySelector('[name="unidades_por_caixa"]');
     quantidade.parentElement.hidden = !caixa;
     quantidade.required = caixa;
-    campos.querySelector('[data-ajuda-preco]').textContent = caixa ? 'Preço da caixa inteira.' : 'Preço de uma unidade.';
+    campos.querySelector('[data-ajuda-preco]').textContent = caixa
+      ? 'Preço da caixa inteira.'
+      : 'Preço de uma unidade.';
   }
 
   desenhar() {
-    $('#tabela-produtos').innerHTML = this.filtrar((p) => [p.codigo, p.nome, p.categoria]).map((p) => `
+    $('#tabela-produtos').innerHTML =
+      this.filtrar((p) => [p.codigo, p.nome, p.categoria])
+        .map(
+          (p) => `
       <tr>
         <td>${Tela.esc(p.codigo)}</td><td>${Tela.esc(p.nome)}</td><td>${Tela.esc(p.categoria)}</td>
         <td>${Tela.formaVenda(p)}</td><td>${Tela.precoDeVenda(p)}</td><td>${Tela.etiqueta(p.situacao)}</td>
         <td class="text-end text-nowrap">${this.botoes(p)}</td>
-      </tr>`).join('') || Tela.linhaVazia(7);
+      </tr>`,
+        )
+        .join('') || Tela.linhaVazia(7);
   }
 }

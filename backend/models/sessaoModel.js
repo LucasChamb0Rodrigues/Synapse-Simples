@@ -3,17 +3,26 @@ const banco = require('../config/banco');
 
 class SessaoStore extends session.Store {
   prepararTabela() {
-    this.tabelaPronta ??= banco.sql(`
+    this.tabelaPronta ??= banco
+      .sql(
+        `
       CREATE TABLE IF NOT EXISTS sessao (
         id         VARCHAR(128) PRIMARY KEY,
         dados      TEXT   NOT NULL,
         expira_em  BIGINT NOT NULL  -- milissegundos (Date.now())
-      )`).catch((erro) => { this.tabelaPronta = null; throw erro; });
+      )`,
+      )
+      .catch((erro) => {
+        this.tabelaPronta = null;
+        throw erro;
+      });
     return this.tabelaPronta;
   }
 
   executar(tarefa, callback = () => {}) {
-    this.prepararTabela().then(tarefa).then((resultado) => callback(null, resultado), callback);
+    this.prepararTabela()
+      .then(tarefa)
+      .then((resultado) => callback(null, resultado), callback);
   }
 
   static expiracao(sessao) {
@@ -22,7 +31,10 @@ class SessaoStore extends session.Store {
 
   get(id, callback) {
     this.executar(async () => {
-      const [linha] = await banco.sql('SELECT dados FROM sessao WHERE id = ? AND expira_em > ?', [id, Date.now()]);
+      const [linha] = await banco.sql('SELECT dados FROM sessao WHERE id = ? AND expira_em > ?', [
+        id,
+        Date.now(),
+      ]);
       return linha ? JSON.parse(linha.dados) : null;
     }, callback);
   }
@@ -35,12 +47,20 @@ class SessaoStore extends session.Store {
         'INSERT INTO sessao (id, dados, expira_em) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE dados = ?, expira_em = ?',
         [id, dados, expira, dados, expira],
       );
-      if (Math.random() < 0.05) await banco.sql('DELETE FROM sessao WHERE expira_em < ?', [Date.now()]);
+      if (Math.random() < 0.05)
+        await banco.sql('DELETE FROM sessao WHERE expira_em < ?', [Date.now()]);
     }, callback);
   }
 
   touch(id, sessao, callback) {
-    this.executar(() => banco.sql('UPDATE sessao SET expira_em = ? WHERE id = ?', [SessaoStore.expiracao(sessao), id]), callback);
+    this.executar(
+      () =>
+        banco.sql('UPDATE sessao SET expira_em = ? WHERE id = ?', [
+          SessaoStore.expiracao(sessao),
+          id,
+        ]),
+      callback,
+    );
   }
 
   destroy(id, callback) {
@@ -55,7 +75,10 @@ class SessaoStore extends session.Store {
   }
 
   static encerrarDoUsuario(usuarioId, exceto = '') {
-    return banco.sql("DELETE FROM sessao WHERE JSON_EXTRACT(dados, '$.usuario.id') = ? AND id <> ?", [usuarioId, exceto]);
+    return banco.sql(
+      "DELETE FROM sessao WHERE JSON_EXTRACT(dados, '$.usuario.id') = ? AND id <> ?",
+      [usuarioId, exceto],
+    );
   }
 }
 

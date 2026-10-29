@@ -1,22 +1,33 @@
 class AbaInsumos extends Cadastro {
   constructor() {
-    super('insumos', 'insumo', 'Inativar este insumo? Ele não poderá ser usado em novas fichas, mas continua nas fichas já salvas.');
+    super(
+      'insumos',
+      'insumo',
+      'Inativar este insumo? Ele não poderá ser usado em novas fichas, mas continua nas fichas já salvas.',
+    );
   }
 
   desenhar() {
-    $('#tabela-insumos').innerHTML = this.filtrar((i) => [i.nome, i.unidade]).map((i) => `
+    $('#tabela-insumos').innerHTML =
+      this.filtrar((i) => [i.nome, i.unidade])
+        .map(
+          (i) => `
       <tr>
         <td>${Tela.esc(i.nome)}</td><td>${i.unidade}</td><td>${Tela.precoInsumo(i.custo)}</td><td>${this.situacao(i)}</td>
         <td class="text-end text-nowrap">
           <button class="btn btn-sm btn-outline-secondary" onclick="${this.chamada('historico', i.id)}">Histórico</button>
           ${this.botoes(i)}
         </td>
-      </tr>`).join('') || Tela.linhaVazia(5);
+      </tr>`,
+        )
+        .join('') || Tela.linhaVazia(5);
   }
 
   editar(id) {
     super.editar(id);
-    this.dica('Se você mudar o custo, as fichas técnicas que usam este insumo aparecerão como "Desatualizada" no Catálogo.');
+    this.dica(
+      'Se você mudar o custo, as fichas técnicas que usam este insumo aparecerão como "Desatualizada" no Catálogo.',
+    );
   }
 
   async historico(id) {
@@ -31,13 +42,20 @@ class AbaInsumos extends Cadastro {
       </div>
       <table class="table table-sm">
         <thead><tr><th>Data</th><th>De</th><th>Para</th><th>Usuário</th></tr></thead>
-        <tbody>${[...precos].reverse().map((p) => `
+        <tbody>${
+          [...precos]
+            .reverse()
+            .map(
+              (p) => `
           <tr>
             <td>${Tela.dataHora(p.alterado_em)}</td>
             <td>${p.custo_anterior === null ? '—' : Tela.precoInsumo(p.custo_anterior)}</td>
             <td>${Tela.precoInsumo(p.custo_novo)}</td>
             <td>${Tela.esc(p.usuario_nome)}</td>
-          </tr>`).join('') || Tela.linhaVazia(4)}
+          </tr>`,
+            )
+            .join('') || Tela.linhaVazia(4)
+        }
         </tbody>
       </table>`;
     $('#janela-ficha').showModal();

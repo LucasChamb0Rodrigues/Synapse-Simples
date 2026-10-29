@@ -13,12 +13,17 @@ const COLUNAS = [
 
 class Estrutura {
   static preparar() {
-    Estrutura.pronta ??= Estrutura.atualizar().catch((erro) => { Estrutura.pronta = null; throw erro; });
+    Estrutura.pronta ??= Estrutura.atualizar().catch((erro) => {
+      Estrutura.pronta = null;
+      throw erro;
+    });
     return Estrutura.pronta;
   }
 
   static async atualizar() {
-    const existentes = await banco.sql('SELECT TABLE_NAME AS tabela, COLUMN_NAME AS coluna FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()');
+    const existentes = await banco.sql(
+      'SELECT TABLE_NAME AS tabela, COLUMN_NAME AS coluna FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()',
+    );
     const nomes = new Set(existentes.map((c) => `${c.tabela}.${c.coluna}`.toLowerCase()));
     for (const [tabela, coluna, definicao] of COLUNAS) {
       if (nomes.has(`${tabela}.${coluna}`)) continue;

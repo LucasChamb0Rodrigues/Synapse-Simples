@@ -15,7 +15,8 @@ class AbaPerfil extends Aba {
   async salvar(evento) {
     evento.preventDefault();
     const dados = Object.fromEntries(new FormData(evento.target));
-    if (dados.senha !== dados.confirmarSenha) return Tela.avisar('A confirmação não confere com a nova senha.', 'danger');
+    if (dados.senha !== dados.confirmarSenha)
+      return Tela.avisar('A confirmação não confere com a nova senha.', 'danger');
     const { usuario } = await Api.chamar('PUT', '/api/perfil', dados);
     sistema.mostrarUsuario(usuario);
     Tela.avisar('Seus dados foram salvos!');

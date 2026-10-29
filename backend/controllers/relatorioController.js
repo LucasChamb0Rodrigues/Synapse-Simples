@@ -3,7 +3,14 @@ const ErroApp = require('../utils/ErroApp');
 
 class RelatorioController {
   async gerar(req, res) {
-    const ids = [...new Set(String(req.query.produtos || '').split(',').map(Number).filter((id) => Number.isInteger(id) && id > 0))];
+    const ids = [
+      ...new Set(
+        String(req.query.produtos || '')
+          .split(',')
+          .map(Number)
+          .filter((id) => Number.isInteger(id) && id > 0),
+      ),
+    ];
     if (ids.length === 0) throw new ErroApp(400, 'Selecione pelo menos um produto.');
     if (ids.length > 200) throw new ErroApp(400, 'Selecione no máximo 200 produtos por relatório.');
     const data = req.query.data || '9999-12-31';
@@ -13,7 +20,10 @@ class RelatorioController {
     let semFicha = 0;
     for (const id of ids) {
       const ficha = await Ficha.buscarVersaoNaData(id, data);
-      if (!ficha) { semFicha++; continue; }
+      if (!ficha) {
+        semFicha++;
+        continue;
+      }
       await ficha.carregarItens();
       produtos.push(ficha);
     }

@@ -1,38 +1,147 @@
-.tela-login { min-height: 100vh; display: flex; background: var(--menu); }
-.tela-login[hidden] { display: none; }
+.tela-login {
+  min-height: 100vh;
+  display: flex;
+  background: var(--menu);
+}
+.tela-login[hidden] {
+  display: none;
+}
 .login-marca {
-  width: 50%; display: flex; align-items: center; justify-content: center;
-  background: #f4f5f7; padding: 24px;
-  border-top-right-radius: 25% 50%; border-bottom-right-radius: 25% 50%;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f5f7;
+  padding: 24px;
+  border-top-right-radius: 25% 50%;
+  border-bottom-right-radius: 25% 50%;
 }
-.logo { display: flex; align-items: center; gap: 16px; }
-.logo svg { width: 88px; height: 88px; color: var(--laranja); }
-.logo span { font-size: 4rem; font-weight: 700; color: var(--menu); letter-spacing: -1px; }
-.login-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }
-.login-form { width: 100%; max-width: 420px; color: #fff; }
-.login-form h1 { font-size: 4rem; font-weight: 400; margin-bottom: 8px; }
-.login-titulo { color: #cfd4da; margin-bottom: 32px; }
-.login-form .form-control { border: 0; border-radius: 10px; padding: 12px 16px; font-size: 1rem; }
-.login-form .form-control:focus { box-shadow: 0 0 0 3px rgb(241 108 34 / 0.45); }
-.login-form .btn { border-radius: 10px; padding: 12px; font-weight: 600; }
-.login-form .btn:disabled { opacity: 0.75; }
-.tela-login { min-height: 100dvh; }
-.login-marca-conteudo { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.login-slogan { margin: 0; color: #5f6670; font-size: 1rem; }
-.login-campo { margin-bottom: 20px; }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.logo svg {
+  width: 88px;
+  height: 88px;
+  color: var(--laranja);
+}
+.logo span {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--menu);
+  letter-spacing: -1px;
+}
+.login-area {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.login-form {
+  width: 100%;
+  max-width: 420px;
+  color: #fff;
+}
+.login-form h1 {
+  font-size: 4rem;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.login-titulo {
+  color: #cfd4da;
+  margin-bottom: 32px;
+}
+.login-form .form-control {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 1rem;
+}
+.login-form .form-control:focus {
+  box-shadow: 0 0 0 3px rgb(241 108 34 / 0.45);
+}
+.login-form .btn {
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 600;
+}
+.login-form .btn:disabled {
+  opacity: 0.75;
+}
+.tela-login {
+  min-height: 100dvh;
+}
+.login-marca-conteudo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.login-slogan {
+  margin: 0;
+  color: #5f6670;
+  font-size: 1rem;
+}
+.login-campo {
+  margin-bottom: 20px;
+}
 .login-aviso {
-  margin: -16px 0 24px; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem;
-  color: #ffd8b0; background: rgb(241 108 34 / 0.14); border: 1px solid rgb(241 108 34 / 0.45);
+  margin: -16px 0 24px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #ffd8b0;
+  background: rgb(241 108 34 / 0.14);
+  border: 1px solid rgb(241 108 34 / 0.45);
 }
-.login-campo .form-label { font-size: 0.9rem; color: #cfd4da; margin-bottom: 6px; }
+.login-campo .form-label {
+  font-size: 0.9rem;
+  color: #cfd4da;
+  margin-bottom: 6px;
+}
 
-.campo-icone { position: relative; }
-.campo-icone > .icone { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #8a9099; pointer-events: none; }
-.campo-icone .form-control { padding-left: 44px; }
-.campo-icone .form-control[type="password"], .campo-icone .form-control#login-senha { padding-right: 48px; }
-.botao-ver-senha {
-  position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px;
-  display: flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 8px; color: #8a9099;
+.campo-icone {
+  position: relative;
 }
-.botao-ver-senha:hover, .botao-ver-senha.ativo { color: var(--laranja); }
-.botao-ver-senha .icone { width: 20px; height: 20px; }
+.campo-icone > .icone {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #8a9099;
+  pointer-events: none;
+}
+.campo-icone .form-control {
+  padding-left: 44px;
+}
+.campo-icone .form-control[type='password'],
+.campo-icone .form-control#login-senha {
+  padding-right: 48px;
+}
+.botao-ver-senha {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: #8a9099;
+}
+.botao-ver-senha:hover,
+.botao-ver-senha.ativo {
+  color: var(--laranja);
+}
+.botao-ver-senha .icone {
+  width: 20px;
+  height: 20px;
+}

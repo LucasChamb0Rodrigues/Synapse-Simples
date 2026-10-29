@@ -7,7 +7,11 @@ class AuthController {
   async situacao(req, res) {
     const aviso = req.session.aviso || null;
     delete req.session.aviso;
-    res.json({ primeiroAcesso: (await Usuario.contar()) === 0, usuario: req.session.usuario || null, aviso });
+    res.json({
+      primeiroAcesso: (await Usuario.contar()) === 0,
+      usuario: req.session.usuario || null,
+      aviso,
+    });
   }
 
   async primeiroAcesso(req, res) {
@@ -25,7 +29,11 @@ class AuthController {
     }
     await TentativaLogin.limpar(req.body.login);
     await AuthController.iniciarSessao(req, usuario);
-    await SessaoStore.encerrarComAviso(usuario.id, req.sessionID, 'Sua sessão foi encerrada porque sua conta entrou em outro dispositivo.');
+    await SessaoStore.encerrarComAviso(
+      usuario.id,
+      req.sessionID,
+      'Sua sessão foi encerrada porque sua conta entrou em outro dispositivo.',
+    );
     res.json({ usuario: req.session.usuario });
   }
 

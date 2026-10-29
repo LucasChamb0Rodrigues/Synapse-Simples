@@ -11,11 +11,17 @@ class AbaCatalogo extends Aba {
   desenhar() {
     const busca = $('#catalogo-busca').value.toLowerCase();
     const filtro = $('#catalogo-filtro').value;
-    const lista = this.lista.filter((p) =>
-      `${p.nome} ${p.codigo}`.toLowerCase().includes(busca)
-      && (!filtro || (filtro === 'margem' ? p.ativo && p.custo?.margemBaixa : p.situacao === filtro)));
+    const lista = this.lista.filter(
+      (p) =>
+        `${p.nome} ${p.codigo}`.toLowerCase().includes(busca) &&
+        (!filtro ||
+          (filtro === 'margem' ? p.ativo && p.custo?.margemBaixa : p.situacao === filtro)),
+    );
 
-    $('#tabela-catalogo').innerHTML = lista.map((p) => `
+    $('#tabela-catalogo').innerHTML =
+      lista
+        .map(
+          (p) => `
       <tr>
         <td>${Tela.esc(p.codigo)}</td><td>${Tela.esc(p.nome)}</td><td>${Tela.esc(p.categoria)}</td>
         <td>${p.versao ? 'v' + p.versao : '—'}</td>
@@ -24,7 +30,9 @@ class AbaCatalogo extends Aba {
         <td>${Tela.margem(p.custo)}</td>
         <td>${Tela.etiqueta(p.situacao)}</td>
         <td><button class="btn btn-sm btn-outline-primary" onclick="${this.chamada('verFicha', p.id)}">Ver</button></td>
-      </tr>`).join('') || Tela.linhaVazia(9);
+      </tr>`,
+        )
+        .join('') || Tela.linhaVazia(9);
 
     this.desenharResumo();
   }
@@ -55,11 +63,15 @@ class AbaCatalogo extends Aba {
         ${Tela.custosEmQuadros(custo, versoes[0].rendimento, versoes[0].perda, produto)}
         <table class="table table-sm">
           <thead><tr><th>Insumo</th><th>Quantidade</th><th>Preço na ficha</th><th>Preço atual</th><th>Subtotal</th></tr></thead>
-          <tbody>${itens.map((i) => `
+          <tbody>${itens
+            .map(
+              (i) => `
             <tr class="${i.custo_na_ficha !== i.custo_atual ? 'table-warning' : ''}">
               <td>${Tela.esc(i.nome)}</td><td>${i.quantidade} ${i.unidade}</td>
               <td>${Tela.precoInsumo(i.custo_na_ficha)}</td><td>${Tela.precoInsumo(i.custo_atual)}</td><td>${Tela.dinheiro(i.subtotal)}</td>
-            </tr>`).join('')}
+            </tr>`,
+            )
+            .join('')}
           </tbody>
           <tfoot><tr><th colspan="4" class="text-end">Custo dos insumos (preços atuais)</th><th>${Tela.dinheiro(custo.insumos)}</th></tr></tfoot>
         </table>

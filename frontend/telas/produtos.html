@@ -1,12 +1,7 @@
 <section id="aba-produtos">
   <div class="cabecalho-aba">
     <h2>Produtos</h2>
-    <button
-      class="btn btn-laranja"
-      onclick="sistema.abas.produtos.novo()"
-    >
-      + Novo produto
-    </button>
+    <button class="btn btn-laranja" onclick="sistema.abas.produtos.novo()">+ Novo produto</button>
   </div>
   <div class="row g-2 mb-3">
     <div class="col-md-8">
@@ -32,30 +27,15 @@
   <div class="row modelo-cadastro" hidden>
     <div>
       <label class="form-label">Código</label
-      ><input
-        class="form-control"
-        name="codigo"
-        maxlength="20"
-        required
-      />
+      ><input class="form-control" name="codigo" maxlength="20" required />
     </div>
     <div>
       <label class="form-label">Nome</label
-      ><input
-        class="form-control"
-        name="nome"
-        maxlength="80"
-        required
-      />
+      ><input class="form-control" name="nome" maxlength="80" required />
     </div>
     <div>
       <label class="form-label">Categoria</label
-      ><select
-        class="form-select"
-        name="categoria_id"
-        id="produto-categoria"
-        required
-      ></select>
+      ><select class="form-select" name="categoria_id" id="produto-categoria" required></select>
     </div>
     <div>
       <label class="form-label">Vendido por</label
@@ -70,23 +50,11 @@
     </div>
     <div>
       <label class="form-label">Unidades por caixa</label
-      ><input
-        class="form-control"
-        name="unidades_por_caixa"
-        type="number"
-        step="1"
-        min="2"
-      />
+      ><input class="form-control" name="unidades_por_caixa" type="number" step="1" min="2" />
     </div>
     <div>
       <label class="form-label">Preço de venda (R$, opcional)</label
-      ><input
-        class="form-control"
-        name="preco_venda"
-        type="number"
-        step="0.01"
-        min="0"
-      />
+      ><input class="form-control" name="preco_venda" type="number" step="0.01" min="0" />
       <div class="form-text" data-ajuda-preco>Preço de uma unidade.</div>
     </div>
   </div>

@@ -6,7 +6,10 @@ class AbaRelatorio extends Aba {
   async carregar() {
     this.lista = (await Api.chamar('GET', '/api/catalogo')).filter((p) => p.ficha_id);
     $('#relatorio-busca').value = '';
-    $('#relatorio-produtos').innerHTML = this.lista.map((p) => `
+    $('#relatorio-produtos').innerHTML =
+      this.lista
+        .map(
+          (p) => `
       <label class="produto-opcao">
         <input class="form-check-input" type="checkbox" value="${p.id}">
         <span class="produto-opcao-corpo">
@@ -15,12 +18,16 @@ class AbaRelatorio extends Aba {
           <span class="produto-opcao-info">${Tela.esc(p.categoria)} · ficha v${p.versao}</span>
         </span>
         <span class="produto-opcao-custo">${p.custo ? `${Tela.precoInsumo(p.custo.unitario)}/un.` : '—'}</span>
-      </label>`).join('') || '<span class="text-muted">Nenhum produto com ficha técnica.</span>';
+      </label>`,
+        )
+        .join('') || '<span class="text-muted">Nenhum produto com ficha técnica.</span>';
     this.atualizarSelecao();
   }
 
   caixas(visiveis = false) {
-    return [...document.querySelectorAll('#relatorio-produtos input')].filter((caixa) => !visiveis || !caixa.closest('label').hidden);
+    return [...document.querySelectorAll('#relatorio-produtos input')].filter(
+      (caixa) => !visiveis || !caixa.closest('label').hidden,
+    );
   }
 
   filtrar() {
@@ -35,23 +42,34 @@ class AbaRelatorio extends Aba {
   marcarTodos() {
     const caixas = this.caixas(true);
     const marcar = !caixas.every((caixa) => caixa.checked);
-    caixas.forEach((caixa) => { caixa.checked = marcar; });
+    caixas.forEach((caixa) => {
+      caixa.checked = marcar;
+    });
     this.atualizarSelecao();
   }
 
   atualizarSelecao() {
     const visiveis = this.caixas(true);
     const marcados = this.caixas().filter((caixa) => caixa.checked).length;
-    $('#relatorio-marcar').textContent = visiveis.length > 0 && visiveis.every((caixa) => caixa.checked) ? 'Desmarcar todos' : 'Marcar todos';
-    $('#relatorio-contagem').textContent = marcados === 0
-      ? 'Nenhum produto selecionado'
-      : `${marcados} de ${this.lista.length} produto(s) selecionado(s)`;
+    $('#relatorio-marcar').textContent =
+      visiveis.length > 0 && visiveis.every((caixa) => caixa.checked)
+        ? 'Desmarcar todos'
+        : 'Marcar todos';
+    $('#relatorio-contagem').textContent =
+      marcados === 0
+        ? 'Nenhum produto selecionado'
+        : `${marcados} de ${this.lista.length} produto(s) selecionado(s)`;
   }
 
   async gerar() {
-    const marcados = this.caixas().filter((caixa) => caixa.checked).map((caixa) => caixa.value);
+    const marcados = this.caixas()
+      .filter((caixa) => caixa.checked)
+      .map((caixa) => caixa.value);
     const data = $('#relatorio-data').value;
-    const { produtos, semFicha } = await Api.chamar('GET', `/api/relatorio?produtos=${marcados.join(',')}&data=${data}`);
+    const { produtos, semFicha } = await Api.chamar(
+      'GET',
+      `/api/relatorio?produtos=${marcados.join(',')}&data=${data}`,
+    );
 
     let html = `
       <div class="relatorio-cabecalho">
@@ -62,10 +80,16 @@ class AbaRelatorio extends Aba {
     if (semFicha > 0) {
       html += `<div class="alert alert-warning no-print">${semFicha} produto(s) não tinham ficha técnica nessa data e ficaram de fora.</div>`;
     }
-    if (produtos.length > 0) html += this.resumo(produtos) + this.comparativo(produtos) + produtos.map((p) => this.cartaoProduto(p)).join('');
+    if (produtos.length > 0)
+      html +=
+        this.resumo(produtos) +
+        this.comparativo(produtos) +
+        produtos.map((p) => this.cartaoProduto(p)).join('');
 
     $('#relatorio-resultado').innerHTML = html;
-    document.querySelectorAll('#relatorio-resultado [data-largura]').forEach((barra) => { barra.style.width = `${barra.dataset.largura}%`; });
+    document.querySelectorAll('#relatorio-resultado [data-largura]').forEach((barra) => {
+      barra.style.width = `${barra.dataset.largura}%`;
+    });
     $('#botao-imprimir').hidden = produtos.length === 0;
   }
 
@@ -88,12 +112,16 @@ class AbaRelatorio extends Aba {
       <div class="card relatorio-bloco">
         <h4>Custo por unidade de cada produto</h4>
         <div class="grafico-barras" role="list">
-          ${ordenados.map((p) => `
+          ${ordenados
+            .map(
+              (p) => `
             <div class="grafico-linha" role="listitem" title="${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}: ${Tela.precoInsumo(p.custo.unitario)} por unidade">
               <span class="grafico-rotulo">${Tela.esc(p.nome)}</span>
               <span class="grafico-trilho"><span class="grafico-barra" data-largura="${(p.custo.unitario / maior) * 100}"></span></span>
               <span class="grafico-valor">${Tela.precoInsumo(p.custo.unitario)}</span>
-            </div>`).join('')}
+            </div>`,
+            )
+            .join('')}
         </div>
       </div>`;
   }
@@ -121,11 +149,15 @@ class AbaRelatorio extends Aba {
         ${principal ? `<div class="relatorio-destaque">Maior peso no custo: <strong>${Tela.esc(principal.nome)}</strong> (${Tela.porcentagem(parte(principal))})</div>` : ''}
         <table class="table table-sm mb-0">
           <thead><tr><th>Insumo</th><th>Quantidade</th><th>Custo unitário</th><th>Subtotal</th><th>Participação</th></tr></thead>
-          <tbody>${itens.map((i) => `
+          <tbody>${itens
+            .map(
+              (i) => `
             <tr>
               <td>${Tela.esc(i.nome)}</td><td>${i.quantidade} ${i.unidade}</td><td>${Tela.precoInsumo(i.custo_atual)}</td><td>${Tela.dinheiro(i.subtotal)}</td>
               <td><span class="participacao"><span class="grafico-trilho"><span class="grafico-barra" data-largura="${parte(i)}"></span></span>${Tela.porcentagem(parte(i))}</span></td>
-            </tr>`).join('')}
+            </tr>`,
+            )
+            .join('')}
           </tbody>
         </table>
       </div>`;

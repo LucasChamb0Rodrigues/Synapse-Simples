@@ -1,17 +1,76 @@
-.janela { border: 0; border-radius: 8px; padding: 24px; max-width: 95vw; }
-.janela-grande { width: 800px; }
-.janela-media { width: 720px; }
-.janela::backdrop { background: rgb(0 0 0 / 0.5); }
-
-.janela-edicao { padding: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 20px 50px rgb(0 0 0 / 0.25); }
-.janela-cabecalho { display: flex; align-items: center; gap: 14px; padding: 20px 24px; border-bottom: 1px solid #eceef1; }
-.janela-icone {
-  width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  background: rgb(241 108 34 / 0.12); color: var(--laranja);
+.janela {
+  border: 0;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 95vw;
 }
-.janela-corpo { padding: 20px 24px; background: #fafbfc; }
-.janela-corpo .form-label { font-size: 0.85rem; font-weight: 600; color: #495057; margin-bottom: 4px; }
-.janela-corpo .form-control, .janela-corpo .form-select { padding: 10px 12px; border-radius: 8px; }
-.janela-corpo .form-control:focus, .janela-corpo .form-select:focus { border-color: var(--laranja); box-shadow: 0 0 0 3px rgb(241 108 34 / 0.15); }
-.janela-dica { font-size: 0.85rem; color: #6c757d; background: #fff; border: 1px solid #eceef1; border-left: 3px solid var(--laranja); border-radius: 6px; padding: 8px 12px; }
-.janela-rodape { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 24px; border-top: 1px solid #eceef1; }
+.janela-grande {
+  width: 800px;
+}
+.janela-media {
+  width: 720px;
+}
+.janela::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+
+.janela-edicao {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.25);
+}
+.janela-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eceef1;
+}
+.janela-icone {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(241 108 34 / 0.12);
+  color: var(--laranja);
+}
+.janela-corpo {
+  padding: 20px 24px;
+  background: #fafbfc;
+}
+.janela-corpo .form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 4px;
+}
+.janela-corpo .form-control,
+.janela-corpo .form-select {
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+.janela-corpo .form-control:focus,
+.janela-corpo .form-select:focus {
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px rgb(241 108 34 / 0.15);
+}
+.janela-dica {
+  font-size: 0.85rem;
+  color: #6c757d;
+  background: #fff;
+  border: 1px solid #eceef1;
+  border-left: 3px solid var(--laranja);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.janela-rodape {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid #eceef1;
+}

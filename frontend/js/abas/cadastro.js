@@ -18,8 +18,11 @@ class Cadastro extends Aba {
   filtrar(campos) {
     const busca = $(`#${this.nome}-busca`).value.toLowerCase();
     const situacao = $(`#${this.nome}-situacao`).value;
-    return this.lista.filter((registro) => campos(registro).join(' ').toLowerCase().includes(busca)
-      && (!situacao || (situacao === 'ativos') === Boolean(registro.ativo)));
+    return this.lista.filter(
+      (registro) =>
+        campos(registro).join(' ').toLowerCase().includes(busca) &&
+        (!situacao || (situacao === 'ativos') === Boolean(registro.ativo)),
+    );
   }
 
   situacao(registro) {
@@ -48,17 +51,24 @@ class Cadastro extends Aba {
 
     linha.className = 'row g-3';
     const colunas = [...linha.children];
-    colunas.forEach((coluna) => { coluna.className = colunas.length === 1 ? 'col-12' : 'col-md-6'; });
+    colunas.forEach((coluna) => {
+      coluna.className = colunas.length === 1 ? 'col-12' : 'col-md-6';
+    });
 
     const campos = $('#editar-campos');
     campos.replaceChildren(linha);
-    if (registro) campos.querySelectorAll('[name]').forEach((campo) => { campo.value = registro[campo.name] ?? ''; });
+    if (registro)
+      campos.querySelectorAll('[name]').forEach((campo) => {
+        campo.value = registro[campo.name] ?? '';
+      });
 
     Cadastro.emEdicao = { cadastro: this, id };
     $('#editar-icone').setAttribute('href', `#i-${this.nome}`);
     if (registro) {
       $('#editar-titulo').textContent = `Editar ${this.item}`;
-      $('#editar-subtitulo').textContent = registro.codigo ? `${registro.codigo} - ${registro.nome}` : registro.nome;
+      $('#editar-subtitulo').textContent = registro.codigo
+        ? `${registro.codigo} - ${registro.nome}`
+        : registro.nome;
       $('#editar-botao').textContent = 'Salvar alterações';
     } else {
       $('#editar-titulo').textContent = `${this.feminino ? 'Nova' : 'Novo'} ${this.item}`;
@@ -88,7 +98,11 @@ class Cadastro extends Aba {
       Tela.avisar('Cadastrado!');
     } else {
       const resposta = await Api.chamar('PUT', `/api/${cadastro.nome}/${id}`, dados);
-      Tela.avisar(resposta.precoMudou ? 'Salvo. O preço mudou: confira as fichas desatualizadas no Catálogo.' : 'Alterações salvas!');
+      Tela.avisar(
+        resposta.precoMudou
+          ? 'Salvo. O preço mudou: confira as fichas desatualizadas no Catálogo.'
+          : 'Alterações salvas!',
+      );
     }
     $('#janela-editar').close();
     cadastro.carregar();

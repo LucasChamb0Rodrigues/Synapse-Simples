@@ -50,7 +50,9 @@ const banco = new Banco({
 });
 
 if (process.env.DB_TIMEZONE) {
-  banco.pool.pool.on('connection', (conexao) => conexao.query('SET time_zone = ?', [process.env.DB_TIMEZONE]));
+  banco.pool.pool.on('connection', (conexao) =>
+    conexao.query('SET time_zone = ?', [process.env.DB_TIMEZONE]),
+  );
 }
 
 module.exports = banco;
