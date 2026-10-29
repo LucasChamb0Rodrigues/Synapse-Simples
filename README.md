@@ -129,7 +129,15 @@ frontend/            V: as telas que rodam no navegador
     catalogo.html  produtos.html  ficha.html  insumos.html  categorias.html  relatorio.html  usuarios.html  perfil.html
   config.js            endereço da API (no computador aponta para a porta 3000; na Vercel usa o repasse)
   vercel.json          na Vercel, repassa /api/... para o projeto da API
-  estilo.css           cores e layout
+  css/                 o visual, um arquivo por parte (carregados nesta ordem no index.html)
+    base.css             cores, botões e ícones (vale para tudo)
+    login.css            tela de login
+    layout.css           menu lateral, conteúdo e cabeçalho das abas
+    janelas.css          janelas de editar, ver ficha e confirmar
+    ficha.css            quadros de custo da ficha técnica
+    relatorio.css        relatório, cards de indicadores e barras
+    responsivo.css       ajustes para tablet e celular
+    impressao.css        relatório impresso em PDF (cabe em uma página)
   js/                  o JavaScript das telas, um arquivo por classe
     tela.js              Tela: formata dinheiro e datas, mostra avisos e confirmações
     api.js               Api: conversa com o back-end (fetch)
