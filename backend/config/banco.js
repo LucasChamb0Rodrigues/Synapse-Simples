@@ -1,8 +1,26 @@
 const mysql = require('mysql2/promise');
 
 class Banco {
-  constructor(configuracao) {
-    this.pool = mysql.createPool(configuracao);
+  constructor() {
+    this.pool = mysql.createPool(Banco.configuracao());
+    if (process.env.DB_TIMEZONE) {
+      this.pool.pool.on('connection', (conexao) =>
+        conexao.query('SET time_zone = ?', [process.env.DB_TIMEZONE]),
+      );
+    }
+  }
+
+  static configuracao() {
+    return {
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      dateStrings: true,
+      decimalNumbers: true,
+      ssl: process.env.DB_SSL === 'true' ? { ca: process.env.DB_SSL_CA || undefined } : undefined,
+    };
   }
 
   async sql(comando, valores = [], conexao = this.pool) {
@@ -38,21 +56,4 @@ class Banco {
   }
 }
 
-const banco = new Banco({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  dateStrings: true,
-  decimalNumbers: true,
-  ssl: process.env.DB_SSL === 'true' ? { ca: process.env.DB_SSL_CA || undefined } : undefined,
-});
-
-if (process.env.DB_TIMEZONE) {
-  banco.pool.pool.on('connection', (conexao) =>
-    conexao.query('SET time_zone = ?', [process.env.DB_TIMEZONE]),
-  );
-}
-
-module.exports = banco;
+module.exports = new Banco();

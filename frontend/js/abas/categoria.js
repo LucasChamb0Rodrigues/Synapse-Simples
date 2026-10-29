@@ -9,7 +9,7 @@ class AbaCategorias extends Cadastro {
   }
 
   desenhar() {
-    $('#tabela-categorias').innerHTML =
+    Tela.elemento('#tabela-categorias').innerHTML =
       this.filtrar((c) => [c.nome])
         .map(
           (c) => `

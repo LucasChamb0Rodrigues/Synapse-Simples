@@ -16,8 +16,8 @@ class Cadastro extends Aba {
   desenhar() {}
 
   filtrar(campos) {
-    const busca = $(`#${this.nome}-busca`).value.toLowerCase();
-    const situacao = $(`#${this.nome}-situacao`).value;
+    const busca = Tela.elemento(`#${this.nome}-busca`).value.toLowerCase();
+    const situacao = Tela.elemento(`#${this.nome}-situacao`).value;
     return this.lista.filter(
       (registro) =>
         campos(registro).join(' ').toLowerCase().includes(busca) &&
@@ -45,7 +45,7 @@ class Cadastro extends Aba {
 
   abrirJanela(id) {
     const registro = this.lista.find((r) => r.id === id);
-    const linha = $(`#aba-${this.nome} .modelo-cadastro`).cloneNode(true);
+    const linha = Tela.elemento(`#aba-${this.nome} .modelo-cadastro`).cloneNode(true);
     linha.hidden = false;
     linha.querySelectorAll('[id]').forEach((campo) => campo.removeAttribute('id'));
 
@@ -55,7 +55,7 @@ class Cadastro extends Aba {
       coluna.className = colunas.length === 1 ? 'col-12' : 'col-md-6';
     });
 
-    const campos = $('#editar-campos');
+    const campos = Tela.elemento('#editar-campos');
     campos.replaceChildren(linha);
     if (registro)
       campos.querySelectorAll('[name]').forEach((campo) => {
@@ -63,19 +63,20 @@ class Cadastro extends Aba {
       });
 
     Cadastro.emEdicao = { cadastro: this, id };
-    $('#editar-icone').setAttribute('href', `#i-${this.nome}`);
+    Tela.elemento('#editar-icone').setAttribute('href', `#i-${this.nome}`);
     if (registro) {
-      $('#editar-titulo').textContent = `Editar ${this.item}`;
-      $('#editar-subtitulo').textContent = registro.codigo
+      Tela.elemento('#editar-titulo').textContent = `Editar ${this.item}`;
+      Tela.elemento('#editar-subtitulo').textContent = registro.codigo
         ? `${registro.codigo} - ${registro.nome}`
         : registro.nome;
-      $('#editar-botao').textContent = 'Salvar alterações';
+      Tela.elemento('#editar-botao').textContent = 'Salvar alterações';
     } else {
-      $('#editar-titulo').textContent = `${this.feminino ? 'Nova' : 'Novo'} ${this.item}`;
-      $('#editar-subtitulo').textContent = 'Preencha os dados para cadastrar.';
-      $('#editar-botao').textContent = 'Cadastrar';
+      Tela.elemento('#editar-titulo').textContent =
+        `${this.feminino ? 'Nova' : 'Novo'} ${this.item}`;
+      Tela.elemento('#editar-subtitulo').textContent = 'Preencha os dados para cadastrar.';
+      Tela.elemento('#editar-botao').textContent = 'Cadastrar';
     }
-    $('#janela-editar').showModal();
+    Tela.elemento('#janela-editar').showModal();
     campos.querySelector('[name]').focus();
   }
 
@@ -83,7 +84,7 @@ class Cadastro extends Aba {
     const div = document.createElement('div');
     div.className = 'janela-dica mt-3';
     div.textContent = texto;
-    $('#editar-campos').append(div);
+    Tela.elemento('#editar-campos').append(div);
   }
 
   static async salvarJanela(evento) {
@@ -104,7 +105,7 @@ class Cadastro extends Aba {
           : 'Alterações salvas!',
       );
     }
-    $('#janela-editar').close();
+    Tela.elemento('#janela-editar').close();
     cadastro.carregar();
   }
 

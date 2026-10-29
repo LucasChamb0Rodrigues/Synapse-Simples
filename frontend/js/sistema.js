@@ -25,18 +25,29 @@ class Sistema {
   }
 
   alternarMenu(abrir) {
-    $('#tela-sistema').classList.toggle('menu-aberto', abrir);
+    Tela.elemento('#tela-sistema').classList.toggle('menu-aberto', abrir);
   }
+
+  static TELAS = [
+    'catalogo',
+    'produto',
+    'ficha',
+    'insumo',
+    'categoria',
+    'relatorio',
+    'usuario',
+    'perfil',
+  ];
 
   async carregarTelas() {
     const telas = await Promise.all(
-      Object.keys(this.abas).map(async (nome) => {
+      Sistema.TELAS.map(async (nome) => {
         const resposta = await fetch(`telas/${nome}.html`);
         if (!resposta.ok) throw new Error(`Não foi possível carregar a tela ${nome}.`);
         return resposta.text();
       }),
     );
-    $('main').innerHTML = telas.join('');
+    Tela.elemento('main').innerHTML = telas.join('');
   }
 
   async iniciar() {
@@ -45,12 +56,12 @@ class Sistema {
     if (situacao.usuario) return this.entrar(situacao.usuario);
 
     this.primeiroAcesso = situacao.primeiroAcesso;
-    $('#tela-login').hidden = false;
-    $('#login-aviso').hidden = !situacao.aviso;
-    $('#login-aviso').textContent = situacao.aviso || '';
-    $('#campo-nome').hidden = !this.primeiroAcesso;
-    $('#campo-nome input').required = this.primeiroAcesso;
-    $('#login-titulo').textContent = this.primeiroAcesso
+    Tela.elemento('#tela-login').hidden = false;
+    Tela.elemento('#login-aviso').hidden = !situacao.aviso;
+    Tela.elemento('#login-aviso').textContent = situacao.aviso || '';
+    Tela.elemento('#campo-nome').hidden = !this.primeiroAcesso;
+    Tela.elemento('#campo-nome input').required = this.primeiroAcesso;
+    Tela.elemento('#login-titulo').textContent = this.primeiroAcesso
       ? 'Primeiro acesso: crie o usuário Admin (administrador).'
       : 'Entre com seu usuário e senha.';
   }
@@ -58,7 +69,7 @@ class Sistema {
   async fazerLogin(evento) {
     evento.preventDefault();
     const url = this.primeiroAcesso ? '/api/primeiro-acesso' : '/api/login';
-    const botao = $('#login-botao');
+    const botao = Tela.elemento('#login-botao');
     botao.disabled = true;
     botao.textContent = 'Entrando...';
     try {
@@ -68,7 +79,7 @@ class Sistema {
         Object.fromEntries(new FormData(evento.target)),
       );
       evento.target.reset();
-      $('#login-aviso').hidden = true;
+      Tela.elemento('#login-aviso').hidden = true;
       this.entrar(resposta.usuario);
     } finally {
       botao.disabled = false;
@@ -77,7 +88,7 @@ class Sistema {
   }
 
   alternarSenha(botao) {
-    const campo = $('#login-senha');
+    const campo = Tela.elemento('#login-senha');
     const mostrar = campo.type === 'password';
     campo.type = mostrar ? 'text' : 'password';
     botao.classList.toggle('ativo', mostrar);
@@ -86,8 +97,8 @@ class Sistema {
 
   entrar(usuario) {
     this.usuario = usuario;
-    $('#tela-login').hidden = true;
-    $('#tela-sistema').hidden = false;
+    Tela.elemento('#tela-login').hidden = true;
+    Tela.elemento('#tela-sistema').hidden = false;
     this.mostrarUsuario(usuario);
     document.querySelectorAll('.so-admin').forEach((botao) => {
       botao.hidden = usuario.perfil !== 'admin';
@@ -98,11 +109,11 @@ class Sistema {
   mostrarUsuario(usuario) {
     this.usuario = usuario;
     const palavras = usuario.nome.trim().split(/\s+/);
-    $('#usuario-avatar').textContent = (
+    Tela.elemento('#usuario-avatar').textContent = (
       palavras[0][0] + (palavras.length > 1 ? palavras.at(-1)[0] : '')
     ).toUpperCase();
-    $('#usuario-nome').textContent = usuario.nome;
-    $('#usuario-perfil').textContent = Tela.nomePerfil(usuario.perfil);
+    Tela.elemento('#usuario-nome').textContent = usuario.nome;
+    Tela.elemento('#usuario-perfil').textContent = Tela.nomePerfil(usuario.perfil);
   }
 
   async sair() {

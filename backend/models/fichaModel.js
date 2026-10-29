@@ -2,10 +2,12 @@ const banco = require('../config/banco');
 const Modelo = require('./Modelo');
 const ErroApp = require('../utils/ErroApp');
 
-const centavos = (valor) => Math.round(valor * 100) / 100;
-
 class Ficha {
   static MARGEM_MINIMA = 30;
+
+  static centavos(valor) {
+    return Math.round(valor * 100) / 100;
+  }
 
   constructor(dados = {}) {
     Object.assign(this, dados);
@@ -18,13 +20,13 @@ class Ficha {
   }
 
   static custos(custoInsumos, rendimento = 1, perda = 0, precoVenda = null, unidadesVenda = 1) {
-    const lote = centavos(custoInsumos * (1 + perda / 100));
+    const lote = Ficha.centavos(custoInsumos * (1 + perda / 100));
     const unitario = Math.round((lote / rendimento) * 10000) / 10000;
     const venda = Math.round(unitario * unidadesVenda * 10000) / 10000;
     const margem =
       precoVenda > 0 ? Math.round(((precoVenda - venda) / precoVenda) * 1000) / 10 : null;
     return {
-      insumos: centavos(custoInsumos),
+      insumos: Ficha.centavos(custoInsumos),
       lote,
       unitario,
       unidadesVenda,

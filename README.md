@@ -30,7 +30,7 @@ frontend/  (telas)       ──pede dados (fetch)──►  backend/  (API Expre
 5. Se preferir ligar separado: a API com `cd backend` + `npm start`, e as telas pelo VS Code, clicando com o botão direito em `frontend/index.html` → **Open with Live Server**. Não use os dois jeitos ao mesmo tempo: os dois usam a porta 5500.
 6. Abra <http://localhost:5500>. No primeiro acesso, o sistema pede para criar o usuário **Admin** (administrador).
 
-O endereço da API que as telas usam fica em `frontend/config.js`. No computador ele já aponta para a porta 3000.
+O endereço da API que as telas usam fica em `frontend/config.js` (classe `Configuracao`). No computador ele já aponta para a porta 3000.
 
 ---
 
@@ -84,24 +84,25 @@ Depois disso, cada `git push` na `main` atualiza as telas e a API sozinho.
 
 ```
 backend/             A API (Model + Controller)
-  aplicacao.js         Monta a API: liga os middlewares, a sessão (login no MySQL) e as rotas
-  servidor.js          Liga a API no computador (npm start)
+  aplicacao.js         classe Aplicacao: monta a API (middlewares, sessão no MySQL e rotas)
+  servidor.js          classe Servidor: liga a API no computador (npm start)
   api/index.js         Entrada da API na Vercel
   vercel.json          Na Vercel, manda todos os endereços para o api/index.js
-  rotas.js             Liga cada endereço da API a um método de controller, em 3 blocos: aberto, logado e só Admin
+  rotas.js             classe Rotas: liga cada endereço a um método de controller, em 3 blocos: aberto, logado e só Admin
   banco.sql            Criação das tabelas
   .env.example         Modelo das configurações (copie para .env)
 
-iniciar.js           Só para o computador: "npm start" na raiz liga a API e as telas juntas
+iniciar.js           classe Iniciador (só para o computador): "npm start" na raiz liga a API e as telas juntas
 
-  config/              Configuração do banco de dados
+  config/              Configuração
+    ambiente.js          classe Ambiente: lê o arquivo .env e confere o SESSION_SECRET
     banco.js             classe Banco: conexão com o MySQL, sql() e transacao()
     estrutura.js         Atualiza o banco sozinho: cria colunas e tabelas novas que faltarem
 
-  middlewares/         Funções que rodam antes (ou depois) de cada pedido
-    seguranca.js         cabeçalhos de segurança e CORS
-    autenticacao.js      atualiza o usuário da sessão, exige login, exige perfil Admin
-    erros.js             transforma qualquer erro em uma mensagem para a tela
+  middlewares/         Classes com o que roda antes (ou depois) de cada pedido
+    seguranca.js         classe Seguranca: cabeçalhos de segurança e CORS
+    autenticacao.js      classe Autenticacao: atualiza o usuário da sessão, exige login, exige perfil Admin
+    erros.js             classe TratadorDeErros: transforma qualquer erro em uma mensagem para a tela
 
   utils/
     ErroApp.js           classe ErroApp: erro com status HTTP que vira mensagem na tela
@@ -126,8 +127,8 @@ iniciar.js           Só para o computador: "npm start" na raiz liga a API e as 
 frontend/            V: as telas que rodam no navegador
   index.html           esqueleto da página: login, menu, janelas e a lista de scripts
   telas/               o HTML de cada aba, um arquivo por aba (o sistema.js carrega todos ao abrir)
-    catalogo.html  produtos.html  ficha.html  insumos.html  categorias.html  relatorio.html  usuarios.html  perfil.html
-  config.js            endereço da API (no computador aponta para a porta 3000; na Vercel usa o repasse)
+    catalogo.html  produto.html  ficha.html  insumo.html  categoria.html  relatorio.html  usuario.html  perfil.html
+  config.js            classe Configuracao: endereço da API (no computador aponta para a porta 3000; na Vercel usa o repasse)
   vercel.json          na Vercel, repassa /api/... para o projeto da API
   css/                 o visual, um arquivo por parte (carregados nesta ordem no index.html)
     base.css             cores, botões e ícones (vale para tudo)
@@ -145,32 +146,36 @@ frontend/            V: as telas que rodam no navegador
     abas/                uma classe por aba da tela
       aba.js               classe base de todas as abas
       cadastro.js          classe base das abas de cadastro (lista, busca, janela de editar, inativar)
-      catalogo.js  produtos.js  ficha.js  insumos.js  categorias.js  relatorio.js  usuarios.js  perfil.js
+      catalogo.js  produto.js  ficha.js  insumo.js  categoria.js  relatorio.js  usuario.js  perfil.js
 ```
+
+**Mesmo nome em todas as camadas:** cada funcionalidade usa o mesmo nome (no singular) do banco até a tela. Para achar tudo de uma funcionalidade, aperte **Ctrl+P** no VS Code e digite o nome (ex.: `insumo`).
+
+| Funcionalidade | Back-end | Tela (HTML) | Lógica da tela (JS) | Estilo |
+|---|---|---|---|---|
+| catalogo | `catalogoController.js` | `telas/catalogo.html` | `js/abas/catalogo.js` | |
+| produto | `produtoController.js`, `produtoModel.js` | `telas/produto.html` | `js/abas/produto.js` | |
+| ficha | `fichaModel.js` | `telas/ficha.html` | `js/abas/ficha.js` | `css/ficha.css` |
+| insumo | `insumoController.js`, `insumoModel.js` | `telas/insumo.html` | `js/abas/insumo.js` | |
+| categoria | `categoriaController.js`, `categoriaModel.js` | `telas/categoria.html` | `js/abas/categoria.js` | |
+| relatorio | `relatorioController.js` | `telas/relatorio.html` | `js/abas/relatorio.js` | `css/relatorio.css` |
+| usuario | `usuarioController.js`, `usuarioModel.js` | `telas/usuario.html` | `js/abas/usuario.js` | |
+| perfil | `perfilController.js` | `telas/perfil.html` | `js/abas/perfil.js` | |
 
 **Onde aparece a orientação a objetos:**
 
 - **Classes e objetos:** cada registro do banco vira um objeto (`new Produto(...)`), com dados e comportamento juntos (`produto.salvar()`, `produto.mudarAtivo(false)`, `usuario.conferirSenha(...)`).
 - **Herança:** `Categoria`, `Insumo`, `Produto` e `Usuario` herdam de `Modelo`; na tela, as abas herdam de `Aba` e `Cadastro`.
 - **Polimorfismo:** `Modelo.salvar()` chama `this.validar()`, e cada classe filha tem a sua própria validação. Na tela, cada aba tem o seu próprio `carregar()`.
+- **Tudo em classes:** todo o código (back-end, telas e o `iniciar.js`) fica dentro de classes. Fora delas só ficam as linhas de partida, que criam o primeiro objeto e o colocam para rodar (ex.: `Servidor.ligar()` e `new Sistema()`).
 - **Encapsulamento:** as regras ficam dentro da classe dona delas (ex.: só o `Usuario` sabe gerar e conferir o hash da senha; só a `Ficha` sabe calcular o custo e gravar a versão).
-
----
-
-## Formatação do código
-
-O código segue o padrão do **Prettier** (configuração em `.prettierrc.json`: aspas simples, linhas de até 100 caracteres). Ele não é instalado no projeto; para formatar tudo depois de mexer, rode na raiz:
-
-```bat
-npx prettier --write "**/*.{js,css,html}"
-```
 
 ---
 
 ## Como um clique vira dado no banco (exemplo: cadastrar insumo)
 
 1. **View:** o usuário preenche o formulário e clica em **Cadastrar**. O `frontend/js/abas/cadastro.js` chama `Cadastro.salvarJanela(evento)`, que faz `Api.chamar('POST', '/api/insumos', dados)`.
-2. **Rota:** o `backend/rotas.js` passa pelos middlewares de `backend/middlewares/autenticacao.js` (está logada? é Admin?) e chama o método `criar` do `InsumoController`.
+2. **Rota:** a classe `Rotas` (`backend/rotas.js`) passa pela classe `Autenticacao` (`backend/middlewares/autenticacao.js`: está logada? é Admin?) e chama o método `criar` do `InsumoController`.
 3. **Controller:** `backend/controllers/insumoController.js` cria o objeto `new Insumo().preencher(dados)` e chama `insumo.salvar()`.
 4. **Model:** `insumo.salvar()` (herdado de `Modelo`) chama `validar()` da classe `Insumo` e faz o `INSERT` no MySQL.
 5. O controller responde `{ ok: true }`. A tela mostra "Salvo!" e recarrega a tabela.

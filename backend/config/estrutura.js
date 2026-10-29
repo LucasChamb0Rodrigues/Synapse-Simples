@@ -1,17 +1,17 @@
 const banco = require('./banco');
 
-const COLUNAS = [
-  ['usuario', 'ativo', 'BOOLEAN NOT NULL DEFAULT TRUE'],
-  ['categoria', 'ativo', 'BOOLEAN NOT NULL DEFAULT TRUE'],
-  ['insumo', 'ativo', 'BOOLEAN NOT NULL DEFAULT TRUE'],
-  ['produto', 'preco_venda', 'DECIMAL(10,2) NULL'],
-  ['produto', 'forma_venda', "ENUM('unidade', 'caixa') NOT NULL DEFAULT 'unidade'"],
-  ['produto', 'unidades_por_caixa', 'INT NULL'],
-  ['ficha_tecnica', 'rendimento', 'DECIMAL(10,3) NOT NULL DEFAULT 1'],
-  ['ficha_tecnica', 'perda', 'DECIMAL(5,2) NOT NULL DEFAULT 0'],
-];
-
 class Estrutura {
+  static COLUNAS = [
+    ['usuario', 'ativo', 'BOOLEAN NOT NULL DEFAULT TRUE'],
+    ['categoria', 'ativo', 'BOOLEAN NOT NULL DEFAULT TRUE'],
+    ['insumo', 'ativo', 'BOOLEAN NOT NULL DEFAULT TRUE'],
+    ['produto', 'preco_venda', 'DECIMAL(10,2) NULL'],
+    ['produto', 'forma_venda', "ENUM('unidade', 'caixa') NOT NULL DEFAULT 'unidade'"],
+    ['produto', 'unidades_por_caixa', 'INT NULL'],
+    ['ficha_tecnica', 'rendimento', 'DECIMAL(10,3) NOT NULL DEFAULT 1'],
+    ['ficha_tecnica', 'perda', 'DECIMAL(5,2) NOT NULL DEFAULT 0'],
+  ];
+
   static preparar() {
     Estrutura.pronta ??= Estrutura.atualizar().catch((erro) => {
       Estrutura.pronta = null;
@@ -25,7 +25,7 @@ class Estrutura {
       'SELECT TABLE_NAME AS tabela, COLUMN_NAME AS coluna FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()',
     );
     const nomes = new Set(existentes.map((c) => `${c.tabela}.${c.coluna}`.toLowerCase()));
-    for (const [tabela, coluna, definicao] of COLUNAS) {
+    for (const [tabela, coluna, definicao] of Estrutura.COLUNAS) {
       if (nomes.has(`${tabela}.${coluna}`)) continue;
       await banco.sql(`ALTER TABLE ${tabela} ADD ${coluna} ${definicao}`).catch((erro) => {
         if (erro.code !== 'ER_DUP_FIELDNAME') throw erro;
