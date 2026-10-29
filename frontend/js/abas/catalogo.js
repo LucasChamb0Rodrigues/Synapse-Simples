@@ -26,15 +26,20 @@ class AbaCatalogo extends Aba {
         <td><button class="btn btn-sm btn-outline-primary" onclick="${this.chamada('verFicha', p.id)}">Ver</button></td>
       </tr>`).join('') || Tela.linhaVazia(9);
 
-    const desatualizadas = this.lista.filter((p) => p.situacao === 'Desatualizada').length;
-    $('#aviso-desatualizadas').hidden = desatualizadas === 0;
-    $('#aviso-desatualizadas').textContent = `${desatualizadas} produto(s) com ficha desatualizada: o preço de algum insumo mudou desde que a ficha foi salva.`;
+    this.desenharResumo();
+  }
 
-    const margemBaixa = this.lista.filter((p) => p.ativo && p.custo?.margemBaixa);
-    $('#aviso-margem').hidden = margemBaixa.length === 0;
-    $('#aviso-margem').textContent = margemBaixa.length
-      ? `${margemBaixa.length} produto(s) com margem abaixo de ${margemBaixa[0].custo.margemMinima}%: o custo por unidade está alto para o preço de venda.`
-      : '';
+  desenharResumo() {
+    const ativos = this.lista.filter((p) => p.ativo).length;
+    const desatualizadas = this.lista.filter((p) => p.situacao === 'Desatualizada').length;
+    const margemBaixa = this.lista.filter((p) => p.ativo && p.custo?.margemBaixa).length;
+    const margemMinima = this.lista.find((p) => p.custo)?.custo.margemMinima ?? 30;
+
+    $('#catalogo-resumo').innerHTML = [
+      Tela.indicador('Total de produtos', this.lista.length, `${ativos} ativo(s)`),
+      Tela.indicador('Fichas desatualizadas', desatualizadas, 'preço de insumo mudou'),
+      Tela.indicador('Margem abaixo do mínimo', margemBaixa, `menos de ${margemMinima}%`),
+    ].join('');
   }
 
   async verFicha(id) {
