@@ -1,0 +1,53 @@
+<section id="aba-categorias">
+  <div class="cabecalho-aba">
+    <h2>Categorias</h2>
+    <button
+      class="btn btn-laranja"
+      onclick="sistema.abas.categorias.novo()"
+    >
+      + Nova categoria
+    </button>
+  </div>
+  <div class="row g-2 mb-3">
+    <div class="col-md-8">
+      <input
+        class="form-control"
+        id="categorias-busca"
+        placeholder="Buscar por nome..."
+        oninput="sistema.abas.categorias.desenhar()"
+      />
+    </div>
+    <div class="col-md-4">
+      <select
+        class="form-select"
+        id="categorias-situacao"
+        onchange="sistema.abas.categorias.desenhar()"
+      >
+        <option value="ativos">Só ativos</option>
+        <option value="inativos">Só inativos</option>
+        <option value="">Todos</option>
+      </select>
+    </div>
+  </div>
+  <div class="row modelo-cadastro" hidden>
+    <div>
+      <label class="form-label">Nome</label
+      ><input
+        class="form-control"
+        name="nome"
+        maxlength="50"
+        required
+      />
+    </div>
+  </div>
+  <table class="table table-hover bg-white">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Situação</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tabela-categorias"></tbody>
+  </table>
+</section>

@@ -124,14 +124,16 @@ iniciar.js           Só para o computador: "npm start" na raiz liga a API e as 
     relatorioController.js  perfilController.js
 
 frontend/            V: as telas que rodam no navegador
-  index.html           todas as telas (uma aba para cada); os botões chamam o objeto "sistema"
+  index.html           esqueleto da página: login, menu, janelas e a lista de scripts
+  telas/               o HTML de cada aba, um arquivo por aba (o sistema.js carrega todos ao abrir)
+    catalogo.html  produtos.html  ficha.html  insumos.html  categorias.html  relatorio.html  usuarios.html  perfil.html
   config.js            endereço da API (no computador aponta para a porta 3000; na Vercel usa o repasse)
   vercel.json          na Vercel, repassa /api/... para o projeto da API
   estilo.css           cores e layout
   js/                  o JavaScript das telas, um arquivo por classe
     tela.js              Tela: formata dinheiro e datas, mostra avisos e confirmações
     api.js               Api: conversa com o back-end (fetch)
-    sistema.js           Sistema: login, menu e troca de abas (é o último a carregar e liga tudo)
+    sistema.js           Sistema: carrega as telas, login, menu e troca de abas (é o último a carregar e liga tudo)
     abas/                uma classe por aba da tela
       aba.js               classe base de todas as abas
       cadastro.js          classe base das abas de cadastro (lista, busca, janela de editar, inativar)

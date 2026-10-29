@@ -1,0 +1,107 @@
+<section id="aba-produtos">
+  <div class="cabecalho-aba">
+    <h2>Produtos</h2>
+    <button
+      class="btn btn-laranja"
+      onclick="sistema.abas.produtos.novo()"
+    >
+      + Novo produto
+    </button>
+  </div>
+  <div class="row g-2 mb-3">
+    <div class="col-md-8">
+      <input
+        class="form-control"
+        id="produtos-busca"
+        placeholder="Buscar por nome, código ou categoria..."
+        oninput="sistema.abas.produtos.desenhar()"
+      />
+    </div>
+    <div class="col-md-4">
+      <select
+        class="form-select"
+        id="produtos-situacao"
+        onchange="sistema.abas.produtos.desenhar()"
+      >
+        <option value="ativos">Só ativos</option>
+        <option value="inativos">Só inativos</option>
+        <option value="">Todos</option>
+      </select>
+    </div>
+  </div>
+  <div class="row modelo-cadastro" hidden>
+    <div>
+      <label class="form-label">Código</label
+      ><input
+        class="form-control"
+        name="codigo"
+        maxlength="20"
+        required
+      />
+    </div>
+    <div>
+      <label class="form-label">Nome</label
+      ><input
+        class="form-control"
+        name="nome"
+        maxlength="80"
+        required
+      />
+    </div>
+    <div>
+      <label class="form-label">Categoria</label
+      ><select
+        class="form-select"
+        name="categoria_id"
+        id="produto-categoria"
+        required
+      ></select>
+    </div>
+    <div>
+      <label class="form-label">Vendido por</label
+      ><select
+        class="form-select"
+        name="forma_venda"
+        onchange="sistema.abas.produtos.alternarCaixa()"
+      >
+        <option value="unidade">Unidade</option>
+        <option value="caixa">Caixa</option>
+      </select>
+    </div>
+    <div>
+      <label class="form-label">Unidades por caixa</label
+      ><input
+        class="form-control"
+        name="unidades_por_caixa"
+        type="number"
+        step="1"
+        min="2"
+      />
+    </div>
+    <div>
+      <label class="form-label">Preço de venda (R$, opcional)</label
+      ><input
+        class="form-control"
+        name="preco_venda"
+        type="number"
+        step="0.01"
+        min="0"
+      />
+      <div class="form-text" data-ajuda-preco>Preço de uma unidade.</div>
+    </div>
+  </div>
+  <table class="table table-hover bg-white">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nome</th>
+        <th>Categoria</th>
+        <th>Venda</th>
+        <th>Preço</th>
+        <th>Situação</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tabela-produtos"></tbody>
+  </table>
+</section>

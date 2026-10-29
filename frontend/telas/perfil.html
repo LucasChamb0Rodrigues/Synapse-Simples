@@ -1,0 +1,68 @@
+<section id="aba-perfil">
+  <h2>Meu perfil</h2>
+  <form
+    class="card card-body mb-4"
+    id="form-perfil"
+    onsubmit="sistema.abas.perfil.salvar(event)"
+  >
+    <div class="row g-2">
+      <div class="col-md-6">
+        <label class="form-label">Nome</label
+        ><input
+          class="form-control"
+          name="nome"
+          maxlength="60"
+          required
+        />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Login</label
+        ><input
+          class="form-control"
+          name="login"
+          maxlength="30"
+          autocomplete="username"
+          required
+        />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Nova senha</label
+        ><input
+          class="form-control"
+          name="senha"
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          placeholder="Deixe em branco para manter a atual"
+        />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Confirmar nova senha</label
+        ><input
+          class="form-control"
+          name="confirmarSenha"
+          type="password"
+          autocomplete="new-password"
+        />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label"
+          >Senha atual (para confirmar as alterações)</label
+        ><input
+          class="form-control"
+          name="senhaAtual"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+    </div>
+    <div class="small text-muted mt-2">
+      Perfil: <strong id="perfil-tipo"></strong> (só o Admin pode mudar
+      o perfil).
+    </div>
+    <div class="mt-3">
+      <button class="btn btn-laranja">Salvar alterações</button>
+    </div>
+  </form>
+</section>
