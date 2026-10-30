@@ -1,20 +1,20 @@
-const banco = require('../config/banco');
-const Modelo = require('./Modelo');
-const ErroApp = require('../utils/ErroApp');
-const Ficha = require('./fichaModel');
+const banco = require("../config/banco");
+const Modelo = require("./Modelo");
+const ErroApp = require("../utils/ErroApp");
+const Ficha = require("./fichaModel");
 
 class Produto extends Modelo {
-  static tabela = 'produto';
+  static tabela = "produto";
   static campos = [
-    'codigo',
-    'nome',
-    'categoria_id',
-    'preco_venda',
-    'forma_venda',
-    'unidades_por_caixa',
+    "codigo",
+    "nome",
+    "categoria_id",
+    "preco_venda",
+    "forma_venda",
+    "unidades_por_caixa",
   ];
-  static FORMAS_VENDA = ['unidade', 'caixa'];
-  static naoEncontrado = 'Produto não encontrado.';
+  static FORMAS_VENDA = ["unidade", "caixa"];
+  static naoEncontrado = "Produto não encontrado.";
 
   static async listarCatalogo() {
     const linhas = await banco.sql(`
@@ -50,7 +50,7 @@ class Produto extends Modelo {
 
   static async buscarPorId(id) {
     const [linha] = await banco.sql(
-      'SELECT p.*, c.nome AS categoria FROM produto p JOIN categoria c ON c.id = p.categoria_id WHERE p.id = ?',
+      "SELECT p.*, c.nome AS categoria FROM produto p JOIN categoria c ON c.id = p.categoria_id WHERE p.id = ?",
       [id],
     );
     return linha && new Produto(linha);
@@ -62,66 +62,84 @@ class Produto extends Modelo {
     if (!/^[A-Z0-9._-]{1,20}$/.test(this.codigo))
       throw new ErroApp(
         400,
-        'O código deve ter de 1 a 20 caracteres (letras, números, ponto, hífen ou _).',
+        "O código deve ter de 1 a 20 caracteres (letras, números, ponto, hífen ou _).",
       );
-    if (!this.nome) throw new ErroApp(400, 'Informe o nome do produto.');
-    if (!this.categoria_id) throw new ErroApp(400, 'Selecione uma categoria.');
+    if (!this.nome) throw new ErroApp(400, "Informe o nome do produto.");
+    if (!this.categoria_id) throw new ErroApp(400, "Selecione uma categoria.");
     this.preco_venda =
-      this.preco_venda === '' || this.preco_venda == null ? null : Number(this.preco_venda);
+      this.preco_venda === "" || this.preco_venda == null
+        ? null
+        : Number(this.preco_venda);
     if (this.preco_venda !== null && !(this.preco_venda > 0))
-      throw new ErroApp(400, 'Informe um preço de venda maior que zero, ou deixe em branco.');
-    this.forma_venda = Modelo.texto(this.forma_venda || 'unidade').toLowerCase();
+      throw new ErroApp(
+        400,
+        "Informe um preço de venda maior que zero, ou deixe em branco.",
+      );
+    this.forma_venda = Modelo.texto(
+      this.forma_venda || "unidade",
+    ).toLowerCase();
     if (!Produto.FORMAS_VENDA.includes(this.forma_venda))
-      throw new ErroApp(400, 'Escolha se o produto é vendido por unidade ou por caixa.');
-    if (this.forma_venda === 'caixa') {
+      throw new ErroApp(
+        400,
+        "Escolha se o produto é vendido por unidade ou por caixa.",
+      );
+    if (this.forma_venda === "caixa") {
       this.unidades_por_caixa = Number(this.unidades_por_caixa);
-      if (!Number.isInteger(this.unidades_por_caixa) || this.unidades_por_caixa < 2) {
+      if (
+        !Number.isInteger(this.unidades_por_caixa) ||
+        this.unidades_por_caixa < 1
+      ) {
         throw new ErroApp(
           400,
-          'Informe quantas unidades vêm na caixa (número inteiro, a partir de 2).',
+          "Informe quantas unidades vêm na caixa (número inteiro, a partir de 2).",
         );
       }
     } else {
       this.unidades_por_caixa = null;
     }
 
-    const [categoria] = await banco.sql('SELECT ativo FROM categoria WHERE id = ?', [
-      this.categoria_id,
-    ]);
-    if (!categoria) throw new ErroApp(400, 'A categoria escolhida não existe mais.');
+    const [categoria] = await banco.sql(
+      "SELECT ativo FROM categoria WHERE id = ?",
+      [this.categoria_id],
+    );
+    if (!categoria)
+      throw new ErroApp(400, "A categoria escolhida não existe mais.");
     if (!categoria.ativo) {
       const [salvo] = this.id
-        ? await banco.sql('SELECT categoria_id FROM produto WHERE id = ?', [this.id])
+        ? await banco.sql("SELECT categoria_id FROM produto WHERE id = ?", [
+            this.id,
+          ])
         : [];
       if (salvo?.categoria_id !== Number(this.categoria_id))
         throw new ErroApp(
           400,
-          'Esta categoria está inativa. Escolha outra ou reative-a em Categorias.',
+          "Esta categoria está inativa. Escolha outra ou reative-a em Categorias.",
         );
     }
 
     const repetidos = await banco.sql(
-      'SELECT id, ativo FROM produto WHERE (codigo = ? OR nome = ?) AND id <> ?',
+      "SELECT id, ativo FROM produto WHERE (codigo = ? OR nome = ?) AND id <> ?",
       [this.codigo, this.nome, this.id || 0],
     );
     if (repetidos.some((p) => !p.ativo))
       throw new ErroApp(
         409,
-        'Já existe um produto inativo com esse código ou nome. Reative-o na lista de produtos.',
+        "Já existe um produto inativo com esse código ou nome. Reative-o na lista de produtos.",
       );
     if (repetidos.length > 0)
-      throw new ErroApp(409, 'Já existe um produto com esse código ou nome.');
+      throw new ErroApp(409, "Já existe um produto com esse código ou nome.");
   }
 
   calcularSituacao() {
-    if (!this.ativo) return 'Inativo';
-    if (!this.ficha_id) return 'Sem ficha';
-    if (this.insumos_alterados > 0) return 'Desatualizada';
-    return 'Ativa';
+    if (!this.ativo) return "Inativo";
+    if (!this.ficha_id) return "Sem ficha";
+    if (this.insumos_alterados > 0) return "Desatualizada";
+    return "Ativa";
   }
 
   novaFicha({ itens, rendimento, perda }) {
-    if (!this.ativo) throw new ErroApp(400, 'Produto inativo não pode receber ficha técnica.');
+    if (!this.ativo)
+      throw new ErroApp(400, "Produto inativo não pode receber ficha técnica.");
     return new Ficha({ produto: this, itens, rendimento, perda });
   }
 }
