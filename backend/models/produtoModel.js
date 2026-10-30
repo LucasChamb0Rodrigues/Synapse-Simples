@@ -87,7 +87,7 @@ class Produto extends Modelo {
       this.unidades_por_caixa = Number(this.unidades_por_caixa);
       if (
         !Number.isInteger(this.unidades_por_caixa) ||
-        this.unidades_por_caixa < 5
+        this.unidades_por_caixa < 2
       ) {
         throw new ErroApp(
           400,
