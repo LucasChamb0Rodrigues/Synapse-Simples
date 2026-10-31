@@ -15,8 +15,8 @@ class Insumo extends Modelo {
     if (!this.nome) throw new ErroApp(400, 'Informe o nome do insumo.');
     if (!Insumo.UNIDADES.includes(this.unidade))
       throw new ErroApp(400, 'Unidade de medida inválida.');
-    if (!(this.custo >= 0)) throw new ErroApp(400, 'Informe um custo válido (zero ou maior).');
     this.custo = Math.round(this.custo * 10000) / 10000;
+    if (!(this.custo > 0)) throw new ErroApp(400, 'Informe um custo válido (maior que zero).');
 
     if (this.id) {
       const salvo = await Insumo.buscarPorId(this.id);
