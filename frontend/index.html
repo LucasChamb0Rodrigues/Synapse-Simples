@@ -284,14 +284,18 @@
             <h5 class="mb-0" id="editar-titulo"></h5>
             <div class="small text-muted text-truncate" id="editar-subtitulo"></div>
           </div>
-          <button type="button" class="btn-close" onclick="$('#janela-editar').close()"></button>
+          <button
+            type="button"
+            class="btn-close"
+            onclick="Tela.elemento('#janela-editar').close()"
+          ></button>
         </div>
         <div class="janela-corpo" id="editar-campos"></div>
         <div class="janela-rodape">
           <button
             type="button"
             class="btn btn-outline-secondary"
-            onclick="$('#janela-editar').close()"
+            onclick="Tela.elemento('#janela-editar').close()"
           >
             Cancelar
           </button>
