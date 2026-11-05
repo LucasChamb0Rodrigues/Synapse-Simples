@@ -1,0 +1,33 @@
+<section id="aba-variacao">
+  <h2 class="no-print">Variação de Preços</h2>
+  <div class="card card-body mb-3 no-print relatorio-filtros">
+    <p class="small text-muted mb-3">
+      Mostra os insumos que mudaram de preço no período, quanto mudou e quantos produtos usam cada
+      insumo.
+    </p>
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label" for="variacao-inicio">Data inicial</label>
+        <input class="form-control" id="variacao-inicio" type="date" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="variacao-fim">Data final</label>
+        <input class="form-control" id="variacao-fim" type="date" />
+      </div>
+      <div class="col-md-6 d-flex gap-2">
+        <button class="btn btn-laranja" onclick="sistema.abas.variacao.gerar()">
+          Gerar relatório
+        </button>
+        <button
+          class="btn btn-outline-secondary"
+          id="variacao-imprimir"
+          onclick="window.print()"
+          hidden
+        >
+          Imprimir
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="variacao-resultado"></div>
+</section>

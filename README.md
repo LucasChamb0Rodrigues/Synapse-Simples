@@ -122,6 +122,8 @@ iniciar.js           classe Iniciador (só para o computador): "npm start" na ra
     produtoController.js    cadastro de produtos + gravação da ficha técnica
     insumoController.js     categoriaController.js    usuarioController.js
     relatorioController.js  perfilController.js
+    variacaoController.js   relatório de variação de preços dos insumos (por período)
+    margemController.js     relatório de margem de lucro dos produtos (por categoria)
 
   testes/              Testes automáticos (npm test dentro de backend/)
     insumo.test.js       teste do critério 2 do cadastro de insumo (custo negativo)
@@ -129,7 +131,7 @@ iniciar.js           classe Iniciador (só para o computador): "npm start" na ra
 frontend/            V: as telas que rodam no navegador
   index.html           esqueleto da página: login, menu, janelas e a lista de scripts
   telas/               o HTML de cada aba, um arquivo por aba (o sistema.js carrega todos ao abrir)
-    catalogo.html  produto.html  ficha.html  insumo.html  categoria.html  relatorio.html  usuario.html  perfil.html
+    catalogo.html  produto.html  ficha.html  insumo.html  categoria.html  relatorio.html  variacao.html  margem.html  usuario.html  perfil.html
   config.js            classe Configuracao: endereço da API (no computador aponta para a porta 3000; na Vercel usa o repasse)
   vercel.json          na Vercel, repassa /api/... para o projeto da API
   css/                 o visual, um arquivo por parte (carregados nesta ordem no index.html)
@@ -138,9 +140,9 @@ frontend/            V: as telas que rodam no navegador
     layout.css           menu lateral, conteúdo e cabeçalho das abas
     janelas.css          janelas de editar, ver ficha e confirmar
     ficha.css            quadros de custo da ficha técnica
-    relatorio.css        relatório, cards de indicadores e barras
+    relatorio.css        relatórios, cards de indicadores e barras
     responsivo.css       ajustes para tablet e celular
-    impressao.css        relatório impresso em PDF (cabe em uma página)
+    impressao.css        relatórios impressos ou salvos em PDF
   js/                  o JavaScript das telas, um arquivo por classe
     tela.js              Tela: formata dinheiro e datas, mostra avisos e confirmações
     api.js               Api: conversa com o back-end (fetch)
@@ -148,7 +150,7 @@ frontend/            V: as telas que rodam no navegador
     abas/                uma classe por aba da tela
       aba.js               classe base de todas as abas
       cadastro.js          classe base das abas de cadastro (lista, busca, janela de editar, inativar)
-      catalogo.js  produto.js  ficha.js  insumo.js  categoria.js  relatorio.js  usuario.js  perfil.js
+      catalogo.js  produto.js  ficha.js  insumo.js  categoria.js  relatorio.js  variacao.js  margem.js  usuario.js  perfil.js
 ```
 
 **Mesmo nome em todas as camadas:** cada funcionalidade usa o mesmo nome (no singular) do banco até a tela. Para achar tudo de uma funcionalidade, aperte **Ctrl+P** no VS Code e digite o nome (ex.: `insumo`).
@@ -161,6 +163,8 @@ frontend/            V: as telas que rodam no navegador
 | insumo | `insumoController.js`, `insumoModel.js` | `telas/insumo.html` | `js/abas/insumo.js` | |
 | categoria | `categoriaController.js`, `categoriaModel.js` | `telas/categoria.html` | `js/abas/categoria.js` | |
 | relatorio | `relatorioController.js` | `telas/relatorio.html` | `js/abas/relatorio.js` | `css/relatorio.css` |
+| variacao | `variacaoController.js`, `insumoModel.js` | `telas/variacao.html` | `js/abas/variacao.js` | `css/relatorio.css` |
+| margem | `margemController.js`, `produtoModel.js` | `telas/margem.html` | `js/abas/margem.js` | `css/relatorio.css` |
 | usuario | `usuarioController.js`, `usuarioModel.js` | `telas/usuario.html` | `js/abas/usuario.js` | |
 | perfil | `perfilController.js` | `telas/perfil.html` | `js/abas/perfil.js` | |
 
@@ -200,6 +204,10 @@ Para **editar**, o botão "Editar" coloca os dados no mesmo formulário e a tela
 | Histórico de preços dos insumos | tabela `insumo_preco`, com a lista de alterações na tela de Insumos |
 | RF7 Catálogo com busca e situação | `backend/controllers/catalogoController.js` e `frontend/js/abas/catalogo.js` |
 | Alerta de ficha desatualizada | situação "Desatualizada" quando o preço de um insumo muda |
+| RF8 Usuários e perfis (Admin e Usuário) | `backend/controllers/usuarioController.js` e `backend/models/usuarioModel.js` |
+| RF9 Meu perfil (nome, login e senha) | `backend/controllers/perfilController.js` e `frontend/js/abas/perfil.js` |
+| RF10 Relatório de variação de preços dos insumos (período, impressão) | `backend/controllers/variacaoController.js` e `Insumo.variacaoDePrecos` (`backend/models/insumoModel.js`) |
+| RF11 Relatório de margem de lucro (categoria, só margem baixa, impressão) | `backend/controllers/margemController.js` |
 | RNF5 Login individual com perfis | `backend/controllers/authController.js` e `backend/middlewares/autenticacao.js` (senha com bcrypt) |
 
 **Nada é excluído:** produtos, insumos, categorias e usuários são **inativados** em vez de apagados, então o histórico (fichas, versões e custos) nunca se perde e tudo pode ser reativado. Usuário inativo não consegue entrar.
