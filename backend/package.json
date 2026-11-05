@@ -8,7 +8,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "start": "node servidor.js"
+    "start": "node servidor.js",
+    "test": "node --test"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

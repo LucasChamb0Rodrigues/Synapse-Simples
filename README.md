@@ -123,6 +123,9 @@ iniciar.js           classe Iniciador (só para o computador): "npm start" na ra
     insumoController.js     categoriaController.js    usuarioController.js
     relatorioController.js  perfilController.js
 
+  testes/              Testes automáticos (npm test dentro de backend/)
+    insumo.test.js       teste do critério 2 do cadastro de insumo (custo negativo)
+
 frontend/            V: as telas que rodam no navegador
   index.html           esqueleto da página: login, menu, janelas e a lista de scripts
   telas/               o HTML de cada aba, um arquivo por aba (o sistema.js carrega todos ao abrir)
