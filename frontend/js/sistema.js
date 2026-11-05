@@ -9,6 +9,8 @@ class Sistema {
       insumos: new AbaInsumos(),
       categorias: new AbaCategorias(),
       relatorio: new AbaRelatorio(),
+      variacao: new AbaVariacao(),
+      margem: new AbaMargem(),
       usuarios: new AbaUsuarios(),
       perfil: new AbaPerfil(),
     };
@@ -35,6 +37,8 @@ class Sistema {
     'insumo',
     'categoria',
     'relatorio',
+    'variacao',
+    'margem',
     'usuario',
     'perfil',
   ];

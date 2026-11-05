@@ -50,6 +50,29 @@ class Insumo extends Modelo {
     );
     return total;
   }
+
+  static async variacaoDePrecos(inicio, fim) {
+    const mudancas = await banco.sql(
+      `SELECT i.nome, i.unidade, p.custo_anterior, p.custo_novo, p.alterado_em, p.usuario_nome,
+              (SELECT COUNT(*)
+                 FROM item_ficha it
+                 JOIN ficha_tecnica f ON f.id = it.ficha_id
+                WHERE it.insumo_id = i.id
+                  AND f.versao = (SELECT MAX(versao) FROM ficha_tecnica WHERE produto_id = f.produto_id)
+              ) AS produtos
+         FROM insumo_preco p
+         JOIN insumo i ON i.id = p.insumo_id
+        WHERE p.custo_anterior IS NOT NULL AND DATE(p.alterado_em) BETWEEN ? AND ?
+        ORDER BY p.alterado_em, p.id`,
+      [inicio, fim],
+    );
+    return mudancas.map((mudanca) => {
+      const antes = mudanca.custo_anterior;
+      const depois = mudanca.custo_novo;
+      const variacao = antes > 0 ? Math.round(((depois - antes) / antes) * 1000) / 10 : null;
+      return { ...mudanca, variacao };
+    });
+  }
 }
 
 module.exports = Insumo;

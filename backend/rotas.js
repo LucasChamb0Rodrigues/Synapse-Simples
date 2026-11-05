@@ -5,6 +5,8 @@ const produtos = require('./controllers/produtoController');
 const insumos = require('./controllers/insumoController');
 const categorias = require('./controllers/categoriaController');
 const relatorio = require('./controllers/relatorioController');
+const variacao = require('./controllers/variacaoController');
+const margem = require('./controllers/margemController');
 const usuarios = require('./controllers/usuarioController');
 const perfil = require('./controllers/perfilController');
 const Autenticacao = require('./middlewares/autenticacao');
@@ -49,6 +51,8 @@ class Rotas {
     rotas.patch('/categorias/:id/ativo', categorias.mudarAtivo);
 
     rotas.get('/relatorio', relatorio.gerar);
+    rotas.get('/variacao', variacao.gerar);
+    rotas.get('/margem', margem.gerar);
 
     rotas.get('/usuarios', usuarios.listar);
     rotas.post('/usuarios', usuarios.criar);

@@ -27,7 +27,9 @@
   }
   main > section:last-child,
   #relatorio-resultado,
-  #relatorio-resultado > *:last-child {
+  #relatorio-resultado > *:last-child,
+  #variacao-resultado > *:last-child,
+  #margem-resultado > *:last-child {
     margin-bottom: 0 !important;
   }
   body {
@@ -39,7 +41,9 @@
     print-color-adjust: exact;
   }
 
-  #relatorio-resultado {
+  #relatorio-resultado,
+  #variacao-resultado,
+  #margem-resultado {
     font-size: 9.5px;
     line-height: 1.25;
   }
@@ -129,11 +133,14 @@
     padding: 3px 8px;
     margin-bottom: 5px;
   }
-  .relatorio-produto table {
+  .relatorio-produto table,
+  .relatorio-tabela {
     font-size: 8.5px;
   }
   .relatorio-produto th,
-  .relatorio-produto td {
+  .relatorio-produto td,
+  .relatorio-tabela th,
+  .relatorio-tabela td {
     padding: 1.5px 5px;
   }
   .participacao {

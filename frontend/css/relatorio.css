@@ -178,6 +178,9 @@
   border-radius: 0 4px 4px 0;
   transition: width 0.4s ease;
 }
+.grafico-barra.alerta {
+  background: #dc3545;
+}
 
 .relatorio-produto-topo {
   display: flex;
