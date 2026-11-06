@@ -16,18 +16,8 @@ class RelatorioController {
     const data = req.query.data || '9999-12-31';
     if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) throw new ErroApp(400, 'Data inválida.');
 
-    const produtos = [];
-    let semFicha = 0;
-    for (const id of ids) {
-      const ficha = await Ficha.buscarVersaoNaData(id, data);
-      if (!ficha) {
-        semFicha++;
-        continue;
-      }
-      await ficha.carregarItens();
-      produtos.push(ficha);
-    }
-    res.json({ produtos, semFicha });
+    const produtos = await Ficha.buscarVersoesNaData(ids, data);
+    res.json({ produtos, semFicha: ids.length - produtos.length });
   }
 }
 
