@@ -57,7 +57,9 @@ class Insumo extends Modelo {
               (SELECT COUNT(*)
                  FROM item_ficha it
                  JOIN ficha_tecnica f ON f.id = it.ficha_id
+                 JOIN produto pr ON pr.id = f.produto_id
                 WHERE it.insumo_id = i.id
+                  AND pr.ativo = 1
                   AND f.versao = (SELECT MAX(versao) FROM ficha_tecnica WHERE produto_id = f.produto_id)
               ) AS produtos
          FROM insumo_preco p
