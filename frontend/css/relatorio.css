@@ -22,9 +22,11 @@
   padding: 2px;
 }
 .produto-opcao {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  column-gap: 10px;
+  row-gap: 4px;
   padding: 12px;
   cursor: pointer;
   background: #fff;
@@ -78,6 +80,7 @@
   color: #6c757d;
 }
 .produto-opcao-custo {
+  grid-column: 2;
   font-weight: 600;
   white-space: nowrap;
 }
