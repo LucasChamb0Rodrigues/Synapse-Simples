@@ -12,8 +12,15 @@ class MargemController {
     const produtos = comMargem
       .filter((p) => !soMargemBaixa || p.custo.margemBaixa)
       .sort((a, b) => a.custo.margem - b.custo.margem);
+    const semMargem = ativos
+      .filter((p) => !comMargem.includes(p))
+      .map((p) => ({
+        codigo: p.codigo,
+        nome: p.nome,
+        motivo: p.custo ? 'sem preço de venda' : 'sem ficha técnica',
+      }));
 
-    res.json({ produtos, semMargem: ativos.length - comMargem.length });
+    res.json({ produtos, semMargem });
   }
 }
 
