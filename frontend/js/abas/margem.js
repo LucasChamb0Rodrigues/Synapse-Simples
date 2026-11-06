@@ -28,8 +28,9 @@ class AbaMargem extends Aba {
         <div class="small text-muted">Gerado por ${Tela.esc(sistema.usuario.nome)} em ${new Date().toLocaleString('pt-BR')}
           · ${Tela.esc(filtro)}${baixa === '1' ? ' · só margem abaixo de 30%' : ''} · custos pelos preços atuais dos insumos</div>
       </div>`;
-    if (semMargem > 0) {
-      html += `<div class="alert alert-warning no-print">${semMargem} produto(s) sem ficha técnica ou sem preço de venda ficaram de fora.</div>`;
+    if (semMargem.length > 0) {
+      const lista = semMargem.map((p) => `${Tela.esc(p.codigo)} ${Tela.esc(p.nome)} (${p.motivo})`);
+      html += `<div class="alert alert-warning no-print">Ficaram de fora: ${lista.join('; ')}.</div>`;
     }
     if (produtos.length === 0) {
       html += '<div class="alert alert-info">Nenhum produto para mostrar com esses filtros.</div>';
