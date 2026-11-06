@@ -44,34 +44,41 @@ class Ficha {
     );
   }
 
-  static listarItens(fichaId) {
+  static listarItens(fichaIds) {
     return banco.sql(
-      `SELECT i.insumo_id, s.nome, s.unidade, s.ativo, i.quantidade,
+      `SELECT i.ficha_id, i.insumo_id, s.nome, s.unidade, s.ativo, i.quantidade,
               i.custo_unitario AS custo_na_ficha, s.custo AS custo_atual,
               ROUND(i.quantidade * s.custo, 2) AS subtotal
          FROM item_ficha i JOIN insumo s ON s.id = i.insumo_id
-        WHERE i.ficha_id = ? ORDER BY s.nome`,
-      [fichaId],
+        WHERE i.ficha_id IN (?) ORDER BY s.nome`,
+      [fichaIds],
     );
   }
 
-  static async buscarVersaoNaData(produtoId, data) {
-    const [linha] = await banco.sql(
+  static async buscarVersoesNaData(produtoIds, data) {
+    const linhas = await banco.sql(
       `SELECT f.id, f.versao, f.criada_em, f.rendimento, f.perda, p.codigo, p.nome, p.preco_venda, p.forma_venda, p.unidades_por_caixa, c.nome AS categoria
          FROM ficha_tecnica f
          JOIN produto p   ON p.id = f.produto_id
          JOIN categoria c ON c.id = p.categoria_id
-        WHERE f.produto_id = ? AND DATE(f.criada_em) <= ?
-        ORDER BY f.versao DESC LIMIT 1`,
-      [produtoId, data],
+        WHERE f.produto_id IN (?)
+          AND f.versao = (SELECT MAX(versao) FROM ficha_tecnica
+                           WHERE produto_id = f.produto_id AND DATE(criada_em) <= ?)
+        ORDER BY p.nome`,
+      [produtoIds, data],
     );
-    return linha && new Ficha(linha);
+    const fichas = linhas.map((linha) => new Ficha(linha));
+    if (fichas.length === 0) return fichas;
+
+    const itens = await Ficha.listarItens(fichas.map((ficha) => ficha.id));
+    for (const ficha of fichas) ficha.definirItens(itens.filter((item) => item.ficha_id === ficha.id));
+    return fichas;
   }
 
-  async carregarItens() {
-    this.itens = await Ficha.listarItens(this.id);
+  definirItens(itens) {
+    this.itens = itens;
     this.custo = Ficha.custos(
-      this.itens.reduce((soma, item) => soma + item.subtotal, 0),
+      itens.reduce((soma, item) => soma + item.subtotal, 0),
       this.rendimento,
       this.perda,
       this.preco_venda,
