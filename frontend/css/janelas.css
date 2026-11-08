@@ -47,15 +47,6 @@
   border-color: var(--laranja);
   box-shadow: 0 0 0 3px rgb(241 108 34 / 0.15);
 }
-.janela-dica {
-  font-size: 0.85rem;
-  color: #6c757d;
-  background: #fff;
-  border: 1px solid #eceef1;
-  border-left: 3px solid var(--laranja);
-  border-radius: 6px;
-  padding: 8px 12px;
-}
 .janela-rodape {
   display: flex;
   justify-content: flex-end;

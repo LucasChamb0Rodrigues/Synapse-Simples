@@ -81,7 +81,7 @@ class Cadastro extends Aba {
 
   dica(texto) {
     const div = document.createElement('div');
-    div.className = 'janela-dica mt-3';
+    div.className = 'form-text mt-3';
     div.textContent = texto;
     Tela.elemento('#editar-campos').append(div);
   }
