@@ -63,7 +63,6 @@ class Cadastro extends Aba {
       });
 
     Cadastro.emEdicao = { cadastro: this, id };
-    Tela.elemento('#editar-icone').setAttribute('href', `#i-${this.nome}`);
     if (registro) {
       Tela.elemento('#editar-titulo').textContent = `Editar ${this.item}`;
       Tela.elemento('#editar-subtitulo').textContent = registro.codigo
