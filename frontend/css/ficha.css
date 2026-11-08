@@ -27,6 +27,21 @@
 .ficha-custos .ficha-custo-destaque strong {
   color: #b4470e;
 }
+.ficha-lista-custos {
+  margin-bottom: 20px;
+}
+.ficha-lista-custos > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+}
+.ficha-lista-custos > div + div {
+  border-top: 1px solid #eceef1;
+}
+.ficha-lista-custos strong {
+  white-space: nowrap;
+}
 .campo-quantidade .form-control:focus {
   border-color: var(--laranja);
   box-shadow: 0 0 0 3px rgb(241 108 34 / 0.15);

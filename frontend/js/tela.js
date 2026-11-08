@@ -63,15 +63,17 @@ class Tela {
       </div>`;
   }
 
-  static custosEmQuadros(custo, rendimento, perda, produto) {
+  static custosEmLista(custo, rendimento, perda, produto) {
     const precoVenda = produto.preco_venda;
     const caixa = custo.unidadesVenda > 1;
-    return `<div class="relatorio-indicadores">
-      ${Tela.indicador('Custo por unidade', Tela.precoInsumo(custo.unitario), `rende ${Number(rendimento).toLocaleString('pt-BR')} un. por receita`)}
-      ${Tela.indicador('Custo da receita', Tela.dinheiro(custo.lote), `insumos ${Tela.dinheiro(custo.insumos)} + perda ${Tela.porcentagem(perda)}`)}
-      ${caixa ? Tela.indicador('Custo da caixa', Tela.precoInsumo(custo.venda), `${custo.unidadesVenda} un. por caixa`) : ''}
-      ${Tela.indicador('Preço de venda', precoVenda ? Tela.dinheiro(precoVenda) : '—', precoVenda ? (caixa ? `por caixa com ${custo.unidadesVenda} un.` : 'por unidade') : 'não informado')}
-      ${Tela.indicador('Margem', custo.margem === null ? '—' : Tela.porcentagem(custo.margem), custo.margem === null ? '' : custo.margemBaixa ? `abaixo do mínimo de ${custo.margemMinima}%` : `mínimo: ${custo.margemMinima}%`)}
+    const item = (rotulo, valor, detalhe = '', classe = '') =>
+      `<div><span>${rotulo}${detalhe ? ` <span class="text-muted">(${detalhe})</span>` : ''}</span><strong class="${classe}">${valor}</strong></div>`;
+    return `<div class="ficha-lista-custos">
+      ${item('Custo por unidade', Tela.precoInsumo(custo.unitario), `rende ${Number(rendimento).toLocaleString('pt-BR')} un.`)}
+      ${item('Custo da receita', Tela.dinheiro(custo.lote), `perda ${Tela.porcentagem(perda)}`)}
+      ${caixa ? item('Custo da caixa', Tela.precoInsumo(custo.venda), `${custo.unidadesVenda} un.`) : ''}
+      ${item(`Preço de venda da ${caixa ? 'caixa' : 'unidade'}`, precoVenda ? Tela.dinheiro(precoVenda) : '—')}
+      ${item('Margem', custo.margem === null ? '—' : Tela.porcentagem(custo.margem), `mínimo ${custo.margemMinima}%`, custo.margemBaixa ? 'text-danger' : '')}
     </div>`;
   }
 

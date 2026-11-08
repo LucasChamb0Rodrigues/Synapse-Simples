@@ -54,13 +54,15 @@ class AbaCatalogo extends Aba {
     const { produto, versoes, itens, custo } = await Api.chamar('GET', `/api/catalogo/${id}`);
     Tela.elemento('#janela-ficha-titulo').textContent = `${produto.codigo} - ${produto.nome}`;
 
-    let html = `<p>Categoria: <strong>${Tela.esc(produto.categoria)}</strong></p>`;
+    const categoria = Tela.esc(produto.categoria);
+    let html;
     if (versoes.length === 0) {
-      html += '<p class="text-muted">Este produto ainda não tem ficha técnica.</p>';
+      html = `<p class="small text-muted">${categoria}</p>
+        <p class="text-muted">Este produto ainda não tem ficha técnica.</p>`;
     } else {
-      html += `
-        <p class="small text-muted">Versão ${versoes[0].versao}, salva em ${Tela.dataHora(versoes[0].criada_em)} por ${Tela.esc(versoes[0].usuario_nome)}</p>
-        ${Tela.custosEmQuadros(custo, versoes[0].rendimento, versoes[0].perda, produto)}
+      html = `
+        <p class="small text-muted">${categoria} · Versão ${versoes[0].versao} · ${Tela.dataHora(versoes[0].criada_em)} · ${Tela.esc(versoes[0].usuario_nome)}</p>
+        ${Tela.custosEmLista(custo, versoes[0].rendimento, versoes[0].perda, produto)}
         <table class="table table-sm">
           <thead><tr><th>Insumo</th><th>Quantidade</th><th>Preço na ficha</th><th>Preço atual</th><th>Subtotal</th></tr></thead>
           <tbody>${itens
