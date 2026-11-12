@@ -6,6 +6,7 @@ class AbaRelatorio extends Aba {
   async carregar() {
     this.lista = (await Api.chamar('GET', '/api/catalogo')).filter((p) => p.ficha_id);
     Tela.elemento('#relatorio-busca').value = '';
+    Tela.elemento('#relatorio-nenhum').hidden = true;
     Tela.elemento('#relatorio-produtos').innerHTML =
       this.lista
         .map(
@@ -20,7 +21,12 @@ class AbaRelatorio extends Aba {
         <span class="produto-opcao-custo">${p.custo ? `${Tela.precoInsumo(p.custo.unitario)}/un.` : '—'}</span>
       </label>`,
         )
-        .join('') || '<span class="text-muted">Nenhum produto com ficha técnica.</span>';
+        .join('') ||
+      Tela.estado(
+        'Nenhum produto com ficha técnica ainda.',
+        'O relatório usa a ficha técnica dos produtos. Monte uma na aba Ficha Técnica.',
+        Tela.botao('Ir para Ficha Técnica', "sistema.abrirAba('ficha')"),
+      );
     this.atualizarSelecao();
   }
 
@@ -36,6 +42,8 @@ class AbaRelatorio extends Aba {
       const opcao = caixa.closest('label');
       opcao.hidden = !opcao.textContent.toLowerCase().includes(busca);
     });
+    Tela.elemento('#relatorio-nenhum').hidden =
+      this.lista.length === 0 || this.caixas(true).length > 0;
     this.atualizarSelecao();
   }
 

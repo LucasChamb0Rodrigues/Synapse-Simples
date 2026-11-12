@@ -77,8 +77,42 @@ class Tela {
     </div>`;
   }
 
-  static linhaVazia(colunas) {
-    return `<tr><td colspan="${colunas}" class="text-center text-muted">Nenhum registro.</td></tr>`;
+  // Mensagem de uma lista sem nada para mostrar: título, explicação e botão (os dois últimos opcionais)
+  static estado(titulo, texto = '', botao = '', classe = '') {
+    return `<div class="estado-lista ${classe}"><strong>${titulo}</strong>${texto ? `<span>${texto}</span>` : ''}${botao}</div>`;
+  }
+
+  static linhaVazia(colunas, titulo = 'Nenhum registro.', texto = '', botao = '', classe = '') {
+    return `<tr class="linha-estado"><td colspan="${colunas}">${Tela.estado(titulo, texto, botao, classe)}</td></tr>`;
+  }
+
+  static botao(texto, acao, estilo = 'btn-outline-secondary') {
+    return `<button type="button" class="btn btn-sm ${estilo}" onclick="${acao}">${texto}</button>`;
+  }
+
+  // Ao abrir uma aba, as listas (data-lista) ainda vazias mostram "Carregando..." até os dados chegarem
+  static marcarCarregando(secao, carregando) {
+    secao.setAttribute('aria-busy', String(carregando));
+    if (!carregando) return;
+    secao.querySelectorAll('[data-lista]').forEach((lista) => {
+      if (lista.children.length === 0 || lista.querySelector('.estado-falha'))
+        Tela.avisarNaLista(lista, 'Carregando...', '', 'estado-carregando');
+    });
+  }
+
+  // Se a aba não conseguiu buscar os dados, as listas mostram o erro e um botão para tentar de novo
+  static marcarFalha(secao, tentarDeNovo) {
+    secao.querySelectorAll('[data-lista]').forEach((lista) => {
+      const botao = Tela.botao('Tentar de novo', tentarDeNovo);
+      Tela.avisarNaLista(lista, 'Não foi possível carregar os dados.', botao, 'estado-falha');
+    });
+  }
+
+  static avisarNaLista(lista, titulo, botao, classe) {
+    lista.innerHTML =
+      lista.tagName === 'TBODY'
+        ? Tela.linhaVazia(lista.closest('table').tHead.rows[0].cells.length, titulo, '', botao, classe)
+        : Tela.estado(titulo, '', botao, classe);
   }
 
   static nomePerfil(perfil) {

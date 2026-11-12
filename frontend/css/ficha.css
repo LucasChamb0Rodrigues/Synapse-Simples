@@ -1,6 +1,15 @@
 .campo-quantidade {
   width: 160px;
 }
+.ficha-aviso {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
 .ficha-custos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));

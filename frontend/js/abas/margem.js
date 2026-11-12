@@ -13,6 +13,15 @@ class AbaMargem extends Aba {
     campo.value = escolhida;
   }
 
+  // Por que o relatório saiu vazio
+  motivoVazio(soMargemBaixa, temProdutosDeFora, comCategoria) {
+    const onde = comCategoria ? ' nesta categoria' : '';
+    if (soMargemBaixa) return `Nenhum produto com margem abaixo de 30%${onde}.`;
+    if (temProdutosDeFora)
+      return `Nenhum produto${onde} tem ficha técnica e preço de venda. Os que ficaram de fora estão listados acima.`;
+    return `Nenhum produto ativo${onde}.`;
+  }
+
   async gerar() {
     const campo = Tela.elemento('#margem-categoria');
     const baixa = Tela.elemento('#margem-baixa').checked ? '1' : '0';
@@ -33,7 +42,8 @@ class AbaMargem extends Aba {
       html += `<div class="alert alert-warning no-print">Ficaram de fora: ${lista.join('; ')}.</div>`;
     }
     if (produtos.length === 0) {
-      html += '<div class="alert alert-info">Nenhum produto para mostrar com esses filtros.</div>';
+      const motivo = this.motivoVazio(baixa === '1', semMargem.length > 0, Boolean(campo.value));
+      html += `<div class="alert alert-info">${motivo}</div>`;
     } else {
       html += this.resumo(produtos) + this.grafico(produtos) + this.tabela(produtos);
     }

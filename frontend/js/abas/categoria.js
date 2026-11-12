@@ -6,6 +6,7 @@ class AbaCategorias extends Cadastro {
       'Inativar esta categoria? Ela não poderá ser escolhida para novos produtos; os produtos atuais continuam nela.',
       true,
     );
+    this.dicaVazio = 'As categorias agrupam os produtos, como Picolé ou Pote 2L.';
   }
 
   desenhar() {
@@ -15,6 +16,6 @@ class AbaCategorias extends Cadastro {
           (c) => `
       <tr><td>${Tela.esc(c.nome)}</td><td>${this.situacao(c)}</td><td class="text-end text-nowrap">${this.botoes(c)}</td></tr>`,
         )
-        .join('') || Tela.linhaVazia(3);
+        .join('') || this.linhaVazia(3);
   }
 }

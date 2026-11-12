@@ -28,7 +28,8 @@ class AbaVariacao extends Aba {
           · período de ${data(inicio)} a ${data(fim)}</div>
       </div>`;
     if (mudancas.length === 0) {
-      html += '<div class="alert alert-info">Nenhum insumo mudou de preço nesse período.</div>';
+      html +=
+        '<div class="alert alert-info">Nenhum insumo mudou de preço nesse período. Experimente um período maior.</div>';
     } else {
       const insumos = this.porInsumo(mudancas);
       html += this.resumo(insumos, mudancas) + this.tabelaInsumos(insumos) + this.tabela(mudancas);

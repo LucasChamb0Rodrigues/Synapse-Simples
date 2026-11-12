@@ -8,6 +8,16 @@
       onchange="sistema.abas.ficha.escolherProduto()"
     ></select>
     <div class="small text-muted mt-2" id="ficha-info"></div>
+    <div class="ficha-aviso" id="ficha-sem-produtos" hidden>
+      Nenhum produto ativo para montar a ficha. Cadastre um produto ou reative um na aba Produtos.
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary"
+        onclick="sistema.abrirAba('produtos')"
+      >
+        Ir para Produtos
+      </button>
+    </div>
   </div>
   <div id="ficha-editor" hidden>
     <div class="card card-body mb-3">
@@ -23,11 +33,22 @@
         <div class="col-md-3">
           <button
             class="btn btn-outline-primary w-100"
+            id="ficha-adicionar"
             onclick="sistema.abas.ficha.adicionarItem()"
           >
             Adicionar
           </button>
         </div>
+      </div>
+      <div class="ficha-aviso" id="ficha-sem-insumos" hidden>
+        Nenhum insumo ativo. Cadastre um insumo ou reative um na aba Insumos.
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          onclick="sistema.abrirAba('insumos')"
+        >
+          Ir para Insumos
+        </button>
       </div>
     </div>
     <table class="table bg-white">

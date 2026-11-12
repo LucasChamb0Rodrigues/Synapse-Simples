@@ -6,6 +6,7 @@ class Cadastro extends Aba {
     this.item = item;
     this.perguntaInativar = perguntaInativar;
     this.feminino = feminino;
+    this.dicaVazio = '';
   }
 
   async carregar() {
@@ -14,6 +15,31 @@ class Cadastro extends Aba {
   }
 
   desenhar() {}
+
+  // O que a tabela mostra quando não sobra nenhuma linha: cadastro vazio ou busca sem resultado
+  linhaVazia(colunas) {
+    const nenhum = this.feminino ? 'Nenhuma' : 'Nenhum';
+    const final = this.feminino ? 'a' : 'o';
+    if (this.lista.length === 0)
+      return Tela.linhaVazia(
+        colunas,
+        `${nenhum} ${this.item} cadastrad${final} ainda.`,
+        this.dicaVazio,
+        Tela.botao(`+ Nov${final} ${this.item}`, this.chamada('novo'), 'btn-laranja'),
+      );
+    return Tela.linhaVazia(
+      colunas,
+      `${nenhum} ${this.item} encontrad${final}.`,
+      'Confira a busca e o filtro de situação.',
+      Tela.botao(`Mostrar tod${final}s`, this.chamada('limparFiltros')),
+    );
+  }
+
+  limparFiltros() {
+    Tela.elemento(`#${this.nome}-busca`).value = '';
+    Tela.elemento(`#${this.nome}-situacao`).value = '';
+    this.desenhar();
+  }
 
   filtrar(campos) {
     const busca = Tela.elemento(`#${this.nome}-busca`).value.toLowerCase();

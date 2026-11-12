@@ -85,7 +85,21 @@ class Sistema {
       secao.hidden = secao.id !== `aba-${nome}`;
     });
     this.alternarMenu(false);
-    this.abas[nome].carregar();
+    this.carregarAba(nome);
+  }
+
+  // Enquanto a aba busca os dados, as listas vazias mostram "Carregando..."; se falhar, "Tentar de novo"
+  async carregarAba(nome) {
+    const secao = Tela.elemento(`#aba-${nome}`);
+    Tela.marcarCarregando(secao, true);
+    try {
+      await this.abas[nome].carregar();
+    } catch (erro) {
+      console.error(erro);
+      Tela.marcarFalha(secao, `sistema.abrirAba('${nome}')`);
+    } finally {
+      Tela.marcarCarregando(secao, false);
+    }
   }
 }
 

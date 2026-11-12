@@ -5,6 +5,8 @@ class AbaInsumos extends Cadastro {
       'insumo',
       'Inativar este insumo? Ele não poderá ser usado em novas fichas, mas continua nas fichas já salvas.',
     );
+    this.dicaVazio =
+      'Cadastre as matérias-primas e as embalagens com o custo de cada uma. Elas entram nas fichas técnicas dos produtos.';
   }
 
   desenhar() {
@@ -20,7 +22,7 @@ class AbaInsumos extends Cadastro {
         </td>
       </tr>`,
         )
-        .join('') || Tela.linhaVazia(5);
+        .join('') || this.linhaVazia(5);
   }
 
   editar(id) {
@@ -54,7 +56,7 @@ class AbaInsumos extends Cadastro {
             <td>${Tela.esc(p.usuario_nome)}</td>
           </tr>`,
             )
-            .join('') || Tela.linhaVazia(4)
+            .join('') || Tela.linhaVazia(4, 'Nenhum preço registrado para este insumo.')
         }
         </tbody>
       </table>`;

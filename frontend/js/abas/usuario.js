@@ -21,7 +21,7 @@ class AbaUsuarios extends Cadastro {
         }</td>
       </tr>`,
         )
-        .join('') || Tela.linhaVazia(5);
+        .join('') || this.linhaVazia(5);
   }
 
   editar(id) {

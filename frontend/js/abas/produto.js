@@ -5,6 +5,8 @@ class AbaProdutos extends Cadastro {
       'produto',
       'Inativar este produto? Ele sai do catálogo de consulta e não recebe novas fichas, mas o histórico fica guardado.',
     );
+    this.dicaVazio =
+      'Cadastre os produtos que a Gebon vende. Depois, monte a ficha técnica de cada um na aba Ficha Técnica.';
   }
 
   async carregar() {
@@ -50,6 +52,6 @@ class AbaProdutos extends Cadastro {
         <td class="text-end text-nowrap">${this.botoes(p)}</td>
       </tr>`,
         )
-        .join('') || Tela.linhaVazia(7);
+        .join('') || this.linhaVazia(7);
   }
 }

@@ -6,18 +6,29 @@ class AbaFicha extends Aba {
   }
 
   async carregar() {
-    const produtos = await Api.chamar('GET', '/api/catalogo');
+    const produtos = (await Api.chamar('GET', '/api/catalogo')).filter((p) => p.ativo);
     this.insumosDisponiveis = (await Api.chamar('GET', '/api/insumos')).filter((i) => i.ativo);
 
-    Tela.elemento('#ficha-produto').innerHTML =
-      '<option value="">Selecione o produto...</option>' +
-      produtos
-        .filter((p) => p.ativo)
-        .map((p) => `<option value="${p.id}">${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}</option>`)
-        .join('');
-    Tela.elemento('#ficha-insumo').innerHTML = this.insumosDisponiveis
-      .map((i) => `<option value="${i.id}">${Tela.esc(i.nome)} (${i.unidade})</option>`)
-      .join('');
+    const campoProduto = Tela.elemento('#ficha-produto');
+    campoProduto.disabled = produtos.length === 0;
+    campoProduto.innerHTML = produtos.length
+      ? '<option value="">Selecione o produto...</option>' +
+        produtos
+          .map((p) => `<option value="${p.id}">${Tela.esc(p.codigo)} - ${Tela.esc(p.nome)}</option>`)
+          .join('')
+      : '<option value="">Nenhum produto ativo</option>';
+    Tela.elemento('#ficha-sem-produtos').hidden = produtos.length > 0;
+
+    const semInsumos = this.insumosDisponiveis.length === 0;
+    Tela.elemento('#ficha-insumo').innerHTML = semInsumos
+      ? '<option value="">Nenhum insumo ativo</option>'
+      : this.insumosDisponiveis
+          .map((i) => `<option value="${i.id}">${Tela.esc(i.nome)} (${i.unidade})</option>`)
+          .join('');
+    ['#ficha-insumo', '#ficha-quantidade', '#ficha-adicionar'].forEach((campo) => {
+      Tela.elemento(campo).disabled = semInsumos;
+    });
+    Tela.elemento('#ficha-sem-insumos').hidden = !semInsumos;
     Tela.elemento('#ficha-editor').hidden = true;
     Tela.elemento('#ficha-info').textContent = '';
   }
@@ -116,7 +127,12 @@ class AbaFicha extends Aba {
         <td><button class="btn btn-sm btn-outline-danger" onclick="${this.chamada('removerItem', posicao)}">Remover</button></td>
       </tr>`,
         )
-        .join('') || Tela.linhaVazia(5);
+        .join('') ||
+      Tela.linhaVazia(
+        5,
+        'Nenhum insumo na ficha ainda.',
+        'Escolha um insumo e a quantidade acima e clique em Adicionar.',
+      );
     this.desenharTotal();
   }
 

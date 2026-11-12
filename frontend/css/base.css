@@ -34,3 +34,38 @@ h2 {
 .min-w-0 {
   min-width: 0;
 }
+
+/* Lista sem nada para mostrar: vazia, carregando ou com falha (Tela.estado) */
+.estado-lista {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 28px 16px;
+  text-align: center;
+  color: #6c757d;
+}
+.estado-lista strong {
+  color: #343a40;
+}
+.estado-lista span {
+  max-width: 480px;
+  font-size: 0.9rem;
+}
+.estado-lista .btn {
+  margin-top: 6px;
+}
+/* "Carregando..." só aparece se a resposta demorar mais de 0,3 s (evita piscar) */
+.estado-carregando {
+  animation: aparecer-depois 0.2s 0.3s both;
+}
+@keyframes aparecer-depois {
+  from {
+    opacity: 0;
+  }
+}
+/* Enquanto a aba recarrega, os dados antigos ficam apagados (também só depois de 0,3 s) */
+[aria-busy='true'] [data-lista] > :not(.linha-estado, .estado-lista) {
+  opacity: 0.5;
+  transition: opacity 0.2s 0.3s;
+}

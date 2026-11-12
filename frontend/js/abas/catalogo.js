@@ -32,9 +32,38 @@ class AbaCatalogo extends Aba {
         <td><button class="btn btn-sm btn-outline-primary" onclick="${this.chamada('verFicha', p.id)}">Ver</button></td>
       </tr>`,
         )
-        .join('') || Tela.linhaVazia(9);
+        .join('') || this.linhaVazia();
 
     this.desenharResumo();
+  }
+
+  // O que a tabela mostra quando não sobra nenhum produto
+  linhaVazia() {
+    if (this.lista.length > 0)
+      return Tela.linhaVazia(
+        9,
+        'Nenhum produto encontrado.',
+        'Confira a busca e o filtro de situação.',
+        Tela.botao('Mostrar todos', this.chamada('limparFiltros')),
+      );
+    if (!Rotas.pode('produtos', sistema.usuario))
+      return Tela.linhaVazia(
+        9,
+        'Nenhum produto para consultar ainda.',
+        'Aparecem aqui os produtos ativos que já têm ficha técnica. Se esperava ver algum, fale com um administrador.',
+      );
+    return Tela.linhaVazia(
+      9,
+      'Nenhum produto cadastrado ainda.',
+      'Cadastre os insumos e os produtos e monte a ficha técnica de cada produto. O custo e a margem aparecem aqui.',
+      Tela.botao('Cadastrar produtos', "sistema.abrirAba('produtos')", 'btn-laranja'),
+    );
+  }
+
+  limparFiltros() {
+    Tela.elemento('#catalogo-busca').value = '';
+    Tela.elemento('#catalogo-filtro').value = '';
+    this.desenhar();
   }
 
   desenharResumo() {
@@ -57,8 +86,11 @@ class AbaCatalogo extends Aba {
     const categoria = Tela.esc(produto.categoria);
     let html;
     if (versoes.length === 0) {
+      const montar = Rotas.pode('ficha', sistema.usuario)
+        ? Tela.botao('Montar a ficha técnica', "sistema.abrirAba('ficha')")
+        : '';
       html = `<p class="small text-muted">${categoria}</p>
-        <p class="text-muted">Este produto ainda não tem ficha técnica.</p>`;
+        ${Tela.estado('Este produto ainda não tem ficha técnica.', '', montar)}`;
     } else {
       html = `
         <p class="small text-muted">${categoria} · Versão ${versoes[0].versao} · ${Tela.dataHora(versoes[0].criada_em)} · ${Tela.esc(versoes[0].usuario_nome)}</p>

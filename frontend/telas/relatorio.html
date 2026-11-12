@@ -25,8 +25,12 @@
     <div
       id="relatorio-produtos"
       class="relatorio-produtos"
+      data-lista
       onchange="sistema.abas.relatorio.atualizarSelecao()"
     ></div>
+    <p class="small text-muted mt-2 mb-0" id="relatorio-nenhum" hidden>
+      Nenhum produto encontrado com essa busca.
+    </p>
     <div class="row g-2 align-items-end mt-2">
       <div class="col-md-4">
         <label class="form-label" for="relatorio-data">Ficha válida na data (opcional)</label>
