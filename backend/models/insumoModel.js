@@ -13,6 +13,7 @@ class Insumo extends Modelo {
     this.unidade = Modelo.texto(this.unidade).toUpperCase();
     this.custo = Modelo.numero(this.custo);
     if (!this.nome) throw new ErroApp(400, 'Informe o nome do insumo.');
+    if (this.nome.length > 60) throw new ErroApp(400, 'O nome deve ter no máximo 60 caracteres.');
     if (!Insumo.UNIDADES.includes(this.unidade))
       throw new ErroApp(400, 'Unidade de medida inválida.');
     this.custo = Math.round(this.custo * 10000) / 10000;

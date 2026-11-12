@@ -65,6 +65,8 @@ class Produto extends Modelo {
         "O código deve ter de 1 a 20 caracteres (letras, números, ponto, hífen ou _).",
       );
     if (!this.nome) throw new ErroApp(400, "Informe o nome do produto.");
+    if (this.nome.length > 80)
+      throw new ErroApp(400, "O nome deve ter no máximo 80 caracteres.");
     if (!this.categoria_id) throw new ErroApp(400, "Selecione uma categoria.");
     this.preco_venda =
       this.preco_venda === "" || this.preco_venda == null

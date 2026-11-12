@@ -67,6 +67,7 @@ class Usuario extends Modelo {
     this.nome = Modelo.texto(this.nome);
     this.login = Modelo.texto(this.login).toLowerCase();
     if (!this.nome) throw new ErroApp(400, 'Informe o nome.');
+    if (this.nome.length > 60) throw new ErroApp(400, 'O nome deve ter no máximo 60 caracteres.');
     if (!/^[a-z0-9._-]{3,30}$/.test(this.login))
       throw new ErroApp(
         400,

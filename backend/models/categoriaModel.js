@@ -9,6 +9,8 @@ class Categoria extends Modelo {
   async validar() {
     this.nome = Modelo.texto(this.nome);
     if (!this.nome) throw new ErroApp(400, "Informe o nome da categoria.");
+    if (this.nome.length > 50)
+      throw new ErroApp(400, "O nome deve ter no máximo 50 caracteres.");
   }
 }
 

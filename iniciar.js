@@ -50,15 +50,20 @@ class Iniciador {
   }
 
   responder(req, res) {
-    const caminho = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-    const arquivo = path.join(this.frontend, caminho === '/' ? 'index.html' : caminho);
-    if (!arquivo.startsWith(this.frontend + path.sep)) return res.writeHead(403).end();
-    fs.readFile(arquivo, (erro, conteudo) => {
-      if (erro) return res.writeHead(404).end('Não encontrado');
-      const tipo = Iniciador.TIPOS[path.extname(arquivo)] || 'application/octet-stream';
-      res.writeHead(200, { 'Content-Type': `${tipo}; charset=utf-8` });
-      res.end(conteudo);
-    });
+    try {
+      const caminho = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+      const arquivo = path.join(this.frontend, caminho === '/' ? 'index.html' : caminho);
+      if (!arquivo.startsWith(this.frontend + path.sep)) return res.writeHead(403).end();
+      fs.readFile(arquivo, (erro, conteudo) => {
+        if (erro) return res.writeHead(404).end('Não encontrado');
+        const tipo = Iniciador.TIPOS[path.extname(arquivo)] || 'application/octet-stream';
+        res.writeHead(200, { 'Content-Type': `${tipo}; charset=utf-8` });
+        res.end(conteudo);
+      });
+    } catch {
+      // endereço inválido (byte nulo, %ZZ malformado): responde 400 em vez de derrubar o servidor
+      res.writeHead(400).end('Pedido inválido');
+    }
   }
 
   aguardarPorta() {
