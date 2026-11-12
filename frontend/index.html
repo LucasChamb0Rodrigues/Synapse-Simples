@@ -44,7 +44,7 @@
         </div>
       </div>
       <div class="login-area">
-        <form class="login-form" onsubmit="sistema.fazerLogin(event)">
+        <form class="login-form" onsubmit="sistema.login.fazerLogin(event)">
           <h1>Bem-vindo!</h1>
           <p class="login-titulo" id="login-titulo"></p>
           <div class="login-aviso" id="login-aviso" role="alert" hidden></div>
@@ -103,7 +103,7 @@
               <button
                 type="button"
                 class="botao-ver-senha"
-                onclick="sistema.alternarSenha(this)"
+                onclick="sistema.login.alternarSenha(this)"
                 aria-label="Mostrar senha"
               >
                 <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
@@ -231,28 +231,28 @@
           <button data-aba="catalogo">
             <svg class="icone"><use href="#i-catalogo" /></svg>Catálogo
           </button>
-          <button data-aba="produtos" class="so-admin">
+          <button data-aba="produtos">
             <svg class="icone"><use href="#i-produtos" /></svg>Produtos
           </button>
-          <button data-aba="ficha" class="so-admin">
+          <button data-aba="ficha">
             <svg class="icone"><use href="#i-ficha" /></svg>Ficha Técnica
           </button>
-          <button data-aba="insumos" class="so-admin">
+          <button data-aba="insumos">
             <svg class="icone"><use href="#i-insumos" /></svg>Insumos
           </button>
-          <button data-aba="categorias" class="so-admin">
+          <button data-aba="categorias">
             <svg class="icone"><use href="#i-categorias" /></svg>Categorias
           </button>
-          <button data-aba="relatorio" class="so-admin">
+          <button data-aba="relatorio">
             <svg class="icone"><use href="#i-relatorio" /></svg>Relatório de Custo
           </button>
-          <button data-aba="variacao" class="so-admin">
+          <button data-aba="variacao">
             <svg class="icone"><use href="#i-variacao" /></svg>Variação de Preços
           </button>
-          <button data-aba="margem" class="so-admin">
+          <button data-aba="margem">
             <svg class="icone"><use href="#i-margem" /></svg>Margem de Lucro
           </button>
-          <button data-aba="usuarios" class="so-admin">
+          <button data-aba="usuarios">
             <svg class="icone"><use href="#i-usuarios" /></svg>Usuários
           </button>
         </div>
@@ -337,6 +337,8 @@
     <script src="js/abas/margem.js"></script>
     <script src="js/abas/usuario.js"></script>
     <script src="js/abas/perfil.js"></script>
+    <script src="js/rotas.js"></script>
+    <script src="js/login.js"></script>
     <script src="js/sistema.js"></script>
   </body>
 </html>

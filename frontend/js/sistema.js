@@ -1,22 +1,12 @@
 class Sistema {
   constructor() {
     this.usuario = null;
-    this.primeiroAcesso = false;
-    this.abas = {
-      catalogo: new AbaCatalogo(),
-      produtos: new AbaProdutos(),
-      ficha: new AbaFicha(),
-      insumos: new AbaInsumos(),
-      categorias: new AbaCategorias(),
-      relatorio: new AbaRelatorio(),
-      variacao: new AbaVariacao(),
-      margem: new AbaMargem(),
-      usuarios: new AbaUsuarios(),
-      perfil: new AbaPerfil(),
-    };
+    this.login = new Login();
+    this.abas = Object.fromEntries(Rotas.ABAS.map((aba) => [aba.nome, new aba.classe()]));
     document.querySelectorAll('[data-aba]').forEach((botao) => {
       botao.addEventListener('click', () => this.abrirAba(botao.dataset.aba));
     });
+    window.addEventListener('hashchange', () => this.mostrarAbaDaRota());
     new MutationObserver(() => Tela.rotularTabelas()).observe(document.body, {
       childList: true,
       subtree: true,
@@ -30,24 +20,11 @@ class Sistema {
     Tela.elemento('#tela-sistema').classList.toggle('menu-aberto', abrir);
   }
 
-  static TELAS = [
-    'catalogo',
-    'produto',
-    'ficha',
-    'insumo',
-    'categoria',
-    'relatorio',
-    'variacao',
-    'margem',
-    'usuario',
-    'perfil',
-  ];
-
   async carregarTelas() {
     const telas = await Promise.all(
-      Sistema.TELAS.map(async (nome) => {
-        const resposta = await fetch(`telas/${nome}.html`);
-        if (!resposta.ok) throw new Error(`Não foi possível carregar a tela ${nome}.`);
+      Rotas.ABAS.map(async ({ tela }) => {
+        const resposta = await fetch(`telas/${tela}.html`);
+        if (!resposta.ok) throw new Error(`Não foi possível carregar a tela ${tela}.`);
         return resposta.text();
       }),
     );
@@ -58,56 +35,17 @@ class Sistema {
     await this.carregarTelas();
     const situacao = await Api.chamar('GET', '/api/situacao');
     if (situacao.usuario) return this.entrar(situacao.usuario);
-
-    this.primeiroAcesso = situacao.primeiroAcesso;
-    Tela.elemento('#tela-login').hidden = false;
-    Tela.elemento('#login-aviso').hidden = !situacao.aviso;
-    Tela.elemento('#login-aviso').textContent = situacao.aviso || '';
-    Tela.elemento('#campo-nome').hidden = !this.primeiroAcesso;
-    Tela.elemento('#campo-nome input').required = this.primeiroAcesso;
-    Tela.elemento('#login-titulo').textContent = this.primeiroAcesso
-      ? 'Primeiro acesso: crie o usuário Admin (administrador).'
-      : 'Entre com seu usuário e senha.';
-  }
-
-  async fazerLogin(evento) {
-    evento.preventDefault();
-    const url = this.primeiroAcesso ? '/api/primeiro-acesso' : '/api/login';
-    const botao = Tela.elemento('#login-botao');
-    botao.disabled = true;
-    botao.textContent = 'Entrando...';
-    try {
-      const resposta = await Api.chamar(
-        'POST',
-        url,
-        Object.fromEntries(new FormData(evento.target)),
-      );
-      evento.target.reset();
-      Tela.elemento('#login-aviso').hidden = true;
-      this.entrar(resposta.usuario);
-    } finally {
-      botao.disabled = false;
-      botao.textContent = 'Entrar';
-    }
-  }
-
-  alternarSenha(botao) {
-    const campo = Tela.elemento('#login-senha');
-    const mostrar = campo.type === 'password';
-    campo.type = mostrar ? 'text' : 'password';
-    botao.classList.toggle('ativo', mostrar);
-    botao.setAttribute('aria-label', mostrar ? 'Esconder senha' : 'Mostrar senha');
+    this.login.mostrar(situacao);
   }
 
   entrar(usuario) {
     this.usuario = usuario;
-    Tela.elemento('#tela-login').hidden = true;
     Tela.elemento('#tela-sistema').hidden = false;
     this.mostrarUsuario(usuario);
-    document.querySelectorAll('.so-admin').forEach((botao) => {
-      botao.hidden = usuario.perfil !== 'admin';
+    document.querySelectorAll('[data-aba]').forEach((botao) => {
+      botao.hidden = !Rotas.pode(botao.dataset.aba, usuario);
     });
-    this.abrirAba('catalogo');
+    this.mostrarAbaDaRota();
   }
 
   mostrarUsuario(usuario) {
@@ -123,10 +61,23 @@ class Sistema {
   async sair() {
     if (!(await Tela.confirmar('Deseja sair do sistema?', 'Sair'))) return;
     await Api.chamar('POST', '/api/logout');
+    // Quem entrar depois começa do Catálogo, não na aba da pessoa anterior
+    history.replaceState(null, '', location.pathname);
     location.reload();
   }
 
   abrirAba(nome) {
+    const endereco = Rotas.endereco(nome);
+    // Clicar na aba já aberta não dispara hashchange, mas precisa recarregar os dados
+    if (location.hash === endereco) this.mostrarAbaDaRota();
+    else location.hash = endereco;
+  }
+
+  mostrarAbaDaRota() {
+    if (!this.usuario) return;
+    const nome = Rotas.atual(this.usuario);
+    history.replaceState(null, '', Rotas.endereco(nome));
+    document.querySelectorAll('dialog[open]').forEach((janela) => janela.close());
     document
       .querySelectorAll('[data-aba]')
       .forEach((botao) => botao.classList.toggle('ativo', botao.dataset.aba === nome));

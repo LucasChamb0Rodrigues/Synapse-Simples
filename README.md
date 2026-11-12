@@ -146,7 +146,9 @@ frontend/            V: as telas que rodam no navegador
   js/                  o JavaScript das telas, um arquivo por classe
     tela.js              Tela: formata dinheiro e datas, mostra avisos e confirmações
     api.js               Api: conversa com o back-end (fetch)
-    sistema.js           Sistema: carrega as telas, login, menu e troca de abas (é o último a carregar e liga tudo)
+    rotas.js             Rotas: a lista das abas (nome, tela, classe e quem pode abrir), em 2 blocos: logado e só Admin
+    login.js             Login: tela de login e de primeiro acesso
+    sistema.js           Sistema: carrega as telas, menu e troca de abas pelo endereço (é o último a carregar e liga tudo)
     abas/                uma classe por aba da tela
       aba.js               classe base de todas as abas
       cadastro.js          classe base das abas de cadastro (lista, busca, janela de editar, inativar)
@@ -167,6 +169,8 @@ frontend/            V: as telas que rodam no navegador
 | margem | `margemController.js`, `produtoModel.js` | `telas/margem.html` | `js/abas/margem.js` | `css/relatorio.css` |
 | usuario | `usuarioController.js`, `usuarioModel.js` | `telas/usuario.html` | `js/abas/usuario.js` | |
 | perfil | `perfilController.js` | `telas/perfil.html` | `js/abas/perfil.js` | |
+
+**Endereço das abas:** cada aba tem um endereço com `#`, listado em `js/rotas.js` (ex.: `#/insumos`). Assim o F5 mantém a aba aberta e o botão Voltar do navegador volta para a aba anterior. Um endereço que não existe, ou uma aba só do Admin aberta por outro perfil, cai no Catálogo.
 
 **Onde aparece a orientação a objetos:**
 
