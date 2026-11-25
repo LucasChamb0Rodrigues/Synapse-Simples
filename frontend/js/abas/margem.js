@@ -105,7 +105,6 @@ class AbaMargem extends Aba {
             .join('')}
           </tbody>
         </table>
-        <p class="small text-muted mt-2 mb-0">Margem = (preço de venda − custo) ÷ preço de venda. Produto vendido em caixa usa o custo da caixa inteira.</p>
       </div>`;
   }
 }
